@@ -11,10 +11,10 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    # MySQL은 내부 네트워크에서만 접근 가능하도록 포트 노출 제거
-    # 보안을 위해 외부 포트 노출하지 않음 (내부 Docker 네트워크만 사용)
-    # ports:
-    #   - "${MYSQL_PORT}:3306"
+    # 개발용: 외부 IDE 접속을 위해 포트 노출
+    # 프로덕션 환경에서는 SSH 터널링 사용 권장
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./docker/mysql/init:/docker-entrypoint-initdb.d
