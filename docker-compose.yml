@@ -51,7 +51,7 @@ services:
         condition: service_healthy
     networks:
       - nas-network
-    command: ./gradlew bootRun
+    command: gradle bootRun
 
   # Kotlin Backend API Server
   backend-kotlin:
@@ -76,7 +76,7 @@ services:
         condition: service_healthy
     networks:
       - nas-network
-    command: ./gradlew run --continuous
+    command: gradle bootRun
 
   # Vue Frontend Server
   frontend-vue:
