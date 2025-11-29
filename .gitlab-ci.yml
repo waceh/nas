@@ -128,7 +128,8 @@ test-integration:
     - develop
   when: on_success
 
-# 배포 (프로덕션) - 호스트 Docker Engine 직접 사용
+# 배포 (프로덕션) - 태그 기반 배포
+# 사용법: git tag -a v1.0.0 -m "Release v1.0.0" && git push origin v1.0.0
 deploy-production:
   stage: deploy
   image: docker:latest
@@ -196,8 +197,8 @@ deploy-production:
       docker-compose logs --tail=50
       exit 1
   only:
-    - main
-  when: manual
+    - tags  # 태그가 생성될 때만 실행
+  when: manual  # 수동 실행 (자동 실행 원하면 'on_success'로 변경)
   environment:
     name: production
     url: http://localhost:3000

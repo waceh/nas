@@ -4,6 +4,8 @@
 
 GitLab Issues는 Jira의 많은 기능을 제공하며, 적절한 설정과 워크플로우를 통해 Jira와 유사한 프로젝트 관리가 가능합니다.
 
+> **배포 자동화**: GitLab Issues와 태그를 연동하여 배포를 자동화할 수 있습니다. 자세한 내용은 [DEPLOYMENT_AUTOMATION.md](DEPLOYMENT_AUTOMATION.md)를 참조하세요.
+
 ## 🆚 GitLab Issues vs Jira 비교
 
 ### 기능 비교표
