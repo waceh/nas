@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface ProductRepository : JpaRepository<Product, Long> {
-    fun findAll(): List<Product>
+    // JpaRepository에 이미 findAll()이 있으므로 별도로 정의할 필요 없음
 }
 
