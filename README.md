@@ -1,6 +1,8 @@
-# NAS (Oracle Cloud) 개발 설정
+# NAS (Oracle Cloud) 아키텍처 설계 문서
 
-이 저장소는 Oracle Cloud Infrastructure 인스턴스에서 Docker를 사용하여 개발 환경을 구성하기 위한 설정 파일과 가이드를 포함합니다.
+이 저장소는 Oracle Cloud Infrastructure 인스턴스에서 Docker를 사용한 NAS 환경의 **아키텍처 설계 문서**를 포함합니다.
+
+> **참고**: 이 저장소는 아키텍처 설계 및 구성 계획 문서만 포함하며, 실제 구현 코드나 설정 파일은 별도로 관리됩니다.
 
 ## 📋 목차
 
@@ -18,14 +20,24 @@
 
 ## 소개
 
-이 프로젝트는 Oracle Cloud Infrastructure 인스턴스에서 Docker를 사용하여 다음 서비스들을 구성합니다:
+이 문서는 Oracle Cloud Infrastructure 인스턴스에서 Docker를 사용한 NAS 환경의 아키텍처 설계를 다룹니다.
+
+### 설계 대상 서비스
 
 - **Backend API Server (Spring Boot)**: Kotlin 기반 Spring Boot REST API 서버
 - **Backend API Server (Kotlin)**: Ktor 프레임워크를 사용한 순수 Kotlin REST API 서버
 - **Frontend Server (Vue.js)**: Vue 3 기반 프론트엔드 애플리케이션
 - **Database (MySQL)**: MySQL 8.0 데이터베이스 서버
+- **GitLab**: 코드 저장소 및 CI/CD
+- **GitLab Runner**: CI/CD 파이프라인 실행
+- **Portainer**: Docker 관리 도구
 
-모든 서비스는 Docker Compose를 통해 오케스트레이션되며, 개발 환경과 프로덕션 환경을 모두 지원합니다.
+### 아키텍처 특징
+
+- 모든 서비스는 Docker Compose를 통해 오케스트레이션
+- 단일 서버 환경 최적화
+- GitLab Runner를 통한 자동 배포
+- 개발 환경과 프로덕션 환경 모두 지원
 
 ## 아키텍처
 
