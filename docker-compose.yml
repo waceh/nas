@@ -202,6 +202,9 @@ volumes:
   gitlab_logs:
   gitlab_data:
   gitlab-runner-config:
+  prometheus_data:
+  grafana_data:
+  loki_data:
   # wiki_data:  # Wiki.js 사용 시 활성화
 
 networks:

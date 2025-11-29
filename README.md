@@ -156,6 +156,11 @@
 - **Portainer**: `http://YOUR_SERVER_IP:9000`
 - **GitLab SSH**: `ssh://git@YOUR_SERVER_IP:2222`
 
+#### 모니터링 도구
+- **Grafana**: `http://YOUR_SERVER_IP:3030` (기본: admin/admin)
+- **Prometheus**: `http://YOUR_SERVER_IP:9090`
+- **Loki**: `http://YOUR_SERVER_IP:3100`
+
 ## 요구사항
 
 - Oracle Cloud Infrastructure 인스턴스 (Ubuntu 22.04 권장)
