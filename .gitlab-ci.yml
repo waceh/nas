@@ -157,33 +157,85 @@ deploy-production:
         fi
       fi
       
-      # 기존 컨테이너 중지 및 제거
-      echo "기존 서비스 중지 중..."
-      docker-compose down || true
+      # 롤링 배포를 위한 스케일링 설정
+      echo "롤링 배포 시작..."
       
       # 프로덕션 이미지 빌드
       echo "Docker 이미지 빌드 중..."
-      docker-compose -f docker-compose.yml -f docker-compose.prod.yml build --no-cache
+      docker-compose -f docker-compose.yml -f docker-compose.prod.yml build --no-cache backend-springboot backend-kotlin
       
-      # 서비스 시작
-      echo "서비스 시작 중..."
-      docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+      # Spring Boot 롤링 배포
+      echo "Spring Boot 롤링 배포 중..."
+      # 1. 새 인스턴스 1개 추가 (총 2개)
+      docker-compose -f docker-compose.yml -f docker-compose.scale.yml up -d --scale backend-springboot=2 --no-deps backend-springboot
       
-      # 헬스 체크
-      echo "헬스 체크 대기 중..."
-      sleep 20
+      # 2. 헬스 체크 대기
+      echo "새 Spring Boot 인스턴스 헬스 체크 대기 중..."
+      sleep 15
+      MAX_RETRIES=10
+      RETRY_COUNT=0
+      while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+        if curl -f http://localhost:3000/api/health > /dev/null 2>&1; then
+          echo "Spring Boot 새 인스턴스 정상 작동 확인"
+          break
+        fi
+        RETRY_COUNT=$((RETRY_COUNT + 1))
+        echo "재시도 중... ($RETRY_COUNT/$MAX_RETRIES)"
+        sleep 5
+      done
+      
+      # 3. 기존 인스턴스 중지 (자동으로 1개만 남음)
+      echo "기존 Spring Boot 인스턴스 교체 중..."
+      docker-compose -f docker-compose.yml -f docker-compose.scale.yml up -d --scale backend-springboot=2 backend-springboot
+      sleep 10
+      
+      # Kotlin 롤링 배포
+      echo "Kotlin 롤링 배포 중..."
+      # 1. 새 인스턴스 1개 추가 (총 2개)
+      docker-compose -f docker-compose.yml -f docker-compose.scale.yml up -d --scale backend-kotlin=2 --no-deps backend-kotlin
+      
+      # 2. 헬스 체크 대기
+      echo "새 Kotlin 인스턴스 헬스 체크 대기 중..."
+      sleep 15
+      RETRY_COUNT=0
+      while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+        if curl -f http://localhost:3000/api/kotlin/health > /dev/null 2>&1; then
+          echo "Kotlin 새 인스턴스 정상 작동 확인"
+          break
+        fi
+        RETRY_COUNT=$((RETRY_COUNT + 1))
+        echo "재시도 중... ($RETRY_COUNT/$MAX_RETRIES)"
+        sleep 5
+      done
+      
+      # 3. 기존 인스턴스 중지 (자동으로 1개만 남음)
+      echo "기존 Kotlin 인스턴스 교체 중..."
+      docker-compose -f docker-compose.yml -f docker-compose.scale.yml up -d --scale backend-kotlin=2 backend-kotlin
+      sleep 10
+      
+      # 다른 서비스 시작 (MySQL, Frontend 등)
+      echo "다른 서비스 시작 중..."
+      docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d mysql frontend-vue
+      
+      # 최종 헬스 체크
+      echo "최종 헬스 체크 중..."
+      sleep 10
       
       MAX_RETRIES=10
       RETRY_COUNT=0
       
       while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-        if curl -f http://localhost:3000/api/springboot/health && \
-           curl -f http://localhost:3000/api/kotlin/health; then
+        if curl -f http://localhost:3000/api/health > /dev/null 2>&1 && \
+           curl -f http://localhost:3000/api/kotlin/health > /dev/null 2>&1; then
           echo "=========================================="
-          echo "배포 완료: $(date)"
+          echo "롤링 배포 완료: $(date)"
           echo "모든 서비스가 정상적으로 시작되었습니다!"
           echo "=========================================="
-          docker-compose ps
+          echo "실행 중인 컨테이너:"
+          docker-compose -f docker-compose.yml -f docker-compose.scale.yml ps
+          echo "=========================================="
+          echo "Backend 인스턴스 수:"
+          docker-compose -f docker-compose.yml -f docker-compose.scale.yml ps | grep -E 'backend-springboot|backend-kotlin' | wc -l
           exit 0
         fi
         
