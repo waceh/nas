@@ -302,3 +302,4 @@ docker exec -it gitlab-runner gitlab-runner register
 **작성일**: 2024년
 **대상 환경**: Oracle Cloud Infrastructure
 
+

@@ -228,3 +228,4 @@ docker-compose rm -f backend-springboot_old
 **대상 환경**: Oracle Cloud Infrastructure 단일 인스턴스
 **권장**: Frontend Nginx에서 Backend 로드 밸런싱 처리
 
+

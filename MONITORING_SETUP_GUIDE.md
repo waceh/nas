@@ -555,3 +555,4 @@ jvm_memory_used_bytes / jvm_memory_max_bytes
 **대상 환경**: Oracle Cloud Infrastructure 단일 인스턴스
 **스택**: Grafana + Prometheus + Loki
 
+

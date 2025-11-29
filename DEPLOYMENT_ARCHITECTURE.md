@@ -183,3 +183,4 @@ Runner → Docker Registry → Kubernetes API → Pod 배포
 **대상 환경**: Oracle Cloud Infrastructure 단일 인스턴스
 **배포 방식**: GitLab Runner → 호스트 Docker Engine 직접 접근
 
+

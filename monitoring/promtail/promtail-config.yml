@@ -53,3 +53,4 @@ scrape_configs:
           service: frontend-vue
           __path__: /var/log/frontend/*.log
 
+

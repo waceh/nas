@@ -115,3 +115,4 @@ cd /home/ubuntu/nas
 **대상 환경**: Oracle Cloud Infrastructure
 **CI/CD 플랫폼**: GitHub Actions
 
+

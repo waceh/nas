@@ -335,3 +335,4 @@ Spring Boot, Kotlin, Frontend 서버의 로그 수집 및 모니터링을 위한
 **대상 환경**: Oracle Cloud Infrastructure 단일 인스턴스
 **권장**: Grafana + Prometheus + Loki
 
+
