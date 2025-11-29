@@ -131,6 +131,13 @@
 - **Portainer** (포트 9000): Docker 컨테이너 및 스택 관리
 - **GitLab Runner**: CI/CD 파이프라인 실행
 
+### 모니터링 도구
+
+- **Grafana** (포트 3030): 메트릭 및 로그 시각화
+- **Prometheus** (포트 9090): 메트릭 수집 및 저장
+- **Loki** (포트 3100): 로그 수집 및 저장
+- **상세 가이드**: [MONITORING_TOOLS.md](MONITORING_TOOLS.md)
+
 > **참고**: Wiki 및 프로젝트 관리 도구 추천은 [MANAGEMENT_TOOLS.md](MANAGEMENT_TOOLS.md)를 참조하세요.
 
 자세한 아키텍처 정보는 다음 문서를 참조하세요:
