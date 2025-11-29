@@ -127,7 +127,7 @@ services:
     hostname: 'gitlab.local'
     environment:
       GITLAB_OMNIBUS_CONFIG: |
-        external_url 'http://YOUR_SERVER_IP:8080'
+        external_url 'http://158.180.76.251:8080'
         gitlab_rails['gitlab_shell_ssh_port'] = 2222
         # 메일 설정 (선택사항)
         # gitlab_rails['smtp_enable'] = true
