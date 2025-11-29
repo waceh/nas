@@ -125,6 +125,9 @@
 ### 관리 도구
 
 - **GitLab** (포트 8080): 코드 저장소, CI/CD, 이슈 관리, Wiki
+  - **Wiki**: 문서 관리 및 공유
+  - **Issues**: Jira처럼 사용 가능 (Labels, Milestones, Boards)
+  - **상세 가이드**: [GITLAB_ISSUES_GUIDE.md](GITLAB_ISSUES_GUIDE.md)
 - **Portainer** (포트 9000): Docker 컨테이너 및 스택 관리
 - **GitLab Runner**: CI/CD 파이프라인 실행
 

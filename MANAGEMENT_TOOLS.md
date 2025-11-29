@@ -197,6 +197,8 @@ mongo:
 - 리소스 사용 0MB
 - GitLab과 완벽 통합
 - 소규모 팀에 적합
+- **Jira처럼 사용 가능**: Labels, Milestones, Boards 활용
+- **상세 가이드**: [GITLAB_ISSUES_GUIDE.md](GITLAB_ISSUES_GUIDE.md) 참조
 
 ### 시나리오 2: 별도 Wiki 필요 시
 **Wiki.js**
