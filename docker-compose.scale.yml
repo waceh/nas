@@ -25,22 +25,9 @@ services:
     environment:
       # Stateless 구성
 
-  # Nginx - 로드 밸런서 (선택사항)
-  # Frontend 2개를 사용하지 않는 경우 주석 처리
-  # nginx:
-  #   image: nginx:alpine
-  #   container_name: nas-nginx
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3000:80"
-  #   volumes:
-  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-  #   networks:
-  #     - nas-network
-  #   depends_on:
-  #     - backend-springboot
-  #     - backend-kotlin
-  #     - frontend-vue
+  # 참고: 별도의 Nginx 컨테이너는 불필요
+  # Frontend의 Nginx에서 Backend 로드 밸런싱 처리
+  # Frontend 컨테이너 내부의 Nginx 설정만 수정하면 됨
 
   # Frontend - 2개 인스턴스 (선택사항)
   # frontend-vue:
