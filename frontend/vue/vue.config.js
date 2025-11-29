@@ -6,21 +6,20 @@ module.exports = defineConfig({
     host: '0.0.0.0',
     port: 3000,
     proxy: {
-      '/api': {
-        target: 'http://backend-springboot:8080',
+      // Kotlin API는 별도 프록시 설정
+      '/api/kotlin': {
+        target: 'http://backend-kotlin:8081',
         changeOrigin: true,
         ws: true,
         pathRewrite: {
-          // /api/kotlin/* 요청은 Kotlin 백엔드로
           '^/api/kotlin': '/api/kotlin'
-        },
-        // /api/kotlin이 아닌 경우 Spring Boot로, /api/kotlin인 경우 Kotlin으로 라우팅
-        router: function(req) {
-          if (req.url.startsWith('/api/kotlin')) {
-            return 'http://backend-kotlin:8081'
-          }
-          return 'http://backend-springboot:8080'
         }
+      },
+      // Spring Boot API
+      '/api': {
+        target: 'http://backend-springboot:8080',
+        changeOrigin: true,
+        ws: true
       }
     }
   }
