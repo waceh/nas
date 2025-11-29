@@ -1,13 +1,11 @@
-version: '3.8'
-
 # 스케일링 및 롤링 배포를 위한 Docker Compose 오버라이드
-# 사용법: docker-compose -f docker-compose.yml -f docker-compose.scale.yml up -d
+# 사용법: docker-compose -f docker-compose.yml -f docker-compose.scale.yml up -d --scale backend-springboot=2 --scale backend-kotlin=2
 
 services:
   # Spring Boot Backend - 2개 인스턴스
+  # container_name 제거 (스케일링을 위해)
   backend-springboot:
-    deploy:
-      replicas: 2
+    container_name: null  # 스케일링을 위해 null로 설정
     # 포트는 내부 네트워크만 사용 (Nginx를 통해 접근)
     # ports:
     #   - "${SPRINGBOOT_PORT:-8080}:8080"
@@ -16,9 +14,9 @@ services:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
 
   # Kotlin Backend - 2개 인스턴스
+  # container_name 제거 (스케일링을 위해)
   backend-kotlin:
-    deploy:
-      replicas: 2
+    container_name: null  # 스케일링을 위해 null로 설정
     # 포트는 내부 네트워크만 사용 (Nginx를 통해 접근)
     # ports:
     #   - "${KOTLIN_PORT:-8081}:8081"
