@@ -19,6 +19,6 @@ COPY --from=builder /app .
 # 포트 노출
 EXPOSE 8081
 
-# 개발 모드로 실행
-CMD ["./gradlew", "bootRun"]
+# 개발 모드로 실행 (gradle 명령 직접 사용)
+CMD ["gradle", "bootRun"]
 
