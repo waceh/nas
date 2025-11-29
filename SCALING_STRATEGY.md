@@ -170,7 +170,7 @@ Nginx (정적 파일 캐싱)
 Backend:
 ├── Spring Boot: 2개 (롤링 배포) ✅
 ├── Kotlin: 2개 (롤링 배포) ✅
-└── 로드 밸런싱: Nginx
+└── 로드 밸런싱: Frontend Nginx
 
 Database:
 └── MySQL: 1개 (단일 인스턴스) ✅
@@ -179,6 +179,12 @@ Database:
 Frontend:
 └── Vue.js: 1개 (단일 인스턴스) ✅
     └── Nginx 캐싱
+
+Monitoring:
+├── Grafana: 1개 (시각화) ✅
+├── Prometheus: 1개 (메트릭 수집) ✅
+├── Loki: 1개 (로그 저장) ✅
+└── Promtail: 1개 (로그 수집) ✅
 ```
 
 ### 리소스 사용량 예상
@@ -188,7 +194,8 @@ Frontend:
 | Backend 2개 | +500MB | +1 코어 | - |
 | MySQL 1개 | 500MB | 0.5 코어 | 10GB |
 | Frontend 1개 | 200MB | 0.2 코어 | 1GB |
-| **총계** | **약 2GB** | **약 2 코어** | **약 11GB** |
+| Monitoring 스택 | 1GB | 1 코어 | 10GB |
+| **총계** | **약 3GB** | **약 3 코어** | **약 21GB** |
 
 ### Master/Slave 구성 시
 

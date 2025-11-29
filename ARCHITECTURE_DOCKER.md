@@ -114,7 +114,33 @@
   - 이미지 관리
   - 사용자 권한 관리
 
-### 6. NAS 애플리케이션 스택
+### 2. 모니터링 스택
+
+#### Grafana
+- **컨테이너**: nas-grafana
+- **포트**: 3030 (외부 노출)
+- **기능**: 메트릭 및 로그 시각화, 대시보드, 알림
+- **데이터 소스**: Prometheus (메트릭), Loki (로그)
+
+#### Prometheus
+- **컨테이너**: nas-prometheus
+- **포트**: 9090 (외부 노출)
+- **기능**: 메트릭 수집 및 저장, 쿼리
+- **대상**: Spring Boot, Kotlin, MySQL, Docker 컨테이너
+
+#### Loki
+- **컨테이너**: nas-loki
+- **포트**: 3100 (외부 노출)
+- **기능**: 로그 수집 및 저장, 검색
+- **로그 소스**: Promtail
+
+#### Promtail
+- **컨테이너**: nas-promtail
+- **포트**: 내부 네트워크
+- **기능**: 로그 수집 에이전트
+- **로그 소스**: Docker 컨테이너, 시스템 로그
+
+### 3. NAS 애플리케이션 스택
 
 #### Frontend (Vue.js)
 - **컨테이너**: nas-frontend-vue
@@ -145,6 +171,11 @@
 ### 관리자 접근
 - **Portainer**: `http://YOUR_SERVER_IP:9000`
 - **Portainer HTTPS**: `https://YOUR_SERVER_IP:9443`
+
+### 모니터링 접근
+- **Grafana**: `http://YOUR_SERVER_IP:3030` (기본: admin/admin)
+- **Prometheus**: `http://YOUR_SERVER_IP:9090`
+- **Loki**: `http://YOUR_SERVER_IP:3100`
 
 ## 🎛️ Portainer 주요 기능
 
