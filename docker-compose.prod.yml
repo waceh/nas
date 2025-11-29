@@ -1,0 +1,40 @@
+version: '3.8'
+
+# 프로덕션 환경용 Docker Compose 오버라이드
+# 사용법: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  # Spring Boot Backend - 프로덕션 빌드
+  backend-springboot:
+    build:
+      dockerfile: Dockerfile  # 프로덕션 Dockerfile 사용
+    environment:
+      SPRING_PROFILES_ACTIVE: production
+    volumes:
+      # 프로덕션에서는 소스 코드 마운트 제거
+      - springboot_data:/app/data
+    command: java -jar app.jar
+    restart: always
+
+  # Kotlin Backend - 프로덕션 빌드
+  backend-kotlin:
+    build:
+      dockerfile: Dockerfile  # 프로덕션 Dockerfile 사용
+    volumes:
+      # 프로덕션에서는 소스 코드 마운트 제거
+      - kotlin_data:/app/data
+    restart: always
+
+  # Vue Frontend - 프로덕션 빌드
+  frontend-vue:
+    build:
+      dockerfile: Dockerfile  # 프로덕션 Dockerfile 사용
+    volumes:
+      # 프로덕션에서는 소스 코드 마운트 제거
+    restart: always
+
+  # MySQL - 프로덕션 설정
+  mysql:
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password
+
