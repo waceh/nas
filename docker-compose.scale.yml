@@ -1,11 +1,15 @@
 # 스케일링 및 롤링 배포를 위한 Docker Compose 오버라이드
-# 사용법: docker-compose -f docker-compose.yml -f docker-compose.scale.yml up -d --scale backend-springboot=2 --scale backend-kotlin=2
+# 주의: container_name이 있으면 스케일링이 불가능합니다
+# 사용법: 
+#   1. 기존 컨테이너 중지: docker compose stop backend-springboot backend-kotlin
+#   2. 기존 컨테이너 제거: docker compose rm -f backend-springboot backend-kotlin  
+#   3. 스케일링: docker compose -f docker-compose.yml -f docker-compose.scale.yml up -d --scale backend-springboot=2 --scale backend-kotlin=2
 
 services:
   # Spring Boot Backend - 2개 인스턴스
-  # container_name 제거 (스케일링을 위해)
+  # container_name은 docker-compose.yml에 있지만, --scale 옵션 사용 시 무시됨
   backend-springboot:
-    container_name: null  # 스케일링을 위해 null로 설정
+    # container_name은 docker-compose.yml에서 상속되지만, --scale 사용 시 자동으로 무시됨
     # 포트는 내부 네트워크만 사용 (Nginx를 통해 접근)
     # ports:
     #   - "${SPRINGBOOT_PORT:-8080}:8080"
@@ -14,9 +18,9 @@ services:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
 
   # Kotlin Backend - 2개 인스턴스
-  # container_name 제거 (스케일링을 위해)
+  # container_name은 docker-compose.yml에 있지만, --scale 옵션 사용 시 무시됨
   backend-kotlin:
-    container_name: null  # 스케일링을 위해 null로 설정
+    # container_name은 docker-compose.yml에서 상속되지만, --scale 사용 시 자동으로 무시됨
     # 포트는 내부 네트워크만 사용 (Nginx를 통해 접근)
     # ports:
     #   - "${KOTLIN_PORT:-8081}:8081"

@@ -32,7 +32,7 @@ services:
     build:
       context: ./backend/springboot
       dockerfile: Dockerfile.dev
-    container_name: nas-backend-springboot
+    # container_name 제거: 스케일링을 위해 (기본 이름: nas-oracle-cloud-backend-springboot-1, -2 등)
     restart: unless-stopped
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
@@ -58,7 +58,7 @@ services:
     build:
       context: ./backend/kotlin
       dockerfile: Dockerfile.dev
-    container_name: nas-backend-kotlin
+    # container_name 제거: 스케일링을 위해 (기본 이름: nas-oracle-cloud-backend-kotlin-1, -2 등)
     restart: unless-stopped
     environment:
       DATABASE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
