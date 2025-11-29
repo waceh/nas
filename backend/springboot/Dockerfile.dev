@@ -1,0 +1,24 @@
+FROM gradle:8.5-jdk17 AS builder
+
+WORKDIR /app
+
+# Gradle 캐시를 활용하기 위해 build.gradle 먼저 복사
+COPY build.gradle settings.gradle* ./
+COPY src ./src
+
+# 의존성 다운로드 및 빌드
+RUN gradle build -x test --no-daemon || return 0
+
+FROM gradle:8.5-jdk17
+
+WORKDIR /app
+
+# 소스 코드 복사
+COPY --from=builder /app .
+
+# 포트 노출
+EXPOSE 8080
+
+# 개발 모드로 실행
+CMD ["./gradlew", "bootRun"]
+
