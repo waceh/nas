@@ -40,20 +40,26 @@ docker-compose logs -f gitlab
    docker exec -it nas-gitlab gitlab-rails runner "puts Gitlab::CurrentSettings.current_application_settings.runners_registration_token"
    ```
 
-2. **Runner 등록**
+2. **Runner 등록** (호스트 Docker Engine 직접 접근)
    ```bash
    docker exec -it nas-gitlab-runner gitlab-runner register \
      --url http://gitlab:80 \
      --registration-token YOUR_TOKEN \
      --executor docker \
      --docker-image docker:latest \
+     --docker-privileged=true \
      --docker-volumes /var/run/docker.sock:/var/run/docker.sock \
-     --docker-network-mode nas-network \
+     --docker-network-mode host \
      --description "Docker Runner for NAS" \
      --tag-list "docker,production" \
      --run-untagged=true \
      --locked=false
    ```
+   
+   **설명**:
+   - `--docker-privileged=true`: 호스트 Docker 소켓 접근을 위한 권한
+   - `--docker-network-mode host`: 호스트 네트워크 사용 (포트 접근)
+   - `--docker-volumes /var/run/docker.sock:/var/run/docker.sock`: 호스트 Docker 소켓 마운트
 
 3. **Runner 상태 확인**
    ```bash

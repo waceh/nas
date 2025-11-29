@@ -50,24 +50,30 @@
    - 자세한 가이드: [GITLAB_SETUP_GUIDE.md](../GITLAB_SETUP_GUIDE.md)
    - GitLab 접속: `http://YOUR_SERVER_IP:8080`
 
-2. **GitLab Runner 등록**
+2. **GitLab Runner 등록** (호스트 Docker Engine 직접 접근)
    ```bash
    # 등록 토큰 확인
    docker exec -it nas-gitlab gitlab-rails runner "puts Gitlab::CurrentSettings.current_application_settings.runners_registration_token"
    
-   # Runner 등록
+   # Runner 등록 - 호스트 Docker Engine 직접 접근
    docker exec -it nas-gitlab-runner gitlab-runner register \
      --url http://gitlab:80 \
      --registration-token YOUR_TOKEN \
      --executor docker \
      --docker-image docker:latest \
+     --docker-privileged=true \
      --docker-volumes /var/run/docker.sock:/var/run/docker.sock \
-     --docker-network-mode nas-network \
+     --docker-network-mode host \
      --description "Docker Runner for NAS" \
      --tag-list "docker,production" \
      --run-untagged=true \
      --locked=false
    ```
+   
+   **중요 설정**:
+   - `--docker-privileged=true`: 호스트 Docker 소켓 접근 권한
+   - `--docker-network-mode host`: 호스트 네트워크 사용
+   - `--docker-volumes /var/run/docker.sock:/var/run/docker.sock`: 호스트 Docker 소켓 마운트
 
 3. **파이프라인 확인**
    - GitLab → CI/CD → Pipelines에서 실행 상태 확인

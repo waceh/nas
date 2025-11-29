@@ -128,15 +128,16 @@ test-integration:
     - develop
   when: on_success
 
-# 배포 (프로덕션) - Docker Compose 직접 실행
+# 배포 (프로덕션) - 호스트 Docker Engine 직접 사용
 deploy-production:
   stage: deploy
   image: docker:latest
-  services:
-    - docker:dind
+  # docker:dind 제거 - 호스트 Docker 소켓 직접 사용
   before_script:
     - apk add --no-cache docker-compose curl
     - docker info
+  variables:
+    DOCKER_HOST: "unix:///var/run/docker.sock"
   script:
     - |
       echo "=========================================="
