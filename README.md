@@ -24,19 +24,17 @@
 
 ### 설계 대상 서비스
 
-- **Backend API Server (Spring Boot)**: Kotlin 기반 Spring Boot REST API 서버
-- **Backend API Server (Kotlin)**: Ktor 프레임워크를 사용한 순수 Kotlin REST API 서버
+- **Backend API Server (Spring Boot)**: Java 기반 Spring Boot REST API 서버
+- **Backend API Server (Kotlin)**: Kotlin 기반 Spring Boot REST API 서버
 - **Frontend Server (Vue.js)**: Vue 3 기반 프론트엔드 애플리케이션
 - **Database (MySQL)**: MySQL 8.0 데이터베이스 서버
-- **GitLab**: 코드 저장소 및 CI/CD
-- **GitLab Runner**: CI/CD 파이프라인 실행
 - **Portainer**: Docker 관리 도구
 
 ### 아키텍처 특징
 
 - 모든 서비스는 Docker Compose를 통해 오케스트레이션
 - 단일 서버 환경 최적화
-- GitLab Runner를 통한 자동 배포
+- GitHub Actions를 통한 자동 CI/CD
 - 개발 환경과 프로덕션 환경 모두 지원
 
 ## 아키텍처
@@ -55,11 +53,9 @@
 │    - HTTPS (443)                                        │
 │    - Custom (3000) - NAS Frontend                       │
 │    - Custom (3030) - Grafana                           │
-│    - Custom (8080) - GitLab                             │
 │    - Custom (9000) - Portainer                          │
 │    - Custom (9090) - Prometheus                        │
 │    - Custom (3100) - Loki                              │
-│    - Custom (2222) - GitLab SSH                         │
 │    - Custom (9443) - Portainer HTTPS                    │
 │    - SSH (22)                                           │
 └───────────────┬──────────────────────────────────────────┘
@@ -72,20 +68,14 @@
 │  ┌──────────────────────────────────────────────────┐  │
 │  │  Management Layer                                │  │
 │  │                                                  │  │
-│  │  ┌──────────────┐  ┌──────────────┐            │  │
-│  │  │  GitLab      │  │  Portainer   │            │  │
-│  │  │  (8080)      │  │  (9000)      │            │  │
-│  │  │  - 코드 저장소│  │  - Docker    │            │  │
-│  │  │  - CI/CD     │  │    관리      │            │  │
-│  │  │  - 이슈 관리 │  │  - 컨테이너  │            │  │
-│  │  └──────┬───────┘  └──────────────┘            │  │
-│  │         │                                         │  │
-│  │  ┌──────▼──────────┐                            │  │
-│  │  │  GitLab Runner  │                            │  │
-│  │  │  - CI/CD 실행   │                            │  │
-│  │  │  - Docker 빌드  │                            │  │
-│  │  │  - 배포 실행    │                            │  │
-│  │  └─────────────────┘                            │  │
+│  │  ┌──────────────┐                                │  │
+│  │  │  Portainer   │                                │  │
+│  │  │  (9000)      │                                │  │
+│  │  │  - Docker    │                                │  │
+│  │  │    관리      │                                │  │
+│  │  │  - 컨테이너  │                                │  │
+│  │  │    모니터링  │                                │  │
+│  │  └──────────────┘                                │  │
 │  └──────────────────────────────────────────────────┘  │
 │                                                          │
 │  ┌──────────────────────────────────────────────────┐  │
@@ -147,12 +137,11 @@
 
 ### 관리 도구
 
-- **GitLab** (포트 8080): 코드 저장소, CI/CD, 이슈 관리, Wiki
-  - **Wiki**: 문서 관리 및 공유
-  - **Issues**: Jira처럼 사용 가능 (Labels, Milestones, Boards)
-  - **상세 가이드**: [GITLAB_ISSUES_GUIDE.md](GITLAB_ISSUES_GUIDE.md)
+- **GitHub** (외부): 코드 저장소, CI/CD, 이슈 관리
+  - **저장소**: https://github.com/waceh
+  - **CI/CD**: GitHub Actions를 통한 자동 빌드 및 배포
+  - **Issues**: 이슈 관리 및 프로젝트 관리
 - **Portainer** (포트 9000): Docker 컨테이너 및 스택 관리
-- **GitLab Runner**: CI/CD 파이프라인 실행
 
 ### 모니터링 도구
 
@@ -164,7 +153,6 @@
 > **참고**: Wiki 및 프로젝트 관리 도구 추천은 [MANAGEMENT_TOOLS.md](MANAGEMENT_TOOLS.md)를 참조하세요.
 
 자세한 아키텍처 정보는 다음 문서를 참조하세요:
-- [GitLab 기반 전체 아키텍처](ARCHITECTURE_GITLAB.md)
 - [Docker Compose 기반 아키텍처](ARCHITECTURE_DOCKER.md)
 
 ### 접근 경로
@@ -175,9 +163,8 @@
 - **Kotlin API**: `http://YOUR_SERVER_IP:3000/api/kotlin/*`
 
 #### 관리 도구
-- **GitLab**: `http://YOUR_SERVER_IP:8080`
+- **GitHub**: https://github.com/waceh
 - **Portainer**: `http://YOUR_SERVER_IP:9000`
-- **GitLab SSH**: `ssh://git@YOUR_SERVER_IP:2222`
 
 #### 모니터링 도구
 - **Grafana**: `http://YOUR_SERVER_IP:3030` (기본: admin/admin)
@@ -189,9 +176,9 @@
 - Oracle Cloud Infrastructure 인스턴스 (Ubuntu 22.04 권장)
 - Docker 20.10 이상
 - Docker Compose 2.0 이상
-- 최소 6GB RAM (권장: 8GB 이상) - GitLab 포함
-- 최소 50GB 디스크 공간 (권장: 100GB) - GitLab 데이터 포함
-- Oracle Cloud Security Group 설정 (포트 22, 80, 443, 3000, 8080, 9000, 2222)
+- 최소 4GB RAM (권장: 8GB 이상)
+- 최소 50GB 디스크 공간 (권장: 100GB)
+- Oracle Cloud Security Group 설정 (포트 22, 80, 443, 3000, 9000)
 
 ## 설치 방법
 
@@ -415,9 +402,9 @@ docker-compose exec mysql mysql -u nas_user -p nas_db
 
 ## CI/CD
 
-이 프로젝트는 GitLab과 GitLab Runner를 사용한 자동 CI/CD를 지원합니다.
+이 프로젝트는 GitHub Actions를 사용한 자동 CI/CD를 지원합니다.
 
-### GitLab CI/CD 파이프라인
+### GitHub Actions 파이프라인
 
 코드 푸시 시 자동으로 실행됩니다:
 
@@ -425,21 +412,18 @@ docker-compose exec mysql mysql -u nas_user -p nas_db
 - **Test Stage**: Backend 단위 테스트 및 통합 테스트
 - **Deploy Stage**: Docker Compose를 통한 프로덕션 배포 (수동 실행)
 
-### GitLab 설정
+### GitHub 설정
 
-1. **GitLab 설치**
-   - `docker-compose.yml`에 GitLab과 GitLab Runner가 포함되어 있습니다
-   - 자세한 설치 가이드: [GITLAB_SETUP_GUIDE.md](GITLAB_SETUP_GUIDE.md)
+1. **GitHub 저장소**
+   - 저장소: https://github.com/waceh
+   - 각 프로젝트는 별도 저장소로 관리됩니다:
+     - Frontend (Vue): `waceh/nas-frontend`
+     - Backend 1 (Kotlin-SpringBoot): `waceh/nas-backend-kotlin`
+     - Backend 2 (Java-SpringBoot): `waceh/nas-backend-java`
 
-2. **GitLab 접속**
-   - URL: `http://YOUR_SERVER_IP:8080`
-   - 초기 비밀번호는 GitLab 컨테이너 로그에서 확인
-
-3. **GitLab Runner 등록**
-   - GitLab에서 등록 토큰 확인
-   - Runner 컨테이너에서 등록 실행
-
-4. **자세한 CI/CD 가이드**: [ci-cd/README.md](ci-cd/README.md)를 참조하세요.
+2. **GitHub Actions**
+   - 각 저장소의 `.github/workflows/` 디렉토리에 워크플로우 파일이 있습니다
+   - 자세한 CI/CD 가이드: [ci-cd/README.md](ci-cd/README.md)를 참조하세요.
 
 ## 문제 해결
 

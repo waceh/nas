@@ -30,9 +30,6 @@
 | **22** | TCP | SSH 접속 | 0.0.0.0/0 (또는 특정 IP) |
 | **3000** | TCP | Frontend (Vue) | 0.0.0.0/0 |
 | **3030** | TCP | Grafana | 0.0.0.0/0 |
-| **8080** | TCP | GitLab HTTP | 0.0.0.0/0 |
-| **8443** | TCP | GitLab HTTPS | 0.0.0.0/0 |
-| **2222** | TCP | GitLab SSH | 0.0.0.0/0 |
 | **9000** | TCP | Portainer HTTP | 0.0.0.0/0 |
 | **9443** | TCP | Portainer HTTPS | 0.0.0.0/0 |
 | **9090** | TCP | Prometheus | 0.0.0.0/0 |

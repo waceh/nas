@@ -5,28 +5,28 @@
 ## 📋 목차
 
 - [CI/CD 옵션](#cicd-옵션)
-- [GitLab CI/CD](#gitlab-cicd)
+- [GitHub Actions](#github-actions)
 - [배포 스크립트](#배포-스크립트)
 - [설정 방법](#설정-방법)
 - [배포 프로세스](#배포-프로세스)
 
 ## CI/CD 옵션
 
-이 프로젝트는 GitLab과 GitLab Runner를 사용한 CI/CD를 지원합니다:
+이 프로젝트는 GitHub Actions를 사용한 CI/CD를 지원합니다:
 
-### 1. GitLab CI/CD (권장)
-- **위치**: `.gitlab-ci.yml`
+### 1. GitHub Actions (권장)
+- **위치**: `.github/workflows/`
 - **용도**: 코드 푸시 시 자동 빌드, 테스트 및 배포
-- **장점**: 완전한 제어, 내부 저장소, 무제한 실행 시간
+- **장점**: 완전한 제어, 외부 저장소, 무료 사용량 제공
 
 ### 2. 로컬 배포 스크립트
 - **위치**: `ci-cd/deploy.sh`
 - **용도**: Oracle Cloud 인스턴스에서 직접 배포
 - **장점**: 외부 서비스 불필요, 완전한 제어
 
-## GitLab CI/CD
+## GitHub Actions
 
-### CI 파이프라인 (`.gitlab-ci.yml`)
+### CI 파이프라인 (`.github/workflows/`)
 
 코드 푸시 시 자동으로 실행됩니다:
 
@@ -44,39 +44,24 @@
    - Docker Compose를 통한 프로덕션 배포
    - 헬스 체크 검증
 
-### GitLab 설정
+### GitHub 설정
 
-1. **GitLab 설치 및 설정**
-   - 자세한 가이드: [GITLAB_SETUP_GUIDE.md](../GITLAB_SETUP_GUIDE.md)
-   - GitLab 접속: `http://YOUR_SERVER_IP:8080`
+1. **GitHub 저장소 생성**
+   - 저장소: https://github.com/waceh
+   - 각 프로젝트는 별도 저장소로 관리:
+     - Frontend (Vue): `waceh/nas-frontend`
+     - Backend 1 (Kotlin-SpringBoot): `waceh/nas-backend-kotlin`
+     - Backend 2 (Java-SpringBoot): `waceh/nas-backend-java`
 
-2. **GitLab Runner 등록** (호스트 Docker Engine 직접 접근)
-   ```bash
-   # 등록 토큰 확인
-   docker exec -it nas-gitlab gitlab-rails runner "puts Gitlab::CurrentSettings.current_application_settings.runners_registration_token"
-   
-   # Runner 등록 - 호스트 Docker Engine 직접 접근
-   docker exec -it nas-gitlab-runner gitlab-runner register \
-     --url http://gitlab:80 \
-     --registration-token YOUR_TOKEN \
-     --executor docker \
-     --docker-image docker:latest \
-     --docker-privileged=true \
-     --docker-volumes /var/run/docker.sock:/var/run/docker.sock \
-     --docker-network-mode host \
-     --description "Docker Runner for NAS" \
-     --tag-list "docker,production" \
-     --run-untagged=true \
-     --locked=false
-   ```
-   
-   **중요 설정**:
-   - `--docker-privileged=true`: 호스트 Docker 소켓 접근 권한
-   - `--docker-network-mode host`: 호스트 네트워크 사용
-   - `--docker-volumes /var/run/docker.sock:/var/run/docker.sock`: 호스트 Docker 소켓 마운트
+2. **GitHub Actions Secrets 설정**
+   - 각 저장소의 Settings → Secrets and variables → Actions에서 다음 Secrets 추가:
+     - `SERVER_HOST`: Oracle Cloud 인스턴스 IP 주소
+     - `SERVER_USER`: SSH 사용자 이름 (예: ubuntu)
+     - `SSH_PRIVATE_KEY`: SSH 개인 키
+     - `DOCKER_HOST`: Docker 호스트 (선택사항)
 
 3. **파이프라인 확인**
-   - GitLab → CI/CD → Pipelines에서 실행 상태 확인
+   - GitHub → Actions 탭에서 실행 상태 확인
 
 ## 배포 스크립트
 
@@ -112,7 +97,7 @@ chmod +x ci-cd/deploy.sh
 
 ```bash
 # 저장소 클론
-git clone http://YOUR_SERVER_IP:8080/root/nas.git
+git clone https://github.com/waceh/nas.git
 cd nas
 
 # 환경 변수 파일 생성
@@ -120,36 +105,18 @@ cp env.example .env
 nano .env  # 필요한 값 설정
 ```
 
-### 2. GitLab 및 Runner 시작
+### 2. GitHub Actions 워크플로우 설정
 
-```bash
-# GitLab 및 Runner 시작
-docker-compose up -d gitlab gitlab-runner
+각 프로젝트 저장소에 `.github/workflows/` 디렉토리를 생성하고 워크플로우 파일을 추가합니다.
 
-# GitLab 초기화 대기 (약 5-10분)
-docker-compose logs -f gitlab
-```
-
-### 3. GitLab 초기 설정
-
-1. GitLab 접속: `http://YOUR_SERVER_IP:8080`
-2. 초기 비밀번호 확인:
-   ```bash
-   docker exec -it nas-gitlab grep 'Password:' /etc/gitlab/initial_root_password
-   ```
-3. 관리자 로그인 (root / 위 비밀번호)
-4. 비밀번호 변경 (필수)
-
-### 4. GitLab Runner 등록
-
-위의 "GitLab Runner 등록" 섹션 참조
+자세한 내용은 `.github/workflows/` 디렉토리의 예시 파일을 참조하세요.
 
 ## 배포 프로세스
 
-### 자동 배포 (GitLab CI/CD)
+### 자동 배포 (GitHub Actions)
 
 1. `main` 브랜치에 코드 푸시
-2. GitLab CI/CD가 자동으로 실행
+2. GitHub Actions가 자동으로 실행
 3. Build Stage: Docker 이미지 빌드
 4. Test Stage: 테스트 실행
 5. Deploy Stage: Docker Compose로 배포 (수동 실행)
@@ -176,8 +143,6 @@ docker-compose logs -f backend-springboot
 docker-compose logs -f backend-kotlin
 docker-compose logs -f frontend-vue
 docker-compose logs -f mysql
-docker-compose logs -f gitlab
-docker-compose logs -f gitlab-runner
 ```
 
 ### 헬스 체크
@@ -199,19 +164,13 @@ curl http://YOUR_SERVER_IP:3000
 
 1. 로그 확인: `docker-compose logs`
 2. 서비스 상태 확인: `docker-compose ps`
-3. GitLab Runner 로그 확인: `docker-compose logs gitlab-runner`
+3. GitHub Actions 로그 확인: GitHub → Actions → 해당 워크플로우
 
-### GitLab 접속 불가
+### GitHub Actions 실행 실패
 
-- 포트 8080이 Security Group에서 열려있는지 확인
-- GitLab 컨테이너 로그 확인: `docker-compose logs gitlab`
-- GitLab 초기화 완료 대기 (5-10분)
-
-### Runner 등록 실패
-
-- GitLab과 Runner가 같은 네트워크에 있는지 확인
-- Runner 로그 확인: `docker-compose logs gitlab-runner`
-- GitLab URL이 올바른지 확인 (`http://gitlab:80`)
+- Secrets 설정 확인
+- SSH 키 권한 확인
+- 서버 접근 가능 여부 확인
 
 ### Docker 이미지 빌드 실패
 
@@ -226,7 +185,7 @@ docker-compose build --no-cache backend-springboot
 ## 보안 고려사항
 
 1. **환경 변수 보호**: `.env` 파일을 Git에 커밋하지 마세요
-2. **GitLab 초기 비밀번호 변경**: 필수
+2. **Secrets 관리**: GitHub Secrets에 민감한 정보 저장
 3. **프로덕션 배포**: 수동 실행으로 제어
 4. **백업**: 정기적으로 데이터베이스 백업 수행
 
@@ -240,4 +199,4 @@ docker-compose build --no-cache backend-springboot
 
 ---
 
-**참고**: 자세한 GitLab 설치 가이드는 [GITLAB_SETUP_GUIDE.md](../GITLAB_SETUP_GUIDE.md)를 참조하세요.
+**참고**: GitHub Actions 워크플로우 예시는 `.github/workflows/` 디렉토리를 참조하세요.

@@ -119,61 +119,9 @@ services:
       - nas-network
     command: -H unix:///var/run/docker.sock
 
-  # GitLab CE
-  gitlab:
-    image: gitlab/gitlab-ce:latest
-    container_name: nas-gitlab
-    restart: unless-stopped
-    hostname: 'gitlab.local'
-    environment:
-      GITLAB_OMNIBUS_CONFIG: |
-        external_url 'http://158.180.76.251'
-        gitlab_rails['gitlab_shell_ssh_port'] = 2222
-        nginx['listen_port'] = 80
-        # 메일 설정 (선택사항)
-        # gitlab_rails['smtp_enable'] = true
-        # gitlab_rails['smtp_address'] = "smtp.gmail.com"
-        # gitlab_rails['smtp_port'] = 587
-        # gitlab_rails['smtp_user_name'] = "your-email@gmail.com"
-        # gitlab_rails['smtp_password'] = "your-password"
-        # gitlab_rails['smtp_domain'] = "smtp.gmail.com"
-        # gitlab_rails['smtp_authentication'] = "login"
-        # gitlab_rails['smtp_enable_starttls_auto'] = true
-    ports:
-      - "8080:80"      # HTTP
-      - "8443:443"     # HTTPS
-      - "2222:22"      # SSH
-    volumes:
-      - gitlab_config:/etc/gitlab
-      - gitlab_logs:/var/log/gitlab
-      - gitlab_data:/var/opt/gitlab
-    networks:
-      - nas-network
-    deploy:
-      resources:
-        limits:
-          memory: 4G
-          cpus: '2.0'
-        reservations:
-          memory: 2G
-          cpus: '1.0'
-
-  # GitLab Runner
-  gitlab-runner:
-    image: gitlab/gitlab-runner:latest
-    container_name: nas-gitlab-runner
-    restart: unless-stopped
-    volumes:
-      - gitlab-runner-config:/etc/gitlab-runner
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./:/builds  # 소스 코드 마운트
-    networks:
-      - nas-network
-    depends_on:
-      - gitlab
 
   # Wiki.js - 위키 도구 (선택사항)
-  # GitLab Wiki를 사용하지 않는 경우 활성화
+  # GitHub Wiki를 사용하지 않는 경우 활성화
   # wiki:
   #   image: ghcr.io/requarks/wiki:2
   #   container_name: nas-wiki
@@ -265,10 +213,6 @@ volumes:
   springboot_data:
   kotlin_data:
   portainer_data:
-  gitlab_config:
-  gitlab_logs:
-  gitlab_data:
-  gitlab-runner-config:
   prometheus_data:
   grafana_data:
   loki_data:

@@ -2,7 +2,7 @@
 
 ## 📋 개요
 
-GitLab Runner를 사용하여 Spring Boot와 Kotlin Backend를 무중단 롤링 배포하는 방법입니다.
+GitHub Actions를 사용하여 Spring Boot와 Kotlin Backend를 무중단 롤링 배포하는 방법입니다.
 
 ## 🎯 현재 상태
 
@@ -25,7 +25,7 @@ docker compose -f docker-compose.yml -f docker-compose.scale.yml up -d --scale b
 docker compose ps | grep backend
 ```
 
-### 2. GitLab Runner를 통한 자동 롤링 배포
+### 2. GitHub Actions를 통한 자동 롤링 배포
 
 #### 배포 프로세스
 
@@ -35,9 +35,9 @@ docker compose ps | grep backend
    git push origin v1.0.0
    ```
 
-2. **GitLab CI/CD 파이프라인 실행**
-   - GitLab → CI/CD → Pipelines에서 태그 생성 시 자동 실행
-   - 또는 수동으로 `deploy-production` 작업 실행
+2. **GitHub Actions 파이프라인 실행**
+   - GitHub → Actions에서 태그 생성 시 자동 실행
+   - 또는 수동으로 `deploy` 작업 실행
 
 3. **롤링 배포 단계**
    ```
@@ -71,16 +71,16 @@ services:
 
 **참고**: `deploy.replicas`는 Docker Swarm 모드에서만 작동합니다. 일반 Docker Compose에서는 `--scale` 옵션을 사용합니다.
 
-### .gitlab-ci.yml
+### GitHub Actions 워크플로우
 
-롤링 배포 스크립트가 포함되어 있습니다:
+롤링 배포 스크립트가 `.github/workflows/ci-cd.yml`에 포함되어 있습니다:
 - 새 인스턴스 추가
 - 헬스 체크
 - 기존 인스턴스 교체
 
 ## 🚀 사용 방법
 
-### 방법 1: GitLab Runner 자동 배포 (권장)
+### 방법 1: GitHub Actions 자동 배포 (권장)
 
 1. **코드 커밋 및 푸시**
    ```bash
@@ -95,9 +95,9 @@ services:
    git push origin v1.0.1
    ```
 
-3. **GitLab에서 파이프라인 실행**
-   - GitLab → CI/CD → Pipelines
-   - `deploy-production` 작업을 수동으로 실행
+3. **GitHub Actions에서 파이프라인 확인**
+   - GitHub → Actions
+   - `deploy` 작업 상태 확인
 
 ### 방법 2: 수동 스케일링
 
@@ -203,8 +203,8 @@ Kotlin: 2개 (새 버전)
 ## ✅ 체크리스트
 
 - [ ] docker-compose.scale.yml 파일 확인
-- [ ] .gitlab-ci.yml 롤링 배포 스크립트 확인
-- [ ] GitLab Runner 등록 및 실행 중
+- [ ] .github/workflows/ci-cd.yml 롤링 배포 스크립트 확인
+- [ ] GitHub Actions Secrets 설정 (SERVER_HOST, SERVER_USER, SSH_PRIVATE_KEY)
 - [ ] 서버 리소스 확인 (메모리, CPU)
 - [ ] 헬스 체크 엔드포인트 확인 (`/api/health`, `/api/kotlin/health`)
 - [ ] Nginx 로드 밸런싱 설정 확인

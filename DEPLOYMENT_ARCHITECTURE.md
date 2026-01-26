@@ -7,13 +7,13 @@
 ```
 개발자 코드 푸시
     ↓
-GitLab 저장소 (포트 8080)
+GitHub 저장소 (github.com/waceh)
     ↓
-GitLab CI/CD 파이프라인 트리거
+GitHub Actions 파이프라인 트리거
     ↓
-GitLab Runner (Docker Executor)
+GitHub Actions Runner (Ubuntu)
     ↓
-호스트 Docker 소켓 접근 (/var/run/docker.sock)
+SSH를 통한 서버 접근
     ↓
 호스트 Docker Engine
     ↓
@@ -24,46 +24,45 @@ NAS 애플리케이션 서비스 실행
 
 ## 🔧 기술적 세부사항
 
-### 1. GitLab Runner 설정
+### 1. GitHub Actions 설정
 
-#### Docker Executor 사용
-- **이유**: 각 CI/CD 작업을 격리된 컨테이너에서 실행
-- **이미지**: `docker:latest` (Docker CLI 포함)
+#### SSH를 통한 서버 접근
+- **이유**: 원격 서버에서 직접 배포 실행
+- **방법**: SSH 키 기반 인증
 
-#### 호스트 Docker 소켓 마운트
+#### GitHub Secrets 설정
 ```yaml
-volumes:
-  - /var/run/docker.sock:/var/run/docker.sock
+secrets:
+  SERVER_HOST: 서버 IP 주소
+  SERVER_USER: SSH 사용자 이름
+  SSH_PRIVATE_KEY: SSH 개인 키
 ```
-- **목적**: Runner가 호스트의 Docker Engine에 직접 접근
-- **효과**: 같은 호스트의 컨테이너를 관리할 수 있음
+- **목적**: 안전한 서버 접근
+- **효과**: 민감한 정보를 안전하게 관리
 
-#### Privileged 모드
+#### SSH Action 사용
 ```yaml
-privileged: true
+- uses: appleboy/ssh-action@master
+  with:
+    host: ${{ secrets.SERVER_HOST }}
+    username: ${{ secrets.SERVER_USER }}
+    key: ${{ secrets.SSH_PRIVATE_KEY }}
 ```
-- **목적**: Docker 소켓 접근을 위한 권한
-- **보안 고려**: 단일 서버 환경에서는 허용 가능
-
-#### Host 네트워크 모드
-```yaml
-network_mode: host
-```
-- **목적**: 호스트의 포트에 직접 접근
-- **효과**: 헬스 체크 및 서비스 접근 가능
+- **목적**: 원격 서버에서 명령 실행
+- **효과**: 배포 스크립트 실행 가능
 
 ### 2. CI/CD 파이프라인
 
 #### Build Stage
 - Docker 이미지 빌드 (Spring Boot, Kotlin, Vue.js)
-- 이미지는 호스트 Docker Engine에 저장
+- 이미지는 GitHub Actions Runner에서 빌드
 
 #### Test Stage
 - 단위 테스트 실행
 - 통합 테스트 (Docker Compose 사용)
 
 #### Deploy Stage
-- **호스트 Docker Compose 실행**
+- **SSH를 통한 원격 서버 접근**
 - 기존 컨테이너 중지 및 제거
 - 새 이미지로 컨테이너 재시작
 - 헬스 체크 검증
@@ -126,17 +125,17 @@ curl http://localhost:3000/api/kotlin/health
 
 ## 🔄 다른 패턴과 비교
 
-### 패턴 1: 현재 구조 (단일 서버)
+### 패턴 1: 현재 구조 (GitHub Actions + SSH)
 ```
-Runner → 호스트 Docker 소켓 → 같은 호스트 배포
+GitHub Actions → SSH → 원격 서버 배포
 ```
 - **적합**: 소규모, 개발 환경
-- **장점**: 간단, 빠름, 비용 효율
-- **단점**: 보안, 확장성 제한
+- **장점**: 간단, 빠름, 비용 효율, 외부 서비스 활용
+- **단점**: SSH 키 관리 필요
 
 ### 패턴 2: 별도 배포 서버
 ```
-Runner → Docker Registry → SSH/API → 배포 서버
+GitHub Actions → Docker Registry → SSH/API → 배포 서버
 ```
 - **적합**: 프로덕션, 멀티 서버
 - **장점**: 격리, 확장성, 보안
@@ -144,7 +143,7 @@ Runner → Docker Registry → SSH/API → 배포 서버
 
 ### 패턴 3: Kubernetes
 ```
-Runner → Docker Registry → Kubernetes API → Pod 배포
+GitHub Actions → Docker Registry → Kubernetes API → Pod 배포
 ```
 - **적합**: 대규모, 엔터프라이즈
 - **장점**: 확장성, 고가용성
@@ -154,7 +153,7 @@ Runner → Docker Registry → Kubernetes API → Pod 배포
 
 ### 단기 (현재)
 - 단일 서버 배포 구조 유지
-- GitLab + Runner + 애플리케이션 통합
+- GitHub Actions + SSH를 통한 배포
 
 ### 중기 (필요 시)
 - 별도 배포 서버 추가
@@ -163,7 +162,7 @@ Runner → Docker Registry → Kubernetes API → Pod 배포
 
 ### 장기 (대규모 확장)
 - Kubernetes 클러스터
-- GitLab Runner를 Kubernetes Executor로 전환
+- GitHub Actions를 Kubernetes 배포로 전환
 - 완전한 CI/CD 파이프라인
 
 ## 🎯 결론
@@ -181,6 +180,6 @@ Runner → Docker Registry → Kubernetes API → Pod 배포
 
 **작성일**: 2024년
 **대상 환경**: Oracle Cloud Infrastructure 단일 인스턴스
-**배포 방식**: GitLab Runner → 호스트 Docker Engine 직접 접근
+**배포 방식**: GitHub Actions → SSH → 원격 서버 Docker Compose 실행
 
 

@@ -6,29 +6,30 @@
 
 ## 🎯 추천 순위
 
-### 1순위: GitLab 내장 기능 활용 (추가 설치 불필요) ⭐⭐⭐⭐⭐
+### 1순위: GitHub 내장 기능 활용 (추가 설치 불필요) ⭐⭐⭐⭐⭐
 
-#### GitLab Wiki
+#### GitHub Wiki
 - **장점**: 
-  - 이미 GitLab이 설치되어 있음
+  - GitHub 저장소에 포함
   - 추가 리소스 불필요
-  - GitLab과 완벽 통합
+  - GitHub와 완벽 통합
   - Markdown 지원
 - **단점**: 
   - 기능이 제한적 (고급 위키 기능 부족)
 - **리소스**: 0MB (이미 포함)
 
-#### GitLab Issues
+#### GitHub Issues
 - **장점**: 
-  - 이미 GitLab이 설치되어 있음
+  - GitHub 저장소에 포함
   - 추가 리소스 불필요
-  - GitLab과 완벽 통합
+  - GitHub와 완벽 통합
   - Milestone, Label, Assignee 지원
+  - Projects 보드 기능
 - **단점**: 
   - Jira만큼 강력하지 않음
 - **리소스**: 0MB (이미 포함)
 
-**결론**: GitLab Wiki + Issues로 시작하는 것을 **강력 추천**합니다.
+**결론**: GitHub Wiki + Issues로 시작하는 것을 **강력 추천**합니다.
 
 ---
 
@@ -37,8 +38,8 @@
 #### 특징
 - **가벼움**: 약 200-300MB RAM
 - **현대적 UI**: 사용하기 쉬움
-- **Markdown 지원**: GitLab과 유사한 편집 경험
-- **다양한 저장소 연동**: Git, GitLab, GitHub 등
+- **Markdown 지원**: GitHub와 유사한 편집 경험
+- **다양한 저장소 연동**: Git, GitHub 등
 
 #### Docker Compose 설정
 ```yaml
@@ -113,7 +114,7 @@ bookstack:
 - **Jira 대안**: Agile 프로젝트 관리
 - **칸반 보드**: 스크럼, 칸반 지원
 - **이슈 추적**: 강력한 이슈 관리
-- **GitLab 통합**: GitLab과 연동 가능
+- **GitHub 통합**: GitHub와 연동 가능
 
 #### Docker Compose 설정
 ```yaml
@@ -192,18 +193,17 @@ mongo:
 ## 💡 종합 추천
 
 ### 시나리오 1: 최소 리소스 (강력 추천) ⭐⭐⭐⭐⭐
-**GitLab Wiki + GitLab Issues**
+**GitHub Wiki + GitHub Issues**
 - 추가 설치 불필요
 - 리소스 사용 0MB
-- GitLab과 완벽 통합
+- GitHub와 완벽 통합
 - 소규모 팀에 적합
-- **Jira처럼 사용 가능**: Labels, Milestones, Boards 활용
-- **상세 가이드**: [GITLAB_ISSUES_GUIDE.md](GITLAB_ISSUES_GUIDE.md) 참조
+- **Jira처럼 사용 가능**: Labels, Milestones, Projects 보드 활용
 
 ### 시나리오 2: 별도 Wiki 필요 시
 **Wiki.js**
 - 가볍고 현대적
-- GitLab과 유사한 경험
+- GitHub와 유사한 경험
 - 약 300MB RAM
 
 ### 시나리오 3: 문서 중심 관리
@@ -226,10 +226,10 @@ mongo:
 
 ## 📊 비교표
 
-| 도구 | 리소스 | 난이도 | 기능 | GitLab 통합 |
+| 도구 | 리소스 | 난이도 | 기능 | GitHub 통합 |
 |------|--------|--------|------|-------------|
-| GitLab Wiki | 0MB | ⭐ | ⭐⭐⭐ | ✅ 완벽 |
-| GitLab Issues | 0MB | ⭐ | ⭐⭐⭐ | ✅ 완벽 |
+| GitHub Wiki | 0MB | ⭐ | ⭐⭐⭐ | ✅ 완벽 |
+| GitHub Issues | 0MB | ⭐ | ⭐⭐⭐ | ✅ 완벽 |
 | Wiki.js | 300MB | ⭐⭐ | ⭐⭐⭐⭐ | ⚠️ 부분 |
 | BookStack | 400MB | ⭐⭐ | ⭐⭐⭐⭐ | ❌ 없음 |
 | Taiga | 600MB | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⚠️ 부분 |
@@ -238,12 +238,12 @@ mongo:
 ## 🎯 최종 추천
 
 ### 단일 서버 환경 기준
-1. **1순위**: GitLab Wiki + Issues (추가 설치 불필요)
+1. **1순위**: GitHub Wiki + Issues (추가 설치 불필요)
 2. **2순위**: Wiki.js (별도 Wiki 필요 시)
 3. **3순위**: Taiga (Agile 프로젝트 관리 필요 시)
 
 ### 리소스 여유가 있다면
-- GitLab Wiki + Issues (기본)
+- GitHub Wiki + Issues (기본)
 - Wiki.js (별도 Wiki)
 - 또는 Taiga (프로젝트 관리)
 
@@ -258,5 +258,5 @@ mongo:
 
 **작성일**: 2024년
 **대상 환경**: Oracle Cloud Infrastructure 단일 인스턴스
-**권장**: GitLab Wiki + Issues (추가 설치 불필요)
+**권장**: GitHub Wiki + Issues (추가 설치 불필요)
 

@@ -1,8 +1,8 @@
-# GitLab Issues 기반 배포 자동화
+# GitHub 기반 배포 자동화
 
 ## 📋 개요
 
-GitLab Issues에 태그를 입력하면 자동으로 배포가 트리거되는 시스템을 구성합니다.
+GitHub에서 태그를 생성하거나 Pull Request를 머지하면 자동으로 배포가 트리거되는 시스템을 구성합니다.
 
 ## 🎯 배포 시나리오
 
@@ -13,7 +13,7 @@ GitLab Issues에 태그를 입력하면 자동으로 배포가 트리거되는 �
    ↓
 2. Git 태그 생성 (예: v1.0.0)
    ↓
-3. GitLab CI/CD 자동 트리거
+3. GitHub Actions 자동 트리거
    ↓
 4. 새 인스턴스 배포
    ↓
@@ -22,133 +22,79 @@ GitLab Issues에 태그를 입력하면 자동으로 배포가 트리거되는 �
 6. 기존 인스턴스 종료
 ```
 
-### 시나리오 2: Issue 댓글 기반 배포
+### 시나리오 2: Pull Request 머지 기반 배포
 
 ```
-1. BE 프로젝트 소스 커밋 및 태그 생성
+1. BE 프로젝트 소스 커밋 및 Pull Request 생성
    ↓
-2. GitLab Issue에 태그 정보 댓글 작성
+2. 코드 리뷰 및 승인
    ↓
-3. GitLab CI/CD 수동 트리거 또는 API 호출
+3. Pull Request 머지
    ↓
-4. 새 인스턴스 배포
+4. GitHub Actions 자동 트리거
    ↓
-5. 기존 인스턴스 종료
+5. 새 인스턴스 배포
+   ↓
+6. 기존 인스턴스 종료
 ```
 
 ## 🔧 구현 방법
 
 ### 방법 1: Git 태그 기반 자동 배포 (가장 권장)
 
-#### .gitlab-ci.yml 설정
+#### GitHub Actions 워크플로우 설정
 
 ```yaml
-stages:
-  - build
-  - test
-  - deploy
+name: Build and Deploy
 
-variables:
-  DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: "/certs"
+on:
+  push:
+    tags:
+      - 'v*'  # v로 시작하는 태그
 
-# Backend 빌드
-build-backend:
-  stage: build
-  image: docker:latest
-  before_script:
-    - docker info
-  script:
-    - |
-      # Spring Boot 빌드
-      if [ -d "backend/springboot" ]; then
-        cd backend/springboot
-        docker build -f Dockerfile -t nas-backend-springboot:$CI_COMMIT_TAG .
-        docker tag nas-backend-springboot:$CI_COMMIT_TAG nas-backend-springboot:latest
-      fi
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
       
-      # Kotlin 빌드
-      if [ -d "backend/kotlin" ]; then
-        cd backend/kotlin
-        docker build -f Dockerfile -t nas-backend-kotlin:$CI_COMMIT_TAG .
-        docker tag nas-backend-kotlin:$CI_COMMIT_TAG nas-backend-kotlin:latest
-      fi
-  only:
-    - tags  # 태그가 생성될 때만 실행
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Build Spring Boot image
+        if: contains(github.ref, 'v')
+        run: |
+          if [ -d "backend/springboot" ]; then
+            cd backend/springboot
+            docker build -f Dockerfile -t nas-backend-springboot:${{ github.ref_name }} .
+          fi
+      
+      - name: Build Kotlin image
+        if: contains(github.ref, 'v')
+        run: |
+          if [ -d "backend/kotlin" ]; then
+            cd backend/kotlin
+            docker build -f Dockerfile -t nas-backend-kotlin:${{ github.ref_name }} .
+          fi
 
-# 배포 (태그 기반)
-deploy-production:
-  stage: deploy
-  image: docker:latest
-  before_script:
-    - apk add --no-cache docker-compose curl
-    - docker info
-  variables:
-    DOCKER_HOST: "unix:///var/run/docker.sock"
-  script:
-    - |
-      echo "=========================================="
-      echo "배포 시작: $(date)"
-      echo "태그: $CI_COMMIT_TAG"
-      echo "=========================================="
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v3
       
-      # 환경 변수 파일 확인
-      if [ ! -f .env ]; then
-        echo "경고: .env 파일이 없습니다."
-        if [ -f env.example ]; then
-          cp env.example .env
-        else
-          echo "오류: env.example 파일도 없습니다."
-          exit 1
-        fi
-      fi
-      
-      # 기존 컨테이너 백업 및 중지
-      echo "기존 서비스 백업 및 중지 중..."
-      docker-compose ps
-      
-      # 새 인스턴스 배포 (태그 버전)
-      echo "새 인스턴스 배포 중 (태그: $CI_COMMIT_TAG)..."
-      docker-compose -f docker-compose.yml -f docker-compose.prod.yml build --no-cache
-      docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-      
-      # 헬스 체크
-      echo "헬스 체크 대기 중..."
-      sleep 20
-      
-      MAX_RETRIES=10
-      RETRY_COUNT=0
-      
-      while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-        if curl -f http://localhost:3000/api/springboot/health && \
-           curl -f http://localhost:3000/api/kotlin/health; then
-          echo "=========================================="
-          echo "배포 완료: $(date)"
-          echo "태그: $CI_COMMIT_TAG"
-          echo "모든 서비스가 정상적으로 시작되었습니다!"
-          echo "=========================================="
-          
-          # 기존 인스턴스 정리 (옵션)
-          # docker-compose down --remove-orphans
-          
-          exit 0
-        fi
-        
-        RETRY_COUNT=$((RETRY_COUNT + 1))
-        echo "재시도 중... ($RETRY_COUNT/$MAX_RETRIES)"
-        sleep 5
-      done
-      
-      echo "경고: 배포 실패"
-      docker-compose ps
-      docker-compose logs --tail=50
-      exit 1
-  only:
-    - tags  # 태그가 생성될 때만 실행
-  when: manual  # 수동 실행 또는 자동 실행 선택 가능
-  environment:
-    name: production
-    url: http://localhost:3000
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /path/to/nas
+            git pull origin main
+            docker-compose -f docker-compose.yml -f docker-compose.prod.yml build --no-cache
+            docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
 #### 사용 방법
@@ -157,68 +103,46 @@ deploy-production:
 # 1. 코드 커밋
 git add .
 git commit -m "feat: 새로운 기능 추가"
+git push origin main
 
 # 2. 태그 생성 및 푸시
 git tag -a v1.0.0 -m "Release version 1.0.0"
 git push origin v1.0.0
 
-# 3. GitLab CI/CD가 자동으로 트리거됨
-# 4. Pipelines에서 deploy-production 작업 실행
+# 3. GitHub Actions가 자동으로 트리거됨
+# 4. GitHub → Actions에서 배포 상태 확인
 ```
 
 ---
 
-### 방법 2: Issue 댓글 기반 배포 (고급)
+### 방법 2: Pull Request 머지 기반 배포
 
-#### GitLab API를 사용한 배포 트리거
+#### GitHub Actions 워크플로우 설정
 
 ```yaml
-# .gitlab-ci.yml에 추가
-deploy-from-issue:
-  stage: deploy
-  image: curlimages/curl:latest
-  script:
-    - |
-      # Issue에서 태그 정보 추출 (예: /deploy v1.0.0)
-      # GitLab API를 통해 Issue 댓글 확인
-      # 태그가 있으면 배포 실행
-      echo "Issue 기반 배포는 별도 스크립트 필요"
-  only:
-    - main
-  when: manual
-```
+name: Deploy on Merge
 
-#### 배포 스크립트 (deploy-from-issue.sh)
+on:
+  push:
+    branches:
+      - main
 
-```bash
-#!/bin/bash
-
-# GitLab Issue에서 배포 태그 추출 및 배포 실행
-# 사용법: ./deploy-from-issue.sh <ISSUE_ID>
-
-ISSUE_ID=$1
-GITLAB_URL="http://YOUR_SERVER_IP:8080"
-GITLAB_TOKEN="YOUR_GITLAB_TOKEN"
-
-# Issue 댓글에서 태그 추출
-TAG=$(curl -s --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-  "$GITLAB_URL/api/v4/projects/1/issues/$ISSUE_ID/notes" | \
-  jq -r '.[] | select(.body | contains("/deploy")) | .body' | \
-  grep -oP 'v\d+\.\d+\.\d+')
-
-if [ -z "$TAG" ]; then
-  echo "배포 태그를 찾을 수 없습니다."
-  exit 1
-fi
-
-echo "배포 태그: $TAG"
-
-# GitLab CI/CD 파이프라인 트리거
-curl -X POST \
-  --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-  "$GITLAB_URL/api/v4/projects/1/trigger/pipeline" \
-  -d "ref=main" \
-  -d "variables[DEPLOY_TAG]=$TAG"
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /path/to/nas
+            git pull origin main
+            docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
 
 ---
@@ -290,7 +214,7 @@ deploy-blue-green:
 
 ---
 
-## 📝 Issue와 배포 연동
+## 📝 GitHub Issues와 배포 연동
 
 ### Issue 템플릿 예시
 
@@ -304,21 +228,13 @@ deploy-blue-green:
 - [ ] 코드 리뷰 완료
 - [ ] 테스트 통과
 - [ ] 태그 생성 완료
-- [ ] 배포 파이프라인 실행
+- [ ] GitHub Actions 파이프라인 실행
 - [ ] 헬스 체크 확인
 ```
 
-### Issue 댓글으로 배포 트리거
+### Pull Request 머지로 배포 트리거
 
-Issue에 다음과 같이 댓글 작성:
-```
-/deploy v1.0.0
-```
-
-또는:
-```
-배포 태그: v1.0.0
-```
+Pull Request를 머지하면 자동으로 배포가 트리거됩니다.
 
 ---
 
@@ -329,9 +245,9 @@ Issue에 다음과 같이 댓글 작성:
 ```
 1. 개발자 코드 작성
    ↓
-2. GitLab에 커밋 및 푸시
+2. GitHub에 커밋 및 푸시
    ↓
-3. Merge Request 생성
+3. Pull Request 생성
    ↓
 4. 코드 리뷰 및 승인
    ↓
@@ -339,7 +255,7 @@ Issue에 다음과 같이 댓글 작성:
    ↓
 6. Git 태그 생성 (v1.0.0)
    ↓
-7. GitLab CI/CD 자동 트리거
+7. GitHub Actions 자동 트리거
    ↓
 8. 새 인스턴스 배포
    ↓
@@ -350,16 +266,16 @@ Issue에 다음과 같이 댓글 작성:
 11. Issue에 배포 완료 댓글
 ```
 
-### 2. Issue 기반 배포 프로세스
+### 2. 태그 기반 배포 프로세스
 
 ```
-1. Issue 생성 (배포 요청)
+1. 코드 커밋 및 푸시
    ↓
-2. 개발자 코드 커밋 및 태그 생성
+2. Git 태그 생성 (v1.0.0)
    ↓
-3. Issue에 태그 정보 댓글 작성
+3. 태그 푸시
    ↓
-4. 배포 파이프라인 수동 실행
+4. GitHub Actions 자동 트리거
    ↓
 5. 새 인스턴스 배포
    ↓
@@ -383,15 +299,16 @@ Issue에 다음과 같이 댓글 작성:
 ```bash
 # 1. 코드 커밋
 git commit -m "feat: 새로운 기능"
+git push origin main
 
 # 2. 태그 생성
 git tag -a v1.0.0 -m "Release v1.0.0"
 git push origin v1.0.0
 
-# 3. GitLab에서 파이프라인 확인 및 배포 실행
+# 3. GitHub Actions에서 파이프라인 확인 및 배포 실행
 ```
 
-### Issue 연동
+### GitHub Issues 연동
 
 Issue에는 배포 정보만 기록:
 ```
@@ -406,14 +323,20 @@ Issue에는 배포 정보만 기록:
 
 ### Issue에 배포 상태 업데이트
 
-배포 스크립트에서 GitLab API를 사용하여 Issue 업데이트:
+GitHub Actions에서 GitHub API를 사용하여 Issue 업데이트:
 
-```bash
-# 배포 완료 시 Issue 댓글 추가
-curl -X POST \
-  --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-  "$GITLAB_URL/api/v4/projects/1/issues/$ISSUE_ID/notes" \
-  -d "body=✅ 배포 완료: 태그 $TAG가 성공적으로 배포되었습니다."
+```yaml
+- name: Update Issue
+  uses: actions/github-script@v6
+  with:
+    github-token: ${{ secrets.GITHUB_TOKEN }}
+    script: |
+      github.rest.issues.createComment({
+        issue_number: context.issue.number,
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        body: '✅ 배포 완료: 태그 ${{ github.ref_name }}가 성공적으로 배포되었습니다.'
+      })
 ```
 
 ---
@@ -436,20 +359,25 @@ curl -X POST \
 
 ## 🚀 빠른 시작
 
-### 1단계: .gitlab-ci.yml 수정
-위의 태그 기반 배포 설정 추가
+### 1단계: GitHub Actions 워크플로우 생성
+`.github/workflows/deploy.yml` 파일에 위의 태그 기반 배포 설정 추가
 
-### 2단계: 태그 생성 및 배포
+### 2단계: GitHub Secrets 설정
+- `SERVER_HOST`: 서버 IP 주소
+- `SERVER_USER`: SSH 사용자 이름
+- `SSH_PRIVATE_KEY`: SSH 개인 키
+
+### 3단계: 태그 생성 및 배포
 ```bash
 git tag -a v1.0.0 -m "Release v1.0.0"
 git push origin v1.0.0
 ```
 
-### 3단계: GitLab에서 배포 실행
-- Pipelines → 해당 파이프라인 선택
-- deploy-production 작업 실행
+### 4단계: GitHub Actions에서 배포 확인
+- GitHub → Actions → 해당 워크플로우 확인
+- 배포 상태 모니터링
 
-### 4단계: Issue에 배포 정보 기록
+### 5단계: Issue에 배포 정보 기록
 ```
 배포 태그: v1.0.0
 배포 상태: ✅ 완료

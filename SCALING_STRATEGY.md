@@ -401,12 +401,13 @@ nginx:
 ### 3. 롤링 배포 전략
 
 ```yaml
-# .gitlab-ci.yml
-deploy-production:
-  script:
-    - |
-      # 1. 새 인스턴스 1개 시작
-      docker-compose up -d --scale backend-springboot=2 --no-deps backend-springboot
+# .github/workflows/ci-cd.yml
+deploy:
+  steps:
+    - name: Deploy to server
+      script: |
+        # 1. 새 인스턴스 1개 시작
+        docker-compose up -d --scale backend-springboot=2 --no-deps backend-springboot
       
       # 2. 헬스 체크
       sleep 10

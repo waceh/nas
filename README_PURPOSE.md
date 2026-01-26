@@ -28,7 +28,7 @@
 ### 2. 구현 가이드
 - 실제 구현 시 참고할 수 있는 가이드
 - Docker Compose 설정 예시
-- GitLab CI/CD 설정 예시
+- GitHub Actions CI/CD 설정 예시
 
 ### 3. 문서화
 - 시스템 아키텍처 문서화
@@ -40,13 +40,11 @@
 ```
 nas-oracle-cloud/
 ├── README.md                    # 메인 문서
-├── ARCHITECTURE_GITLAB.md       # GitLab 기반 아키텍처
 ├── ARCHITECTURE_DOCKER.md       # Docker Compose 아키텍처
 ├── DEPLOYMENT_ARCHITECTURE.md   # 배포 아키텍처 상세
-├── GITLAB_SETUP_GUIDE.md        # GitLab 설치 가이드
 ├── DOCKER_MANAGEMENT_TOOLS.md   # Docker 관리 도구 가이드
 ├── docker-compose.yml           # Docker Compose 예시
-├── .gitlab-ci.yml               # GitLab CI/CD 예시
+├── .github/workflows/           # GitHub Actions 워크플로우
 └── ci-cd/                       # CI/CD 가이드
 ```
 
@@ -67,13 +65,13 @@ nas-oracle-cloud/
 ## 📝 문서 사용 방법
 
 ### 1. 아키텍처 이해
-- `ARCHITECTURE_GITLAB.md`: 전체 시스템 아키텍처
+- `ARCHITECTURE_DOCKER.md`: 전체 시스템 아키텍처
 - `DEPLOYMENT_ARCHITECTURE.md`: 배포 구조 상세
 
 ### 2. 구현 가이드 참고
 - `docker-compose.yml`: Docker Compose 구성 예시
-- `.gitlab-ci.yml`: CI/CD 파이프라인 예시
-- `GITLAB_SETUP_GUIDE.md`: GitLab 설치 가이드
+- `.github/workflows/`: GitHub Actions CI/CD 파이프라인 예시
+- `ci-cd/README.md`: CI/CD 가이드
 
 ### 3. 운영 가이드
 - `ci-cd/README.md`: CI/CD 가이드
@@ -81,16 +79,16 @@ nas-oracle-cloud/
 
 ## ⚠️ 주의사항
 
-1. **예시 파일**: `docker-compose.yml`, `.gitlab-ci.yml` 등은 예시이며, 실제 구현 시 환경에 맞게 수정 필요
+1. **예시 파일**: `docker-compose.yml`, `.github/workflows/` 등은 예시이며, 실제 구현 시 환경에 맞게 수정 필요
 2. **환경 변수**: `env.example`은 참고용이며, 실제 환경 변수는 별도 관리
 3. **보안**: 실제 운영 환경에서는 보안 설정을 추가로 적용해야 함
 
 ## 🔗 관련 문서
 
 - [메인 README](README.md)
-- [GitLab 아키텍처](ARCHITECTURE_GITLAB.md)
+- [Docker 아키텍처](ARCHITECTURE_DOCKER.md)
 - [배포 아키텍처](DEPLOYMENT_ARCHITECTURE.md)
-- [GitLab 설치 가이드](GITLAB_SETUP_GUIDE.md)
+- [CI/CD 가이드](ci-cd/README.md)
 
 ---
 
