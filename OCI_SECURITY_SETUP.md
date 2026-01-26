@@ -29,11 +29,9 @@
 |------|---------|------|-----------|
 | **22** | TCP | SSH 접속 | 0.0.0.0/0 (또는 특정 IP) |
 | **3000** | TCP | Frontend (Vue) | 0.0.0.0/0 |
-| **3030** | TCP | Grafana | 0.0.0.0/0 |
+| **19999** | TCP | Netdata | 0.0.0.0/0 |
 | **9000** | TCP | Portainer HTTP | 0.0.0.0/0 |
 | **9443** | TCP | Portainer HTTPS | 0.0.0.0/0 |
-| **9090** | TCP | Prometheus | 0.0.0.0/0 |
-| **3100** | TCP | Loki | 0.0.0.0.0/0 |
 
 ### 보안 권장사항
 
@@ -69,18 +67,18 @@ oci network security-list ingress-rule create \
 # Windows PowerShell에서
 Test-NetConnection -ComputerName 158.180.76.251 -Port 3000
 Test-NetConnection -ComputerName 158.180.76.251 -Port 8080
-Test-NetConnection -ComputerName 158.180.76.251 -Port 3030
+Test-NetConnection -ComputerName 158.180.76.251 -Port 19999
 
 # Linux/Mac에서
 nc -zv 158.180.76.251 3000
 nc -zv 158.180.76.251 8080
-nc -zv 158.180.76.251 3030
+nc -zv 158.180.76.251 19999
 ```
 
 ### 3. 서버 내부에서 확인
 ```bash
 # 서버에 SSH 접속 후
-sudo netstat -tlnp | grep -E '3000|8080|3030|9000|9090'
+sudo netstat -tlnp | grep -E '3000|19999|9000'
 ```
 
 ## ⚠️ 문제 해결

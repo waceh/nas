@@ -181,10 +181,7 @@ Frontend:
     └── Nginx 캐싱
 
 Monitoring:
-├── Grafana: 1개 (시각화) ✅
-├── Prometheus: 1개 (메트릭 수집) ✅
-├── Loki: 1개 (로그 저장) ✅
-└── Promtail: 1개 (로그 수집) ✅
+└── Netdata: 1개 (실시간 모니터링) ✅
 ```
 
 ### 리소스 사용량 예상

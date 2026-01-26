@@ -2,7 +2,11 @@
 
 ## 📋 개요
 
+> **참고**: 현재 시스템은 **Netdata**를 사용하여 경량 모니터링을 제공합니다. 이 가이드는 더 많은 로그 분석이 필요한 경우 Grafana + Prometheus + Loki 스택으로 업그레이드하는 방법을 설명합니다.
+
 Spring Boot, Kotlin, Frontend 서버의 로그 및 메트릭을 수집하고 모니터링하기 위한 Grafana + Prometheus + Loki 스택 설치 가이드입니다.
+
+> **업그레이드 가이드**: [MONITORING_UPGRADE_GUIDE.md](MONITORING_UPGRADE_GUIDE.md) 참조
 
 ## 🚀 설치 단계
 

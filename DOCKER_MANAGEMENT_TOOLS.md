@@ -243,7 +243,10 @@ docker run -d -p 9000:9000 -p 9443:9443 \
 - 라우팅 관리
 - 로드 밸런싱
 
-### 3. Grafana + Prometheus (모니터링)
+### 3. Netdata (모니터링)
+- **현재 구성**: Netdata로 경량 모니터링
+- **업그레이드 옵션**: 필요 시 Grafana + Prometheus + Loki로 업그레이드 가능
+- 자세한 내용: [MONITORING_UPGRADE_GUIDE.md](MONITORING_UPGRADE_GUIDE.md)
 - 메트릭 수집
 - 대시보드 시각화
 - 알림 설정

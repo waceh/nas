@@ -4,9 +4,21 @@
 
 Spring Boot, Kotlin, Frontend 서버의 로그 수집 및 모니터링을 위한 도구를 추천합니다. 와탭(APM)이나 데이터독과 유사한 기능을 제공하는 오픈소스 솔루션을 중심으로 정리했습니다.
 
-## 🎯 추천 순위
+## 🎯 현재 구성: Netdata
 
-### 1순위: Grafana + Prometheus + Loki (강력 추천) ⭐⭐⭐⭐⭐
+현재 시스템은 **Netdata**를 사용하여 경량 모니터링을 제공합니다. 더 많은 로그 분석이 필요한 경우 아래 옵션들을 고려하세요.
+
+### Netdata 특징
+- ✅ 매우 경량 (200-400MB RAM)
+- ✅ 실시간 모니터링
+- ✅ 자동 설정
+- ✅ Docker 컨테이너 자동 감지
+
+> **업그레이드 가이드**: [MONITORING_UPGRADE_GUIDE.md](MONITORING_UPGRADE_GUIDE.md) 참조
+
+## 🎯 업그레이드 옵션
+
+### 1순위: Grafana + Prometheus + Loki (상세 분석용) ⭐⭐⭐⭐⭐
 
 #### 구성
 - **Prometheus**: 메트릭 수집 및 저장
@@ -300,7 +312,14 @@ Spring Boot, Kotlin, Frontend 서버의 로그 수집 및 모니터링을 위한
 - 마이크로서비스 모니터링
 - 가벼움
 
-## 🎯 최종 추천: Grafana + Prometheus + Loki
+## 🎯 최종 추천
+
+### 현재: Netdata (경량 모니터링)
+- 문제 발생 시 체크용으로 충분
+- 리소스 효율적
+- 자동 설정
+
+### 업그레이드: Grafana + Prometheus + Loki (상세 분석)
 
 ### 이유
 1. **가벼움**: 단일 서버 환경에 적합
@@ -333,6 +352,9 @@ Spring Boot, Kotlin, Frontend 서버의 로그 수집 및 모니터링을 위한
 
 **작성일**: 2024년
 **대상 환경**: Oracle Cloud Infrastructure 단일 인스턴스
-**권장**: Grafana + Prometheus + Loki
+**현재 권장**: Netdata (경량 모니터링)
+**업그레이드 옵션**: Grafana + Prometheus + Loki (상세 분석 필요 시)
+
+자세한 업그레이드 가이드: [MONITORING_UPGRADE_GUIDE.md](MONITORING_UPGRADE_GUIDE.md)
 
 
