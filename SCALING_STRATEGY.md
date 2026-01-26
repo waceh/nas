@@ -240,7 +240,7 @@ services:
 
   # Nginx - 로드 밸런서
   nginx:
-    image: nginx:alpine
+    image: nginx:stable-alpine
     container_name: nas-nginx
     restart: unless-stopped
     ports:
@@ -383,7 +383,7 @@ services:
 
 ```yaml
 nginx:
-  image: nginx:alpine
+  image: nginx:stable-alpine
   container_name: nas-nginx
   restart: unless-stopped
   ports:

@@ -343,7 +343,7 @@ Password: .env 파일에서 설정한 값
 - **Health Check**: `http://YOUR_SERVER_IP:3000/api/springboot/health`
 - **프로젝트 위치**: `backend/springboot/`
 - **빌드 도구**: Gradle
-- **Java 버전**: 17
+- **Java 버전**: 25
 
 ### Kotlin Backend API (Ktor)
 
@@ -351,14 +351,14 @@ Password: .env 파일에서 설정한 값
 - **Health Check**: `http://YOUR_SERVER_IP:3000/api/kotlin/health`
 - **프로젝트 위치**: `backend/kotlin/`
 - **프레임워크**: Ktor
-- **Java 버전**: 17
+- **Java 버전**: 25
 
 ### Vue.js Frontend
 
 - **포트**: 3000 (외부 노출)
 - **접속 URL**: `http://YOUR_SERVER_IP:3000`
 - **프로젝트 위치**: `frontend/vue/`
-- **Node 버전**: 18
+- **Node 버전**: 24.13.0 LTS
 
 ## 사용 방법
 
