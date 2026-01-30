@@ -26,7 +26,7 @@ application {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
-        jvmTarget = "25"
+        jvmTarget = "21"
     }
 }
 
