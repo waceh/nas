@@ -1,4 +1,4 @@
-FROM gradle:9.3-jdk25-alpine AS builder
+FROM gradle:8.10-jdk21-alpine AS builder
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ COPY src ./src
 # 의존성 다운로드 및 빌드
 RUN gradle build -x test --no-daemon || return 0
 
-FROM gradle:9.3-jdk25-alpine
+FROM gradle:8.10-jdk21-alpine
 
 WORKDIR /app
 
