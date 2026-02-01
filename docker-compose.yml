@@ -172,7 +172,7 @@ services:
 
   # YouTrack - 이슈 트래킹 & 프로젝트 관리
   youtrack:
-    image: jetbrains/youtrack:2024.3.47595
+    image: jetbrains/youtrack:latest
     container_name: nas-youtrack
     restart: unless-stopped
     ports:
