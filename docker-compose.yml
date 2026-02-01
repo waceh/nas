@@ -170,6 +170,29 @@ services:
     networks:
       - nas-network
 
+  # YouTrack - 이슈 트래킹 & 프로젝트 관리
+  youtrack:
+    image: jetbrains/youtrack:2024.3.47595
+    container_name: nas-youtrack
+    restart: unless-stopped
+    ports:
+      - "8888:8080"
+    volumes:
+      - youtrack_data:/opt/youtrack/data
+      - youtrack_conf:/opt/youtrack/conf
+      - youtrack_logs:/opt/youtrack/logs
+      - youtrack_backups:/opt/youtrack/backups
+    environment:
+      - JVM_OPTS=-Xmx3g -XX:+UseG1GC
+    networks:
+      - nas-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/config?fields=ring(url)"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
 volumes:
   mysql_data:
   springboot_data:
@@ -178,6 +201,10 @@ volumes:
   netdata_config:
   netdata_lib:
   netdata_cache:
+  youtrack_data:
+  youtrack_conf:
+  youtrack_logs:
+  youtrack_backups:
   # wiki_data:  # Wiki.js 사용 시 활성화
 
 networks:
