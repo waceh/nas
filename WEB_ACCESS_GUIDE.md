@@ -9,9 +9,9 @@ OCI 서버에서 실행 중인 웹 GUI 기반 서비스들의 접속 정보 및 
 - [서비스 요약](#서비스-요약)
 - [1. Portainer - Docker 관리](#1-portainer---docker-관리)
 - [2. Netdata - 시스템 모니터링](#2-netdata---시스템-모니터링)
-- [3. NAS Frontend - 애플리케이션](#3-nas-frontend---애플리케이션)
-- [4. MySQL - 데이터베이스](#4-mysql---데이터베이스)
-- [5. 프로젝트 관리 도구](#5-프로젝트-관리-도구)
+- [3. Plane - 프로젝트 관리](#3-plane---프로젝트-관리)
+- [4. NAS Frontend - 애플리케이션](#4-nas-frontend---애플리케이션)
+- [5. MySQL - 데이터베이스](#5-mysql---데이터베이스)
 - [보안 권장사항](#보안-권장사항)
 
 ---
@@ -23,6 +23,7 @@ OCI 서버에서 실행 중인 웹 GUI 기반 서비스들의 접속 정보 및 
 | **Portainer** | 9000, 9443 | http://158.180.76.251:9000 | Docker 관리 | ✅ 실행 중 |
 | **Netdata Cloud** | - | https://app.netdata.cloud | 시스템 모니터링 (권장) | ✅ 연동 완료 |
 | **Netdata 로컬** | 19999 | http://158.180.76.251:19999 | 시스템 모니터링 | ✅ 실행 중 |
+| **Plane** | 80 | http://158.180.76.251 | 프로젝트 관리 | ✅ 실행 중 |
 | **Frontend (Vue)** | 3000 | http://158.180.76.251:3000 | NAS 애플리케이션 | ✅ 실행 중 |
 | **MySQL** | 3306 | 158.180.76.251:3306 | 데이터베이스 | ✅ 실행 중 |
 
@@ -214,7 +215,224 @@ Applications 섹션:
 
 ---
 
-## 3. NAS Frontend - 애플리케이션
+## 3. Plane - 프로젝트 관리
+
+### 📊 기본 정보
+
+**접속 URL:**
+- http://158.180.76.251
+
+**버전:** v1.2.1
+
+**용도:**
+- 이슈 트래킹 & 프로젝트 관리
+- Sprint, 칸반, 사이클 관리
+- 배포 티켓 관리
+- 작업 로그 추적
+- 팀 협업 및 문서화
+
+**기술 스택:**
+- 마이크로서비스 아키텍처 (12개 컨테이너)
+- PostgreSQL 15.7
+- Redis (Valkey 7.2.11)
+- RabbitMQ 3.13.6
+- MinIO (파일 스토리지)
+
+### ✨ 주요 기능
+
+**1. 프로젝트 관리**
+```
+프로젝트:
+├─ 이슈 (Issues) - 작업 항목 생성 및 추적
+├─ 사이클 (Cycles) - Sprint 관리
+├─ 모듈 (Modules) - 기능별 그룹화
+├─ 뷰 (Views) - 커스텀 필터 및 정렬
+└─ 페이지 (Pages) - 문서 및 노트
+```
+
+**2. 보드 & 뷰**
+```
+뷰 타입:
+├─ 리스트 뷰 - 전통적인 이슈 목록
+├─ 칸반 보드 - 드래그 앤 드롭
+├─ 테이블 뷰 - 스프레드시트 스타일
+├─ 갠트 차트 - 타임라인 시각화
+└─ 캘린더 - 일정 기반 뷰
+```
+
+**3. 이슈 관리**
+```
+이슈 기능:
+├─ 우선순위 (Urgent, High, Medium, Low)
+├─ 상태 (Backlog, Todo, In Progress, Done)
+├─ 담당자 할당
+├─ 라벨 및 태그
+├─ 첨부파일
+├─ 댓글 및 멘션
+└─ 이슈 링크 (blocks, blocked by, relates to)
+```
+
+**4. Sprint (Cycle) 관리**
+```
+사이클:
+├─ 기간 설정 (시작일, 종료일)
+├─ 이슈 할당
+├─ 번다운 차트
+├─ 진행률 추적
+└─ 자동 완료
+```
+
+**5. 협업 기능**
+```
+팀 협업:
+├─ 실시간 동시 편집 (Live)
+├─ 멘션 (@사용자)
+├─ 댓글 스레드
+├─ 활동 피드
+└─ 알림
+```
+
+### 💡 사용 방법
+
+**첫 실행 (관리자 계정 생성):**
+
+1. http://158.180.76.251 접속
+2. "Create your account" 클릭
+3. 계정 정보 입력:
+   - Full Name
+   - Email
+   - Password
+4. 워크스페이스 생성 (예: "NAS Development")
+
+**프로젝트 생성:**
+
+1. 대시보드에서 "Create Project" 클릭
+2. 프로젝트 정보 입력:
+   - 이름 (예: "Release Management")
+   - 식별자 (예: "REL")
+   - 설명
+3. "Create Project" 클릭
+
+**배포 티켓 생성 예시:**
+
+1. 프로젝트 → "New Issue" 클릭
+2. 제목: "Deploy Spring Boot v1.2.0 to Production"
+3. 설명:
+   ```
+   ## 배포 정보
+   - 서비스: Spring Boot Backend
+   - 버전: v1.2.0
+   - 환경: Production
+
+   ## 체크리스트
+   - [ ] 코드 리뷰 완료
+   - [ ] 테스트 통과
+   - [ ] Docker 이미지 빌드
+   - [ ] 배포 실행
+   - [ ] 헬스 체크
+   - [ ] Slack 알림
+   ```
+4. 라벨: "deployment", "backend"
+5. 우선순위: High
+6. 담당자 할당
+
+**GitHub Actions 통합 (향후):**
+
+Plane Webhook → GitHub Actions → 배포 → Slack 알림
+
+### 🔧 관리 명령어
+
+```bash
+# Plane 디렉토리로 이동
+cd ~/plane-app/plane-app
+
+# 전체 상태 확인
+docker compose ps
+
+# 전체 로그 확인
+docker compose logs -f
+
+# 특정 서비스 로그
+docker compose logs -f web
+docker compose logs -f api
+
+# 재시작
+docker compose restart
+
+# 중지
+docker compose stop
+
+# 시작
+docker compose start
+
+# 업데이트 (새 버전 배포 시)
+docker compose pull
+docker compose up -d
+```
+
+### 📁 설치 위치
+
+```
+/home/ubuntu/plane-app/plane-app/
+├── docker-compose.yaml    # Docker Compose 설정
+├── .env                   # 환경 변수
+└── custom-Caddyfile       # 프록시 설정
+```
+
+### ⚙️ 컨테이너 구성
+
+**12개 컨테이너 (마이크로서비스):**
+- `plane-app-web-1` - 메인 웹 인터페이스
+- `plane-app-admin-1` - 관리자 대시보드
+- `plane-app-space-1` - 공개 스페이스 (외부 공유)
+- `plane-app-live-1` - 실시간 협업
+- `plane-app-api-1` - REST API 서버
+- `plane-app-worker-1` - 백그라운드 작업
+- `plane-app-beat-worker-1` - 스케줄 작업
+- `plane-app-plane-db-1` - PostgreSQL
+- `plane-app-plane-redis-1` - Redis
+- `plane-app-plane-mq-1` - RabbitMQ
+- `plane-app-plane-minio-1` - MinIO
+- `plane-app-proxy-1` - Caddy 프록시
+
+**리소스 사용량:**
+- 메모리: 약 1.14GB (전체의 5%)
+- CPU: Idle 시 거의 0%
+
+### 🔗 통합 기능
+
+**GitHub 통합 (설정 가능):**
+- Settings → Integrations → GitHub
+- 리포지토리 연결
+- 이슈 동기화
+- PR 링크
+
+**Slack 통합 (설정 가능):**
+- Settings → Integrations → Slack
+- 이슈 알림
+- 댓글 알림
+- 배포 알림
+
+### 💡 팁
+
+**배포 티켓 관리 워크플로우:**
+
+1. **티켓 생성**: 배포할 내용을 이슈로 작성
+2. **Sprint 할당**: 해당 Cycle에 추가
+3. **상태 관리**: Backlog → In Progress → Done
+4. **GitHub Actions**: Webhook으로 자동 배포 트리거
+5. **완료 확인**: 배포 후 댓글로 결과 기록
+
+**라벨 활용:**
+- `deployment`: 배포 관련
+- `backend`: 백엔드 배포
+- `frontend`: 프론트엔드 배포
+- `hotfix`: 긴급 수정
+- `rollback`: 롤백 필요
+
+---
+
+## 4. NAS Frontend - 애플리케이션
 
 ### 📊 기본 정보
 
@@ -252,7 +470,7 @@ http://158.180.76.251:3000/api/kotlin/health
 
 ---
 
-## 4. MySQL - 데이터베이스
+## 5. MySQL - 데이터베이스
 
 ### 📊 기본 정보
 
@@ -411,6 +629,9 @@ ssh -L 3306:localhost:3306 ubuntu@158.180.76.251
 - [Netdata Cloud](https://app.netdata.cloud) - 시스템 모니터링 (권장, 동적 IP 지원)
 - [Netdata 로컬](http://158.180.76.251:19999) - 시스템 모니터링 (로컬)
 
+**프로젝트 관리:**
+- [Plane](http://158.180.76.251) - 이슈 트래킹, Sprint, 칸반, 배포 관리
+
 **애플리케이션:**
 - [NAS Frontend](http://158.180.76.251:3000) - 메인 애플리케이션
 
@@ -420,79 +641,6 @@ ssh -L 3306:localhost:3306 ubuntu@158.180.76.251
 
 ---
 
-## 5. 프로젝트 관리 도구
-
-### 📊 현재 상태
-
-**이슈 트래킹 및 프로젝트 관리 도구가 필요한 경우:**
-
-현재 서버는 **OCI Ampere A1 (ARM64 아키텍처)**이므로, AMD64 전용 도구는 실행할 수 없습니다.
-
-### ⚠️ ARM64 제약사항
-
-**설치 불가능한 도구들:**
-- ❌ **YouTrack** (JetBrains) - AMD64 전용, ARM64 미지원
-- ❌ 기타 AMD64 전용 도구들
-
-### ✅ ARM64 지원 대안
-
-**1. Plane** (추천 ⭐⭐⭐)
-- 오픈소스, 완전 무료
-- ARM64 네이티브 지원
-- Modern UI (Notion + Linear 스타일)
-- Sprint, 칸반, Cycle, Roadmap
-- GitHub Actions 통합
-- Slack 통합
-- 배포 티켓 관리 최적화
-- 메모리: 1-2GB
-
-**설치 방법:**
-```bash
-# docker-compose.yml에 Plane 추가 필요
-# 공식 가이드: https://docs.plane.so/docker-compose
-```
-
-**2. Taiga**
-- 오픈소스
-- ARM64 지원
-- Agile 보드, Wiki 포함
-- 메모리: 2-3GB
-
-**3. Redmine**
-- 오픈소스
-- ARM64 지원
-- 강력한 Wiki, 이슈 트래킹
-- 전통적인 UI
-- 메모리: 1-2GB
-
-**4. GitHub Projects + Wiki**
-- 추가 인프라 불필요
-- 이미 GitHub 사용 중
-- Issue, Project Board, Wiki
-- 무료, 제한 없음
-
-### 💡 권장 구성
-
-**작업 관리 + 문서화 조합:**
-
-**옵션 1: Plane + GitHub Wiki**
-- Plane: 배포 티켓, Sprint, 칸반 관리
-- GitHub Wiki: 기술 문서, 가이드
-- GitHub Actions: CI/CD 자동화
-- Slack: 알림
-
-**옵션 2: GitHub 올인원**
-- GitHub Issues: 티켓 관리
-- GitHub Projects: 칸반 보드
-- GitHub Wiki: 문서화
-- GitHub Actions: CI/CD
-
-**옵션 3: Redmine 올인원**
-- Redmine: 티켓 + Wiki + 프로젝트 관리
-- GitHub Actions: CI/CD
-- 플러그인으로 기능 확장
-
----
 
 ## 🔧 문제 해결
 
