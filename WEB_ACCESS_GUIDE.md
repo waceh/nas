@@ -11,6 +11,7 @@ OCI 서버에서 실행 중인 웹 GUI 기반 서비스들의 접속 정보 및 
 - [2. Netdata - 시스템 모니터링](#2-netdata---시스템-모니터링)
 - [3. NAS Frontend - 애플리케이션](#3-nas-frontend---애플리케이션)
 - [4. MySQL - 데이터베이스](#4-mysql---데이터베이스)
+- [5. 프로젝트 관리 도구](#5-프로젝트-관리-도구)
 - [보안 권장사항](#보안-권장사항)
 
 ---
@@ -416,6 +417,80 @@ ssh -L 3306:localhost:3306 ubuntu@158.180.76.251
 **API 헬스 체크:**
 - [Spring Boot Health](http://158.180.76.251:3000/api/springboot/health)
 - [Kotlin Health](http://158.180.76.251:3000/api/kotlin/health)
+
+---
+
+## 5. 프로젝트 관리 도구
+
+### 📊 현재 상태
+
+**이슈 트래킹 및 프로젝트 관리 도구가 필요한 경우:**
+
+현재 서버는 **OCI Ampere A1 (ARM64 아키텍처)**이므로, AMD64 전용 도구는 실행할 수 없습니다.
+
+### ⚠️ ARM64 제약사항
+
+**설치 불가능한 도구들:**
+- ❌ **YouTrack** (JetBrains) - AMD64 전용, ARM64 미지원
+- ❌ 기타 AMD64 전용 도구들
+
+### ✅ ARM64 지원 대안
+
+**1. Plane** (추천 ⭐⭐⭐)
+- 오픈소스, 완전 무료
+- ARM64 네이티브 지원
+- Modern UI (Notion + Linear 스타일)
+- Sprint, 칸반, Cycle, Roadmap
+- GitHub Actions 통합
+- Slack 통합
+- 배포 티켓 관리 최적화
+- 메모리: 1-2GB
+
+**설치 방법:**
+```bash
+# docker-compose.yml에 Plane 추가 필요
+# 공식 가이드: https://docs.plane.so/docker-compose
+```
+
+**2. Taiga**
+- 오픈소스
+- ARM64 지원
+- Agile 보드, Wiki 포함
+- 메모리: 2-3GB
+
+**3. Redmine**
+- 오픈소스
+- ARM64 지원
+- 강력한 Wiki, 이슈 트래킹
+- 전통적인 UI
+- 메모리: 1-2GB
+
+**4. GitHub Projects + Wiki**
+- 추가 인프라 불필요
+- 이미 GitHub 사용 중
+- Issue, Project Board, Wiki
+- 무료, 제한 없음
+
+### 💡 권장 구성
+
+**작업 관리 + 문서화 조합:**
+
+**옵션 1: Plane + GitHub Wiki**
+- Plane: 배포 티켓, Sprint, 칸반 관리
+- GitHub Wiki: 기술 문서, 가이드
+- GitHub Actions: CI/CD 자동화
+- Slack: 알림
+
+**옵션 2: GitHub 올인원**
+- GitHub Issues: 티켓 관리
+- GitHub Projects: 칸반 보드
+- GitHub Wiki: 문서화
+- GitHub Actions: CI/CD
+
+**옵션 3: Redmine 올인원**
+- Redmine: 티켓 + Wiki + 프로젝트 관리
+- GitHub Actions: CI/CD
+- 플러그인으로 기능 확장
 
 ---
 

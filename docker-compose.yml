@@ -170,29 +170,31 @@ services:
     networks:
       - nas-network
 
-  # YouTrack - 이슈 트래킹 & 프로젝트 관리
-  youtrack:
-    image: jetbrains/youtrack:2025.3.119807
-    container_name: nas-youtrack
-    platform: linux/amd64  # ARM64 서버에서 AMD64 이미지 emulation
-    restart: unless-stopped
-    ports:
-      - "8888:8080"
-    volumes:
-      - youtrack_data:/opt/youtrack/data
-      - youtrack_conf:/opt/youtrack/conf
-      - youtrack_logs:/opt/youtrack/logs
-      - youtrack_backups:/opt/youtrack/backups
-    environment:
-      - JVM_OPTS=-Xmx3g -XX:+UseG1GC
-    networks:
-      - nas-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/config?fields=ring(url)"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 120s
+  # YouTrack - 이슈 트래킹 & 프로젝트 관리 (ARM64 미지원으로 비활성화)
+  # ARM64 아키텍처에서 AMD64 전용 YouTrack 실행 불가
+  # 대안: Plane, Taiga, Redmine 또는 GitHub Projects 사용 권장
+  # youtrack:
+  #   image: jetbrains/youtrack:2025.3.119807
+  #   container_name: nas-youtrack
+  #   platform: linux/amd64  # ARM64 서버에서 AMD64 이미지 emulation 실패
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8888:8080"
+  #   volumes:
+  #     - youtrack_data:/opt/youtrack/data
+  #     - youtrack_conf:/opt/youtrack/conf
+  #     - youtrack_logs:/opt/youtrack/logs
+  #     - youtrack_backups:/opt/youtrack/backups
+  #   environment:
+  #     - JVM_OPTS=-Xmx3g -XX:+UseG1GC
+  #   networks:
+  #     - nas-network
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8080/api/config?fields=ring(url)"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+  #     start_period: 120s
 
 volumes:
   mysql_data:
@@ -202,10 +204,10 @@ volumes:
   netdata_config:
   netdata_lib:
   netdata_cache:
-  youtrack_data:
-  youtrack_conf:
-  youtrack_logs:
-  youtrack_backups:
+  # youtrack_data:  # YouTrack 사용 시 활성화 (ARM64 미지원)
+  # youtrack_conf:
+  # youtrack_logs:
+  # youtrack_backups:
   # wiki_data:  # Wiki.js 사용 시 활성화
 
 networks:
