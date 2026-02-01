@@ -172,8 +172,9 @@ services:
 
   # YouTrack - 이슈 트래킹 & 프로젝트 관리
   youtrack:
-    image: jetbrains/youtrack:latest
+    image: jetbrains/youtrack:2025.3.119807
     container_name: nas-youtrack
+    platform: linux/amd64  # ARM64 서버에서 AMD64 이미지 emulation
     restart: unless-stopped
     ports:
       - "8888:8080"
