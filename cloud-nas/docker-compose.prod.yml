@@ -7,7 +7,7 @@ services:
   # Spring Boot Backend - 프로덕션 빌드
   backend-springboot:
     build:
-      dockerfile: Dockerfile  # 프로덕션 Dockerfile 사용
+      dockerfile: Dockerfile.dev
     environment:
       SPRING_PROFILES_ACTIVE: production
     volumes:
@@ -19,7 +19,7 @@ services:
   # Kotlin Backend - 프로덕션 빌드
   backend-kotlin:
     build:
-      dockerfile: Dockerfile  # 프로덕션 Dockerfile 사용
+      dockerfile: Dockerfile.dev
     volumes:
       # 프로덕션에서는 소스 코드 마운트 제거
       - kotlin_data:/app/data
@@ -28,7 +28,7 @@ services:
   # Vue Frontend - 프로덕션 빌드
   frontend-vue:
     build:
-      dockerfile: Dockerfile  # 프로덕션 Dockerfile 사용
+      dockerfile: Dockerfile.dev
     volumes:
       # 프로덕션에서는 소스 코드 마운트 제거
     restart: always
@@ -36,5 +36,5 @@ services:
   # MySQL - 프로덕션 설정
   mysql:
     restart: always
-    command: --default-authentication-plugin=mysql_native_password
+
 

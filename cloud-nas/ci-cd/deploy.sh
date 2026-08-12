@@ -122,7 +122,7 @@ while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
     SPRINGBOOT_HEALTHY=false
     KOTLIN_HEALTHY=false
     
-    if check_health "Spring Boot API" "http://${SERVER_IP}:${FRONTEND_PORT}/api/springboot/health"; then
+    if check_health "Spring Boot API" "http://${SERVER_IP}:${FRONTEND_PORT}/api/health"; then
         SPRINGBOOT_HEALTHY=true
     fi
     
