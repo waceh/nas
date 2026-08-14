@@ -14,7 +14,7 @@ NAS 인프라 구축 및 클라우드 아키텍처 설계를 다루는 저장소
 자작 홈서버(`self-nas`)의 하드웨어 스펙 및 Proxmox VE 가상화(VM / LXC / Docker) 구성도입니다.
 
 ```mermaid
-graph TD
+flowchart TB
     %% Styles
     classDef hw fill:#24292e,stroke:#444d56,stroke-width:2px,color:#fff;
     classDef pve fill:#1a365d,stroke:#2b6cb0,stroke-width:2px,color:#fff;
@@ -23,7 +23,7 @@ graph TD
     classDef docker fill:#2c5282,stroke:#3182ce,stroke-width:1px,color:#fff;
     classDef disk fill:#2d3748,stroke:#4a5568,stroke-width:1px,color:#fff;
 
-    %% Hardware Layer
+    %% 1. 상단 박스: Physical Hardware
     subgraph HW["🖥️ Physical Hardware (Fractal Node 304 / Vpro C246)"]
         CPU["Intel Core i5-9500T (6C/6T)<br/>Intel UHD Graphics 630 (iGPU)"]:::hw
         RAM["DDR4 RAM 8GB X 2"]:::hw
@@ -37,7 +37,7 @@ graph TD
         end
     end
 
-    %% Hypervisor Layer
+    %% 2. 하단 박스: Proxmox VE
     subgraph PVE["⚡ Proxmox VE 8.x (Hypervisor)"]
         VMBR0["vmbr0 (1GbE LAN - 192.168.50.x)"]:::pve
         
@@ -65,6 +65,9 @@ graph TD
         end
     end
 
+    %% 상하 세로 배치 순서 강제
+    HW ~~~ PVE
+
     %% Storage & Passthrough Links
     SSD -->|"Host OS & Boot"| PVE
     WD_Gold -->|"Virtual Disk"| VM102
@@ -90,6 +93,15 @@ graph TD
 | **가상 머신 (VM)** | VM 101: 헤놀로지 (DSM 7.2.1) | 2 Core / 4GB RAM, HDD 패스스루, 파일 공유(SMB/NFS), Docker 서비스(Nextcloud, Immich, *arr, AdGuard, Vaultwarden) |
 | | VM 102: Windows 11 Pro | 4 Core / 8GB RAM, WD Gold 4TB 기반 고속 가상 디스크, RDP 원격 제어 및 작업 공간 |
 | **LXC 컨테이너** | LXC 105: Plex Media Server | 2 Core / 2GB RAM (Debian 12), iGPU HW 트랜스코딩 가속, 헤놀로지 미디어 NFS 마운트 연동 |
+
+### 💾 물리적 디스크 용도 및 역할 분담 (3-Tier Storage)
+
+| 티어 (Tier) | 디스크 모델 | 연결 방식 / 마운트 위치 | 주요 용도 및 역할 |
+| :--- | :--- | :--- | :--- |
+| **`OS / Boot`** | **Intel 710 SSD 100GB** (MLC) | Proxmox 호스트 직접 설치 | - Proxmox VE 베이스 OS 및 가상 부팅 디스크(`rr.img` 등)<br>- VM/LXC 기본 시스템 템플릿 구동 |
+| **`HOT (고속 작업)`** | **WD Gold 4TB** (7200RPM Enterprise) | VM 102 (Windows 11) 가상 디스크 할당 | - Windows 11 VM 전용 고속 스토리지<br>- RDP 원격 접속 기반 실시간 작업 공간 (영상/음악/문서 작업)<br>- 금융·관공서 업무 처리 |
+| **`COLD (스토리지)`** | **WD Red 8TB** (CMR NAS 드라이브) | VM 101 (헤놀로지) Raw 패스스루 (`by-id`) | - 메인 NAS 스토리지 풀 및 개인 데이터 보관<br>- Nextcloud, Immich, Vaultwarden 등 Docker 앱 영구 데이터 저장 |
+| **`COLD (미디어)`** | **WD White 18TB** (대용량 드라이브) | VM 101 (헤놀로지) Raw 패스스루 (`by-id`) | - 대용량 영상/음악 미디어 라이브러리 및 콜드 아카이빙<br>- Plex LXC에서 NFS 네트워크 마운트(`/volume1/media`)로 실시간 스트리밍 |
 
 ---
 
