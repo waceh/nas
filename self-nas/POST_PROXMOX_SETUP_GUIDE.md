@@ -52,8 +52,8 @@
 ---
 
 ## Step 1. Proxmox VE 설치
-- **상태**: HDD 3개(WD Red 8TB, White 18TB, Gold 4TB) SATA 케이블은 메인보드에서 **완전히 빼둔 상태** 유지 (Intel 710 Host OS SSD 및 Intel 530 SSD만 연결).
-- **작업**: Intel 710 SSD(100GB MLC)에 Proxmox VE 8.x 설치 완료 (Host OS 전용 구동).
+- **상태**: HDD 3개(WD Red 8TB, White 18TB, Gold 4TB) SATA 케이블은 메인보드에서 **완전히 빼둔 상태** 유지 (Intel 710 Host OS SSD 및 Intel 530 SSD — 둘 다 MLC, Non-Disk만 연결).
+- **작업**: Intel 710 SSD(100GB MLC, Non-Disk)에 Proxmox VE 8.x 설치 완료 (Host OS 전용 구동).
 - **접속**: 같은 네트워크 PC에서 웹 UI(`https://<Proxmox_IP>:8006`) 및 SSH 접속 확인.
 
 ---
