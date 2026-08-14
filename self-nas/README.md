@@ -19,17 +19,17 @@
 ## 💾 2. Storage Architecture
 디스크의 성격과 속도에 따라 역할을 완벽히 분리한 4-Tier 스토리지 구성입니다.
 
-- **`OS` Intel 710 SSD (MLC 100GB):** Proxmox 베이스 시스템 및 가상 부팅 디스크
-- **`FAST APP` Intel 530 SSD (120GB):** 고속 서비스 전용 — Plex LXC 루트/메타데이터, Immich PostgreSQL/벡터 DB, AdGuard Home DNS 캐시
-- **`HOT` WD Gold 4TB (7200RPM):** 고성능 VM(Windows 11) 작업 공간 및 Immich 대용량 사진/동영상 원본 저장소
-- **`COLD` WD Red 8TB + White 18TB:** 헤놀로지(NAS) 패스스루, 일반 데이터 및 대용량 미디어 아카이빙 보관소
+- **`HOST OS 전용` Intel 710 SSD (MLC 100GB):** Proxmox VE 베이스 OS 및 부팅 전용 (안정성 최우선, 기타 서비스 미설치)
+- **`상시 고속 서비스 (Non-Disk)` Intel 530 SSD (120GB):** 24/7 상시 무소음 서비스 (AdGuard Home, Plex LXC 루트/캐시, Immich DB/앱, Windows 11 VM 가상 디스크)
+- **`사진 저장 & 백업` WD Gold 4TB (7200RPM):** Immich 원본 사진/동영상 저장소, 시스템 설정 파일 및 핵심 데이터 백업 보관소 (추후 확장 가능)
+- **`COLD 스토리지` WD Red 8TB + White 18TB:** 헤놀로지(NAS) Raw 패스스루, 대용량 미디어 라이브러리 및 콜드 아카이빙 (필요 시에만 호출)
 
 ## 🏗️ 3. Virtualization (Proxmox VE)
 | 가상 머신 (VM) / 컨테이너 | 할당 자원 | 스토리지 (위치) | 주요 역할 |
 | :--- | :--- | :--- | :--- |
-| **VM 101: 헤놀로지** | 2 Core / 4GB | WD Red 8TB & White 18TB (Passthrough) | 메인 NAS 환경 복구, Docker 컨테이너 호스트 |
-| **VM 102: Windows 11** | 4 Core / 8GB | WD Gold 4TB (가상 디스크) | RDP 원격 제어용, 관공서/금융 업무 및 고속 작업 공간 |
-| **LXC 105: Plex** | 2 Core / 2GB | Intel 530 SSD (컨테이너 디스크) + 헤놀로지 미디어 (NFS 마운트) | Intel iGPU 트랜스코딩 가속 기반 고속 Plex 미디어 서버 |
+| **VM 101: 헤놀로지** | 2 Core / 4GB | WD Red 8TB & White 18TB (Cold Passthrough) | 메인 NAS 환경 복구, Docker 컨테이너 호스트 |
+| **VM 102: Windows 11** | 4 Core / 8GB | Intel 530 SSD (고속 가상 디스크) | RDP 원격 제어용, 관공서/금융 업무 및 고속 작업 공간 |
+| **LXC 105: Plex** | 2 Core / 2GB | Intel 530 SSD (컨테이너 루트/캐시) + 헤놀로지 미디어 (NFS 마운트) | Intel iGPU 트랜스코딩 가속 기반 고속 Plex 미디어 서버 |
 
 ## 🐳 4. Services (Docker on Xpenology)
 헤놀로지 내부의 Container Manager를 통해 구동되는 핵심 서비스 목록입니다. (Plex는 별도 LXC로 분리 구동)
