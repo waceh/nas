@@ -27,21 +27,20 @@
 ## 🏗️ 3. Virtualization (Proxmox VE)
 | 가상 머신 (VM) / 컨테이너 | 할당 자원 | 스토리지 (위치) | 주요 역할 |
 | :--- | :--- | :--- | :--- |
-| **VM 101: 헤놀로지** | 2 Core / 4GB | WD Gold 4TB, WD White 8TB & White 18TB (Raw Passthrough 전용) | 메인 NAS 환경 복구, Docker 컨테이너 호스트, 파일 공유 & 백업 금고 |
-| **LXC 105: Jellyfin** | 2 Core / 2GB | Intel 530 SSD (컨테이너 루트/캐시) + 헤놀로지 미디어 (NFS 마운트) | Intel iGPU 트랜스코딩 가속 기반 고속 Jellyfin 미디어 서버 |
+| **VM 101: 헤놀로지**<br/>*(Pure Storage Core)* | 2 Core / 4GB | WD Gold 4TB, WD White 8TB, WD White 18TB (Raw Passthrough) | **순수 NAS 스토리지 코어** (Samba / NFS 파일 공유 데몬 전용, 도커 미구동으로 초경량 유지) |
+| **LXC 102: AdGuard Home** | 1 Core / 512MB | Intel 530 SSD (MLC, Non-Disk) | 24/7 상시 무소음 DNS 쿼리 캐시 & 네트워크 광고 차단 |
+| **LXC 103: Immich Server** | 2 Core / 4GB | Intel 530 SSD (DB/앱) + 헤놀로지 4TB Gold (NFS 원본 저장) | AI 기반 사진 백업 백엔드 + PostgreSQL + Vector Search DB |
+| **LXC 105: Jellyfin Server** | 2 Core / 2GB | Intel 530 SSD (루트/캐시) + 헤놀로지 18TB White (NFS 미디어) | Intel UHD 630 iGPU QuickSync HW 트랜스코딩 미디어 스트리밍 |
+| **LXC 106: Dev Web Server** | 2 Core / 2GB | Intel 530 SSD (MLC, Non-Disk) | Spring Boot / Node.js / Nginx 개인 프로젝트 개발 & 테스트 웹 서버 |
 | *(선택 확장) Windows VM* | *2~4 Core / 4GB* | *Intel 530 SSD or WD Gold 4TB* | *추후 필요 시에만 최소 리소스로 On-Demand 생성 예정* |
 
-## 🐳 4. Services (Docker on Xpenology)
-헤놀로지 내부의 Container Manager를 통해 구동되는 핵심 서비스 목록입니다. (Jellyfin은 별도 LXC로 분리 구동)
+## ⚡ 4. Services Architecture (Proxmox Native LXC 격리 구동)
+헤놀로지 내부에서 무겁게 도커를 돌리지 않고, **Proxmox 하이퍼바이저 레벨의 초경량 Native LXC 컨테이너**로 각 서비스를 완전 분리하여 초고속 SSD(Intel 530) 위에서 구동합니다:
 
-* **Media & Entertainment**
-  * `*arr Stack (Radarr, Sonarr)`: 미디어 자동화 및 관리
-* **Cloud & Backup**
-  * `Nextcloud`: 프로젝트 파일 외부 공유 및 10Gbps 동기화
-  * `Immich`: AI 기반 무제한 사진/동영상 백업 클라우드 (WD Gold 4TB 원본 저장 / Intel 530 SSD 메타데이터 DB 가속)
-* **Network & Security**
-  * `AdGuard Home`: 네트워크 단 광고 차단 (Intel 530 SSD 고속 DNS 쿼리/로그 처리)
-  * `Vaultwarden`: 프라이빗 비밀번호 관리 지갑
+* **DNS & Network Security**: `LXC 102 (AdGuard Home)` — 24/7 무소음 DNS 필터링/캐시
+* **AI Photo Cloud**: `LXC 103 (Immich)` — 초고속 PostgreSQL/벡터 DB는 SSD에서 구동, 대용량 원본 사진은 4TB Gold NFS로 저장
+* **Media Streaming**: `LXC 105 (Jellyfin)` — iGPU 하드웨어 가속, 18TB White NFS 미디어 라이브러리 연동
+* **Development Web Server**: `LXC 106 (Dev Web)` — 개인 웹 애플리케이션 개발/배포 환경
 
 ## 🌐 5. Network Topology & ISP Bridge Mode (LG U+)
 ```
@@ -76,10 +75,13 @@ LG U+ 공유기와 ASUS 공유기 사이 **이중 NAT** 상태. 포트포워딩/
 - [ ] 2. 하드디스크(White 8TB, White 18TB, Gold 4TB) SATA 케이블 메인보드에서 분리해 두기 (OS 설치 시 데이터 보호)
 - [ ] 3. Intel 710 SSD에 Proxmox VE 설치 (Host OS 전용) → [`01_proxmox_install.md`](docs/01_proxmox_install.md)
 - [ ] 4. Proxmox 네트워크 설정 (관리용 vmbr0 / 10Gbps 맥북 직결 vmbr1) → [`02_network_setup.md`](docs/02_network_setup.md)
-- [ ] 5. Intel 530 SSD(상시 고속 서비스) Proxmox 스토리지 등록
+- [ ] 5. Intel 530 SSD(상시 고속 LXC 컨테이너 스토리지) Proxmox 스토리지 등록
 - [ ] 6. 시스템 종료 후 White 8TB, White 18TB, Gold 4TB SATA 케이블 메인보드에 결착
 - [ ] 7. Proxmox 부팅 후 터미널에서 HDD 3대(White 8TB, White 18TB, Gold 4TB) 패스스루 설정 → [`03_disk_passthrough.md`](docs/03_disk_passthrough.md), [`05_wd_gold_storage_setup.md`](docs/05_wd_gold_storage_setup.md)
-- [ ] 8. 헤놀로지 VM(101) 설치 및 기존 Cold 데이터 / 신규 4TB 볼륨 생성 확인 → [`04_xpenology_install.md`](docs/04_xpenology_install.md)
-- [ ] 9. Intel 530 SSD 위에 Jellyfin LXC(105) 컨테이너 생성 및 미디어 NFS 마운트 연동 → [`lxc/jellyfin/README.md`](lxc/jellyfin/README.md)
-- [ ] 10. 상시 도커 서비스 순차적 배포 (AdGuard Home, Immich DB/앱 고속화, *arr, Nextcloud 등)
-- [ ] 11. (선택 확장) Windows VM 필요 시 Intel 530 SSD or WD Gold에 On-Demand 생성
+- [ ] 8. 헤놀로지 VM(101) 부팅 및 순수 NAS 스토리지 풀(Samba/NFS) 구성 → [`04_xpenology_install.md`](docs/04_xpenology_install.md)
+- [ ] 9. Intel 530 SSD 위에 Proxmox Native LXC 컨테이너 순차 구축:
+  - [ ] 9-1. `LXC 102 (AdGuard Home)` DNS 캐시 구축
+  - [ ] 9-2. `LXC 103 (Immich Photo Server)` 구축 및 4TB Gold NFS 연동
+  - [ ] 9-3. `LXC 105 (Jellyfin Media Server)` 구축 및 iGPU 트랜스코딩 가속 → [`lxc/jellyfin/README.md`](lxc/jellyfin/README.md)
+  - [ ] 9-4. `LXC 106 (Dev Web Server)` Spring Boot / Node.js 개발 서버 구축
+- [ ] 10. (선택 확장) Windows VM 필요 시 Intel 530 SSD or WD Gold에 On-Demand 생성

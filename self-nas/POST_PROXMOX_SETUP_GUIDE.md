@@ -1,6 +1,6 @@
 # 🚀 Proxmox 설치 이후 통합 구축 가이드 (Master Setup Guide)
 
-본 가이드는 Proxmox VE 설치(Step 3) 완료 후, **가상 부팅 디스크 개념부터 RR 부트로더 선택 이유, SSD 헤놀로지 선설치 후 HDD 디스크 패스스루 연결**, 그리고 Jellyfin LXC 및 Docker 서비스 배포까지의 모든 과정을 한눈에 보고 따라 할 수 있도록 정리한 통합 마스터 문서입니다.
+본 가이드는 Proxmox VE 설치(Step 3) 완료 후, **가상 부팅 디스크 개념부터 RR 부트로더 선택 이유, SSD 헤놀로지 선설치 후 HDD 디스크 패스스루 연결**, 그리고 Proxmox Native LXC 컨테이너(AdGuard, Immich, Jellyfin, Dev Web Server) 배포까지의 모든 과정을 한눈에 보고 따라 할 수 있도록 정리한 통합 마스터 문서입니다.
 
 ---
 
@@ -29,14 +29,13 @@
 
 ### 🎯 모델 & DSM 버전 선택 가이드 (2026년 8월 기준 최적 선택)
 - **추천 모델: `DS920+`**
-  - **이유**: 사용 중인 CPU가 **Intel i5-9500T (UHD 630 내장그래픽)**이므로, Intel QuickSync 하드웨어 트랜스코딩 및 GPU 가속을 공식 지원하는 **DS920+** 모델이 가장 적합합니다.
+  - **이유**: 사용 중인 CPU가 **Intel i5-9500T (UHD 630 내장그래픽)**이므로, 안정적인 가상화 호환성 및 SATA 패스스루 드라이버를 지원하는 **DS920+** 모델이 가장 적합합니다.
 
 - **추천 DSM 버전: `DSM 7.2.1-69057` (Golden Release / 2026년 8월 기준 최선)**
   - 💡 **왜 최신 7.2.2 대신 7.2.1-69057인가?**
-    1. **`Video Station` & 서버 미디어 코덱 지원의 마지막 버전**: 시놀로지가 DSM 7.2.2부터 Video Station 패키지를 공식 폐지하고 서버 코덱을 제거하였으므로, 순정 미디어 및 코덱 호환성을 온전히 이용하려면 7.2.1이 최선입니다.
-    2. **검증된 100% 안정성**: 부트로더 커뮤니티에서 가장 완벽히 검증되어 부팅 에러, 네트워크 드라이버 충돌, 스토리지 마운트 오류가 전무합니다.
-    3. **Docker 100% 최신 지원**: Docker(Container Manager), SMB/NFS 기능은 최신 7.2.2와 완전히 동일하므로 성능 손실이 없습니다.
-    4. **향후 원클릭 업데이트 가능**: 7.2.1로 안정 구축 후, 추후 7.2.2 이상이 필요해지면 데이터 손실 없이 RR 로더 메뉴에서 클릭 몇 번으로 쉽게 업데이트할 수 있습니다.
+    1. **검증된 100% 안정성**: 부트로더 커뮤니티에서 가장 완벽히 검증되어 부팅 에러, 네트워크 드라이버 충돌, 스토리지 마운트 오류가 전무합니다.
+    2. **스토리지 & SMB/NFS 완벽 지원**: Pure Storage 및 파일 공유 기능이 매우 안정적입니다.
+    3. **향후 원클릭 업데이트 가능**: 7.2.1로 안정 구축 후, 추후 7.2.2 이상이 필요해지면 데이터 손실 없이 RR 로더 메뉴에서 클릭 몇 번으로 쉽게 업데이트할 수 있습니다.
 
 ---
 
@@ -46,7 +45,7 @@
 2. [Step 2. 헤놀로지(Xpenology) VM 생성 및 DSM 기본 설치 (SSD 기반)](#step-2-헤놀로지-xpenology-vm-생성-및-dsm-기본-설치)
 3. [Step 3. HDD 케이블 재결착 및 디스크 패스스루 (qm set)](#step-3-hdd-케이블-재결착-및-디스크-패스스루)
 4. [Step 4. DSM 스토리지 관리자에서 HDD 볼륨 인식 & 마이그레이션](#step-4-dsm-스토리지-관리자에서-hdd-볼륨-인식--마이그레이션)
-5. [Step 5. Jellyfin 미디어 서버 LXC 구축 및 iGPU 트랜스코딩 (선택)](#step-5-jellyfin-미디어-서버-lxc-구축-및-igpu-트랜스코딩-선택)
+5. [Step 5. Proxmox Native LXC 컨테이너 구축 (AdGuard, Immich, Jellyfin, Dev Web)](#step-5-proxmox-native-lxc-컨테이너-구축-intel-530-ssd-고속-구동)
 6. [Step 6. 공유기 & 외부 접근 세팅 (내부 구축 완결 후 나중에)](#step-6-공유기--외부-접근-세팅-나중에-진행)
 
 ---
@@ -159,45 +158,81 @@ qm set 101 -sata4 /dev/disk/by-id/ata-WDC_WD40EFRX-ZZZZZZZZ
 
 ---
 
-## Step 5. Jellyfin 미디어 서버 LXC 구축 및 iGPU 트랜스코딩 (선택)
+## Step 5. Proxmox Native LXC 컨테이너 구축 (Intel 530 SSD 고속 구동)
 
-헤놀로지 스토리지 조립이 완료된 후, Jellyfin용 LXC 컨테이너를 생성하여 헤놀로지 NFS 디스크를 연동합니다.
+헤놀로지는 최소한의 순수 NAS 스토리지(Samba/NFS)로만 가볍게 운용하고, 모든 상시 서비스는 **Proxmox Native LXC 컨테이너**로 Intel 530 SSD 위에서 구동합니다.
 
-### 5-1. Jellyfin LXC 컨테이너 생성 (ID: 105)
+### 5-1. AdGuard Home LXC (ID: 102 - 24/7 무소음 DNS 캐시)
 ```bash
-pct create 105 local:vztmpl/debian-12-standard_12.x_amd64.tar.zst \
-  --hostname jellyfin \
-  --cores 2 \
-  --memory 2048 \
-  --swap 512 \
+# 1. LXC 생성
+pct create 102 local:vztmpl/debian-12-standard_12.x_amd64.tar.zst \
+  --hostname adguard \
+  --cores 1 --memory 512 --swap 256 \
   --net0 name=eth0,bridge=vmbr0,ip=dhcp \
-  --unprivileged 1 \
-  --features nesting=1
+  --unprivileged 1 --features nesting=1
+
+# 2. 설치 및 실행
+pct start 102
+pct enter 102
+curl -s -S -L https://raw.githubusercontent.com/AdguardTeam/AdGuardHome/master/scripts/install.sh | sh
+# 웹 UI: http://<AdGuard_IP>:3000 접속 후 초기 설정
 ```
 
-### 5-2. 미디어 디스크 연동 (헤놀로지 NFS 공유 마운트)
+### 5-2. Immich AI 사진 백업 LXC (ID: 103)
+- **특징**: 고속 PostgreSQL 및 벡터 검색 DB는 Intel 530 SSD에서 초고속 처리, 원본 사진/동영상은 4TB Gold NFS로 저장.
 ```bash
-pct enter 105
-apt update && apt install -y nfs-common
-mkdir -p /mnt/media
-echo "<헤놀로지_VM_IP>:/volume1/media /mnt/media nfs defaults,_netdev 0 0" >> /etc/fstab
+# 1. LXC 생성
+pct create 103 local:vztmpl/debian-12-standard_12.x_amd64.tar.zst \
+  --hostname immich \
+  --cores 2 --memory 4096 --swap 1024 \
+  --net0 name=eth0,bridge=vmbr0,ip=dhcp \
+  --unprivileged 1 --features nesting=1
+
+# 2. 4TB Gold 미디어 NFS 마운트
+pct start 103
+pct enter 103
+apt update && apt install -y nfs-common docker.io docker-compose
+mkdir -p /mnt/immich-photos
+echo "<헤놀로지_IP>:/volume2/immich-photos /mnt/immich-photos nfs defaults,_netdev 0 0" >> /etc/fstab
 mount -a
 ```
 
-### 5-3. Jellyfin 설치
+### 5-3. Jellyfin 미디어 서버 LXC (ID: 105 - iGPU 하드웨어 가속)
 ```bash
-# LXC 컨테이너 콘솔 내부에서 공식 설치 스크립트 실행
+# 1. LXC 생성
+pct create 105 local:vztmpl/debian-12-standard_12.x_amd64.tar.zst \
+  --hostname jellyfin \
+  --cores 2 --memory 2048 --swap 512 \
+  --net0 name=eth0,bridge=vmbr0,ip=dhcp \
+  --unprivileged 1 --features nesting=1
+
+# 2. 18TB White 미디어 라이브러리 NFS 마운트 & Jellyfin 설치
+pct start 105
+pct enter 105
+apt update && apt install -y nfs-common curl
+mkdir -p /mnt/media
+echo "<헤놀로지_IP>:/volume3/media /mnt/media nfs defaults,_netdev 0 0" >> /etc/fstab
+mount -a
 curl https://repo.jellyfin.org/install-debuntu.sh | bash
+
+# 3. Intel iGPU (UHD 630) 가속 패스스루 (/etc/pve/lxc/105.conf 하단 추가)
+# lxc.cgroup2.devices.allow: c 226:0 rwm
+# lxc.cgroup2.devices.allow: c 226:128 rwm
+# lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file
 ```
 
-### 5-4. Intel iGPU (UHD630) 하드웨어 가속 패스스루
-Proxmox 호스트의 `/etc/pve/lxc/105.conf` 하단에 추가:
-```ini
-lxc.cgroup2.devices.allow: c 226:0 rwm
-lxc.cgroup2.devices.allow: c 226:128 rwm
-lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file
+### 5-4. 개발용 웹 서버 LXC (ID: 106 - Spring Boot / Node.js / Nginx)
+```bash
+pct create 106 local:vztmpl/debian-12-standard_12.x_amd64.tar.zst \
+  --hostname dev-web \
+  --cores 2 --memory 2048 --swap 512 \
+  --net0 name=eth0,bridge=vmbr0,ip=dhcp \
+  --unprivileged 1 --features nesting=1
+
+pct start 106
+pct enter 106
+apt update && apt install -y git curl openjdk-17-jdk nodejs npm nginx
 ```
-- `pct restart 105` 실행 후 Jellyfin 웹 UI(`:8096`)에서 대시보드 ➔ 재생 ➔ 트랜스코딩 하드웨어 가속(Intel QuickSync / VAAPI) 활성화.
 
 ---
 
@@ -205,5 +240,5 @@ lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,creat
 
 모든 서비스가 로컬 내부 IP에서 완성된 후 진행합니다.
 
-1. **ASUS 공유기 고정 IP 예약**: Proxmox, 헤놀로지 VM, Jellyfin LXC MAC 주소에 고정 IP 부여.
+1. **ASUS 공유기 고정 IP 예약**: Proxmox 호스트, 헤놀로지 VM, 각 LXC 컨테이너 MAC 주소에 고정 IP 부여.
 2. **이중 NAT 정리 / 포트포워딩**: 외부 접속이 필요할 때 포트포워딩 및 DDNS/VPN 세팅.

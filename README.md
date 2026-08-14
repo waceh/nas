@@ -42,27 +42,21 @@ flowchart TB
     subgraph PVE["⚡ Proxmox VE 8.x (Hypervisor)"]
         VMBR0["vmbr0 (1GbE LAN - 192.168.50.x)"]:::pve
         
-        %% VM 101: Xpenology
-        subgraph VM101["📦 VM 101: 헤놀로지 Xpenology (DSM 7.2.1 / DS920+)"]
-            NAS_SPEC["2 vCPU / 4GB RAM<br/>Boot: Virtual rr.img (sata0)<br/>OS: 32GB vDisk (sata1)"]:::vm
-            
-            subgraph Docker["🐳 Docker Services (Container Manager)"]
-                D2["Immich (AI 사진 백업 - 4TB Gold 미디어 / 530 SSD DB)"]:::docker
-                D4["AdGuard Home (DNS 24/7 무소음 캐시 - 530 SSD)"]:::docker
-                D1["Nextcloud (외부 파일 공유/동기화)"]:::docker
-                D3["*arr Stack (Radarr / Sonarr)"]:::docker
-                D5["Vaultwarden (패스워드 관리)"]:::docker
-                
-                D2 ~~~ D4
-                D4 ~~~ D1
-                D1 ~~~ D3
-                D3 ~~~ D5
-            end
+        %% VM 101: Xpenology (Pure NAS Storage Core)
+        subgraph VM101["📦 VM 101: 헤놀로지 Xpenology (DSM 7.2.1 / Pure Storage Core)"]
+            NAS_SPEC["2 vCPU / 4GB RAM<br/>Boot: Virtual rr.img (sata0)<br/>OS: 32GB vDisk (sata1)<br/>Pure Samba / NFS File Services"]:::vm
         end
 
-        %% LXC 105: Jellyfin
-        subgraph LXC105["🎬 LXC 105: Jellyfin Media Server (Debian 12 CT)"]
-            JELLY_SPEC["2 Cores / 2GB RAM<br/>Intel 530 SSD 루트/캐시<br/>Jellyfin Media Server"]:::lxc
+        %% Proxmox Native LXC Containers
+        subgraph LXC_AREA["⚡ Proxmox Native LXC Containers (Intel 530 SSD 위 구동)"]
+            LXC102["🛡️ LXC 102: AdGuard Home<br/>(24/7 무소음 DNS 캐시 / 광고 차단)"]:::lxc
+            LXC103["📸 LXC 103: Immich Photo Server<br/>(PostgreSQL DB / 벡터 엔진 / 앱)"]:::lxc
+            LXC105["🎬 LXC 105: Jellyfin Media Server<br/>(iGPU QuickSync 트랜스코딩 가속)"]:::lxc
+            LXC106["💻 LXC 106: Dev Web Server<br/>(Spring Boot / Node.js / Nginx 개발 서버)"]:::lxc
+            
+            LXC102 ~~~ LXC103
+            LXC103 ~~~ LXC105
+            LXC105 ~~~ LXC106
         end
     end
 
@@ -71,26 +65,26 @@ flowchart TB
     RAM ~~~ SSD_530
     NIC ~~~ WD_Gold
 
-    %% Storage & Passthrough Links
+    %% Host OS & LXC Fast Root Storage
     SSD_710 -->|"Host OS & Boot"| VMBR0
-    SSD_530 -->|"LXC Root Disk & Cache"| JELLY_SPEC
-    SSD_530 -.->|"DB / App Cache"| D2
-    SSD_530 -.->|"24/7 DNS Cache"| D4
-    WD_Gold -->|"Gold Passthrough (qm set)"| NAS_SPEC
-    WD_White_8TB -->|"Cold Passthrough (qm set)"| NAS_SPEC
-    WD_White_18TB -->|"Cold Passthrough (qm set)"| NAS_SPEC
+    SSD_530 -->|"LXC Root Disks & DB Cache"| LXC102
+
+    %% Raw Disk Passthrough to Xpenology
+    WD_Gold -->|"Gold Passthrough (sata4)"| NAS_SPEC
+    WD_White_8TB -->|"Cold Passthrough (sata2)"| NAS_SPEC
+    WD_White_18TB -->|"Cold Passthrough (sata3)"| NAS_SPEC
     
-    %% Service Data Flows
-    NAS_SPEC -.->|"Photo & Video Storage (NFS)"| D2
-    NAS_SPEC -.->|"VM / Config Backup (NFS)"| PVE
+    %% High-Speed Internal NFS Storage Links
+    NAS_SPEC -.->|"Photo Storage (NFS)"| LXC103
+    NAS_SPEC -.->|"Media Library (NFS)"| LXC105
+    NAS_SPEC -.->|"VM Backup Vault (NFS)"| PVE
     
     %% Hardware Acceleration
-    CPU -.->|"iGPU Passthrough (/dev/dri/renderD128)"| JELLY_SPEC
+    CPU -.->|"iGPU Passthrough (/dev/dri/renderD128)"| LXC105
     
-    %% Network & Shared Storage
+    %% Network Links
     VMBR0 --- VM101
-    VMBR0 --- LXC105
-    NAS_SPEC -.->|"NFS Mount (/volume1/media)"| JELLY_SPEC
+    VMBR0 --- LXC_AREA
 ```
 
 ### 📋 주요 구성 요약
@@ -99,19 +93,22 @@ flowchart TB
 | :--- | :--- | :--- |
 | **물리 하드웨어** | CPU / RAM / Storage | Intel i5-9500T (6C/6T, UHD 630 iGPU), DDR4 16GB, Intel 710 SSD 100GB (MLC, Non-Disk), Intel 530 SSD 120GB (MLC, Non-Disk), WD Gold 4TB, WD White 8TB (`WD80EMAZ-00WJTA0`), WD White 18TB (`WUH721818ALE604`) |
 | **하이퍼바이저** | Proxmox VE 8.x | 베이스 OS (Intel 710 SSD 전용 구동), 가상 네트워크 브리지(`vmbr0`), 스토리지 & iGPU 패스스루 라우팅 |
-| **가상 머신 (VM)** | VM 101: 헤놀로지 (DSM 7.2.1) | 2 Core / 4GB RAM, HDD 3대 Raw 패스스루(Gold 4TB, White 8TB, White 18TB), Docker 서비스(Immich, AdGuard, Nextcloud, *arr, Vaultwarden) |
+| **가상 머신 (VM)** | **VM 101: 헤놀로지**<br/>*(Pure Storage Core)* | 2 Core / 4GB RAM, HDD 3대 Raw 패스스루(Gold 4TB, White 8TB, White 18TB), **순수 NAS 파일 공유 데몬(Samba / NFS) 전용** (도커 미구동으로 초경량/초안정성 유지) |
 | | *(선택 확장) Windows VM* | *(추후 필요 시에만 최소 리소스로 On-Demand 생성 예정)* |
-| **LXC 컨테이너** | LXC 105: Jellyfin Media Server | 2 Core / 2GB RAM (Debian 12), Intel 530 SSD 기반 루트/캐시, iGPU HW 트랜스코딩 가속, 헤놀로지 미디어 NFS 마운트 연동 |
+| **LXC 컨테이너**<br/>*(Intel 530 SSD 고속 구동)* | **LXC 102: AdGuard Home** | 1 Core / 512MB RAM, 24/7 무소음 DNS 쿼리 캐시 & 네트워크 광고 차단 |
+| | **LXC 103: Immich Server** | 2 Core / 4GB RAM, AI 사진 백업 백엔드 + PostgreSQL + Vector DB (미디어 저장은 헤놀로지 4TB Gold NFS 연동) |
+| | **LXC 105: Jellyfin Server** | 2 Core / 2GB RAM, Intel UHD 630 iGPU QuickSync HW 가속 미디어 서버 (미디어 라이브러리는 헤놀로지 18TB White NFS 연동) |
+| | **LXC 106: Dev Web Server** | 2 Core / 2GB RAM, Spring Boot / Node.js / Nginx 개인 개발 및 테스트 웹 서버 |
 
 ### 💾 물리적 디스크 용도 및 역할 분담 (4-Tier Storage)
 
 | 티어 (Tier) | 디스크 모델 | 연결 방식 / 마운트 위치 | 주요 용도 및 역할 |
 | :--- | :--- | :--- | :--- |
 | **`HOST OS 전용`<br/>*(Non-Disk)*** | **Intel 710 SSD 100GB**<br/>(MLC, Non-Disk) | Proxmox 호스트 직접 설치 | - **Proxmox VE Host OS 전용** 구동 (초고내구성 HET-MLC 기반 안정성 극대화)<br>- Host OS 외 일체 서비스 미설치 (무소음/무회전 Non-Disk) |
-| **`상시 고속 서비스`<br/>*(Non-Disk)*** | **Intel 530 SSD 120GB**<br/>(MLC, Non-Disk) | Proxmox 로컬 고속 스토리지 / VM | - **24/7 상시 무소음 서비스 전용** (무소음/무회전 Non-Disk, 대형 HDD 스핀다운 유지)<br>- **Jellyfin Media Server (LXC 105)** 루트 컨테이너 및 메타데이터/트랜스코딩 캐시<br>- **Immich** 고속 앱 실행 및 PostgreSQL/벡터 메타데이터 DB I/O 가속<br>- **AdGuard Home** 24/7 DNS 쿼리 로그 및 필터 캐시<br>- *(추후 필요 시 경량 VM 가상 디스크 스토리지 겸용)* |
-| **`사진 저장 & 백업 금고`** | **WD Gold 4TB**<br/>(7200RPM Enterprise) | VM 101 (헤놀로지) Raw 패스스루 (`by-id`) | - **Immich 원본 사진 및 고화질 동영상 저장소** (`/volume2/immich-photos` NFS 공유)<br>- **사용자 수동 GUI 파일 저장소** (`/volume2/personal-data` SMB / File Station)<br>- **핵심 백업 금고** (`/volume2/pve-backups` NFS): Proxmox VM 전체 스냅샷(`vzdump`), 헤놀로지 설정 백업 보관 |
-| **`COLD (스토리지)`** | **WD White 8TB**<br/>(`WD80EMAZ-00WJTA0`, CMR) | VM 101 (헤놀로지) Raw 패스스루 (`by-id`) | - **Cold Disk**: 헤놀로지 메인 스토리지 풀 및 개인 데이터 보관<br>- Nextcloud, Vaultwarden, *arr 등 일반 Docker 앱 영구 데이터 저장 |
-| **`COLD (미디어)`** | **WD White 18TB**<br/>(`WUH721818ALE604`, Ultrastar) | VM 101 (헤놀로지) Raw 패스스루 (`by-id`) | - **Cold Disk**: 대용량 영상/음악 미디어 라이브러리 및 콜드 아카이빙<br>- Jellyfin LXC에서 NFS 네트워크 마운트(`/volume1/media`)로 필요 시에만 호출 |
+| **`상시 고속 서비스`<br/>*(Non-Disk)*** | **Intel 530 SSD 120GB**<br/>(MLC, Non-Disk) | Proxmox 로컬 컨테이너 스토리지 | - **24/7 상시 무소음 LXC 컨테이너 전용** (무소음/무회전 Non-Disk, 대형 HDD 스핀다운 유지)<br>- **LXC 102 (AdGuard Home)** DNS 로그 및 필터 캐시<br>- **LXC 103 (Immich)** PostgreSQL DB & 벡터 검색 엔진 I/O 초고속 가속<br>- **LXC 105 (Jellyfin)** 루트 컨테이너 및 메타데이터/트랜스코딩 캐시<br>- **LXC 106 (Dev Web Server)** 개발용 웹 서버 및 앱 구동 환경 |
+| **`사진 저장 & 백업 금고`** | **WD Gold 4TB**<br/>(7200RPM Enterprise) | VM 101 (헤놀로지) Raw 패스스루 (`by-id`) | - **Immich 원본 사진 및 고화질 동영상 저장소** (`/volume2/immich-photos` NFS 공유)<br>- **사용자 수동 GUI 파일 저장소** (`/volume2/personal-data` SMB / File Station)<br>- **핵심 백업 금고** (`/volume2/pve-backups` NFS): Proxmox VM 전체 스냅샷(`vzdump`), 헤놀로지 설정 백업 보관 (🛡️ 500GB 할당량 + Keep Last 3) |
+| **`COLD (스토리지)`** | **WD White 8TB**<br/>(`WD80EMAZ-00WJTA0`, CMR) | VM 101 (헤놀로지) Raw 패스스루 (`by-id`) | - **Cold Disk**: 헤놀로지 메인 스토리지 풀 및 개인 데이터 보관 (`/volume1/data`) |
+| **`COLD (미디어)`** | **WD White 18TB**<br/>(`WUH721818ALE604`, Ultrastar) | VM 101 (헤놀로지) Raw 패스스루 (`by-id`) | - **Cold Disk**: 대용량 영상/음악 미디어 라이브러리 및 콜드 아카이빙 (`/volume3/media`)<br>- Jellyfin LXC에서 NFS 네트워크 마운트로 필요 시에만 호출 |
 
 ---
 

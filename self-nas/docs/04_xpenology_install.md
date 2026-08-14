@@ -154,4 +154,4 @@ qm rollback 101 before-dsm-install
 ```
 
 ## 다음 단계
-헤놀로지 VM 정상 동작 확인되면 → LXC 구성 (`lxc/jellyfin/README.md`)으로 진행. 현재는 Jellyfin 하나만 먼저 세팅, 나머지 도커 서비스(Nextcloud/Immich 등)는 헤놀로지 안정화 이후 순차 진행.
+헤놀로지 VM 정상 동작(Pure NAS 스토리지 및 NFS/SMB 공유) 확인되면 → Proxmox Native LXC 컨테이너 구성 (AdGuard, Immich, Jellyfin, Dev Web)으로 진행. (상세 절차: `POST_PROXMOX_SETUP_GUIDE.md` Step 5 참고)
