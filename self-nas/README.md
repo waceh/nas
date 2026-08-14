@@ -7,7 +7,9 @@
 ## 🖥️ 1. Hardware Specifications
 | 부품              | 모델명                                  | 비고                         |
 |:----------------|:-------------------------------------|:---------------------------|
-| **CPU**         | Intel Core i5-9500T (6 Cores)        | 저전력 고효율 (T모델)              |
+| **CPU**         | Intel Core i5-9500T (6 Cores)        | 저전력 고효율 (T모델, UHD 630 iGPU) |
+| **RAM**         | DDR4 8GB x 2 (16GB)                  | 듀얼 채널                    |
+| **Storage**     | Intel 710 SSD 100GB (MLC)<br/>Intel 530 SSD 120GB<br/>WD Gold 4TB (7200RPM)<br/>WD Red 8TB (CMR)<br/>WD White 18TB | 4-Tier 스토리지 (OS / 고속앱 / 작업+사진 / NAS+미디어) |
 | **CPU Cooler**  | TDP <= 200W, 120mm, PWM              | XUANFENG 가성비 CPU 쿨러        |
 | **Motherboard** | Server(NAS) Board Vpro C246          | 서버급 안정성, 확장성(SATAX8, LANX4) |
 | **Case**        | Fractal Design Node 304 (Black)      | 미니 ITX, 쿨링 최적화 구조          |
@@ -15,18 +17,19 @@
 | **Network**     | 10Gbps Server NIC (PCIe)             | 맥북 직결 초고속 네트워크(추후 필요시)     |
 
 ## 💾 2. Storage Architecture
-디스크의 성격과 속도에 따라 역할을 완벽히 분리한 3-Tier 스토리지 구성입니다.
+디스크의 성격과 속도에 따라 역할을 완벽히 분리한 4-Tier 스토리지 구성입니다.
 
-- **`OS` Intel 710 SSD (MLC 100GB):** Proxmox 베이스 시스템 및 가벼운 도커 앱
-- **`HOT` WD Gold 4TB (7200RPM):** 고성능 VM(Windows 11) 및 10Gbps 실시간 영상/음악 작업용 스크래치 디스크
-- **`COLD` WD Red 8TB + White 18TB:** 헤놀로지(NAS) 패스스루, 아카이빙 및 미디어 보관소
+- **`OS` Intel 710 SSD (MLC 100GB):** Proxmox 베이스 시스템 및 가상 부팅 디스크
+- **`FAST APP` Intel 530 SSD (120GB):** 고속 서비스 전용 — Plex LXC 루트/메타데이터, Immich PostgreSQL/벡터 DB, AdGuard Home DNS 캐시
+- **`HOT` WD Gold 4TB (7200RPM):** 고성능 VM(Windows 11) 작업 공간 및 Immich 대용량 사진/동영상 원본 저장소
+- **`COLD` WD Red 8TB + White 18TB:** 헤놀로지(NAS) 패스스루, 일반 데이터 및 대용량 미디어 아카이빙 보관소
 
 ## 🏗️ 3. Virtualization (Proxmox VE)
-| 가상 머신 (VM) | 할당 자원 | 스토리지 (위치) | 주요 역할 |
+| 가상 머신 (VM) / 컨테이너 | 할당 자원 | 스토리지 (위치) | 주요 역할 |
 | :--- | :--- | :--- | :--- |
-| **VM 1: 헤놀로지** | 2 Core / 4GB | WD Red & White (Passthrough) | 메인 NAS 환경 복구, Docker 컨테이너 호스트 |
-| **VM 2: Windows 11** | 4 Core / 8GB | WD Gold 4TB (가상 디스크) | RDP 원격 제어용, 관공서/금융 업무 및 고속 작업 공간 |
-| **LXC: Plex** | - | WD Red & White (Mount/Passthrough) | 별도 LXC 컨테이너로 구동하는 Plex 미디어 서버 |
+| **VM 101: 헤놀로지** | 2 Core / 4GB | WD Red 8TB & White 18TB (Passthrough) | 메인 NAS 환경 복구, Docker 컨테이너 호스트 |
+| **VM 102: Windows 11** | 4 Core / 8GB | WD Gold 4TB (가상 디스크) | RDP 원격 제어용, 관공서/금융 업무 및 고속 작업 공간 |
+| **LXC 105: Plex** | 2 Core / 2GB | Intel 530 SSD (컨테이너 디스크) + 헤놀로지 미디어 (NFS 마운트) | Intel iGPU 트랜스코딩 가속 기반 고속 Plex 미디어 서버 |
 
 ## 🐳 4. Services (Docker on Xpenology)
 헤놀로지 내부의 Container Manager를 통해 구동되는 핵심 서비스 목록입니다. (Plex는 별도 LXC로 분리 구동)
@@ -35,9 +38,9 @@
   * `*arr Stack (Radarr, Sonarr)`: 미디어 자동화 및 관리
 * **Cloud & Backup**
   * `Nextcloud`: 프로젝트 파일 외부 공유 및 10Gbps 동기화
-  * `Immich`: AI 기반 무제한 사진 백업 클라우드
+  * `Immich`: AI 기반 무제한 사진/동영상 백업 클라우드 (WD Gold 4TB 원본 저장 / Intel 530 SSD 메타데이터 DB 가속)
 * **Network & Security**
-  * `AdGuard Home`: 네트워크 단 광고 차단
+  * `AdGuard Home`: 네트워크 단 광고 차단 (Intel 530 SSD 고속 DNS 쿼리/로그 처리)
   * `Vaultwarden`: 프라이빗 비밀번호 관리 지갑
 
 ## 🌐 5. Network Topology & ISP Bridge Mode (LG U+)
