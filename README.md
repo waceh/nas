@@ -26,14 +26,14 @@ graph TD
     %% Hardware Layer
     subgraph HW["🖥️ Physical Hardware (Fractal Node 304 / Vpro C246)"]
         CPU["Intel Core i5-9500T (6C/6T)<br/>Intel UHD Graphics 630 (iGPU)"]:::hw
-        RAM["DDR4 RAM"]:::hw
+        RAM["DDR4 RAM 8GB X 2"]:::hw
         NIC["Onboard 1GbE LAN x4<br/>(10Gbps PCIe NIC 확장 예정)"]:::hw
         
         subgraph Disks["💾 Physical Storage"]
             SSD["Intel 710 SSD 100GB (MLC)<br/>Proxmox OS / Boot"]:::disk
             WD_Gold["WD Gold 4TB (7200RPM)<br/>VM High-Performance Storage"]:::disk
             WD_Red["WD Red 8TB (CMR)<br/>Storage Pool"]:::disk
-            WD_White["WD White 12TB<br/>Media & Archive"]:::disk
+            WD_White["WD White 18TB<br/>Media & Archive"]:::disk
         end
     end
 
@@ -78,52 +78,14 @@ graph TD
     VMBR0 --- VM101
     VMBR0 --- VM102
     VMBR0 --- LXC105
+    VM101 -.->|"NFS Mount (/volume1/media)"| LXC105
 ```
-
-<details open>
-<summary><b>📐 텍스트 다이어그램 (플러그인 없이 바로보기)</b></summary>
-
-```text
-========================================================================================
- 🖥️ Physical Hardware (Fractal Node 304 / Vpro C246 Motherboard)
-   ├─ CPU: Intel Core i5-9500T (6C/6T, Intel UHD Graphics 630 iGPU)
-   ├─ RAM: DDR4 RAM
-   ├─ NIC: Onboard 1GbE LAN x4 (향후 10Gbps PCIe NIC 확장)
-   └─ Storage Array:
-       ├─ [OS]   Intel 710 SSD 100GB (MLC)  ── Proxmox 베이스 시스템 및 가상 부팅
-       ├─ [HOT]  WD Gold 4TB (7200RPM)      ── 고속 VM(Windows 11) 가상 디스크
-       └─ [COLD] WD Red 8TB + White 12TB    ── 헤놀로지 패스스루 아카이빙/미디어
-========================================================================================
-                                   │
-                                   ▼
-========================================================================================
- ⚡ Proxmox VE 8.x Hypervisor (on Intel 710 SSD)
-   └─ Network: vmbr0 (1GbE LAN - 192.168.50.x)
- ──────────────────────────────────────────────────────────────────────────────────────
-   ┌─────────────────────────────────┐  ┌─────────────────────┐  ┌────────────────────┐
-   │ 📦 VM 101: 헤놀로지 (DS920+)    │  │ 💻 VM 102: Win 11   │  │ 🎬 LXC 105: Plex   │
-   │  - 2 vCPU / 4GB RAM             │  │  - 4 vCPU / 8GB RAM │  │  - 2 Cores / 2GB  │
-   │  - Boot: rr.img (sata0)         │  │  - WD Gold 4TB vDisk│  │  - Debian 12 CT   │
-   │  - OS: 32GB vDisk (sata1)       │  │  - RDP 원격 작업용  │  │  - UHD 630 iGPU    │
-   │  - Disks: Red 8TB + White 12TB  │  └─────────────────────┘  │    HW 가속 패스스루│
-   │    (by-id 패스스루)             │                           │  - NFS 미디어 연동 │
-   │                                 │                           └────────────────────┘
-   │  [🐳 Docker (Container Manager)]│                                      ▲
-   │   ├─ Nextcloud (외부 공유/동기화)│                                      │
-   │   ├─ Immich (AI 사진 백업)      │                                      │
-   │   ├─ *arr Stack (미디어 관리)   │──────────────────────────────────────┘
-   │   ├─ AdGuard Home (광고 차단)   │   NFS 공유 마운트 (/volume1/media)
-   │   └─ Vaultwarden (비밀번호 관리)│
-   └─────────────────────────────────┘
-========================================================================================
-```
-</details>
 
 ### 📋 주요 구성 요약
 
 | 레이어 | 구성 요소 | 상세 내용 |
 | :--- | :--- | :--- |
-| **물리 하드웨어** | CPU / RAM / Storage | Intel i5-9500T (6C/6T, UHD 630 iGPU), DDR4, Intel 710 SSD(100GB), WD Gold 4TB, WD Red 8TB, WD White 12TB |
+| **물리 하드웨어** | CPU / RAM / Storage | Intel i5-9500T (6C/6T, UHD 630 iGPU), DDR4, Intel 710 SSD(100GB), WD Gold 4TB, WD Red 8TB, WD White 18TB |
 | **하이퍼바이저** | Proxmox VE 8.x | 베이스 OS (SSD 구동), 가상 네트워크 브리지(`vmbr0`), 스토리지 & iGPU 패스스루 라우팅 |
 | **가상 머신 (VM)** | VM 101: 헤놀로지 (DSM 7.2.1) | 2 Core / 4GB RAM, HDD 패스스루, 파일 공유(SMB/NFS), Docker 서비스(Nextcloud, Immich, *arr, AdGuard, Vaultwarden) |
 | | VM 102: Windows 11 Pro | 4 Core / 8GB RAM, WD Gold 4TB 기반 고속 가상 디스크, RDP 원격 제어 및 작업 공간 |

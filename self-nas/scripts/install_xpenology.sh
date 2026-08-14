@@ -6,7 +6,7 @@
 # 이 스크립트는 MTK Studio (self-nas) 환경에 최적화된 헤놀로지 VM 자동 생성 스크립트입니다.
 # - 최신 RR (Redpill Recovery) / m-shell 부트로더 자동 다운로드
 # - QEMU 가상 USB 부팅 방식 적용 (SATA 슬롯 낭비 없음)
-# - 물리 디스크(WD Red 8TB, WD White 12TB 등) by-id 자동 탐색 및 패스스루
+# - 물리 디스크(WD Red 8TB, WD White 18TB 등) by-id 자동 탐색 및 패스스루
 # - 트러블슈팅용 가상 시리얼 포트(--serial0 socket) 내장
 # ==============================================================================
 

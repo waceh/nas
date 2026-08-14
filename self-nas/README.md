@@ -19,7 +19,7 @@
 
 - **`OS` Intel 710 SSD (MLC 100GB):** Proxmox 베이스 시스템 및 가벼운 도커 앱
 - **`HOT` WD Gold 4TB (7200RPM):** 고성능 VM(Windows 11) 및 10Gbps 실시간 영상/음악 작업용 스크래치 디스크
-- **`COLD` WD Red 8TB + White 12TB:** 헤놀로지(NAS) 패스스루, 아카이빙 및 미디어 보관소
+- **`COLD` WD Red 8TB + White 18TB:** 헤놀로지(NAS) 패스스루, 아카이빙 및 미디어 보관소
 
 ## 🏗️ 3. Virtualization (Proxmox VE)
 | 가상 머신 (VM) | 할당 자원 | 스토리지 (위치) | 주요 역할 |

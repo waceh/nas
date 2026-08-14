@@ -1,6 +1,6 @@
 # 디스크 패스스루 설정 가이드
 
-대상: WD Gold 4TB(HOT), WD Red 8TB + White 12TB(COLD) → 헤놀로지(Xpenology) VM
+대상: WD Gold 4TB(HOT), WD Red 8TB + White 18TB(COLD) → 헤놀로지(Xpenology) VM
 전제: `01_proxmox_install.md` 완료, BIOS에서 VT-d 활성화됨, HDD SATA 케이블 재결착 완료
 
 ## 0. 원칙
@@ -16,7 +16,7 @@ ls -la /dev/disk/by-id/ | grep -v part
 ```
 ata-WDC_WD40EFRX-...  -> ../../sdb   (WD Gold 4TB)
 ata-WDC_WD80EFAX-...  -> ../../sdc   (WD Red 8TB)
-ata-WDC_WD120EMFZ-... -> ../../sdd   (White 12TB)
+ata-WDC_WD180EDGZ-... -> ../../sdd   (White 18TB)
 ```
 모델명/용량으로 디스크 매칭. 헷갈리면 `hdparm -I /dev/sdX | grep Serial`로 시리얼 재확인 후 라벨/구매내역과 대조.
 
@@ -29,7 +29,7 @@ qm list
 디스크 추가 (예: VM ID 101, Red/White를 SATA 버스로 연결):
 ```bash
 qm set 101 -sata1 /dev/disk/by-id/ata-WDC_WD80EFAX-XXXXXXXX
-qm set 101 -sata2 /dev/disk/by-id/ata-WDC_WD120EMFZ-XXXXXXXX
+qm set 101 -sata2 /dev/disk/by-id/ata-WDC_WD180EDGZ-XXXXXXXX
 ```
 - Xpenology(헤놀로지)는 부트로더가 SATA 컨트롤러 인식에 민감 → **SATA 버스** 권장 (`-scsi`보다 호환성 좋음)
 - OS 부팅 디스크(가상 디스크, 부트로더용)는 건드리지 말고 기존 슬롯 유지

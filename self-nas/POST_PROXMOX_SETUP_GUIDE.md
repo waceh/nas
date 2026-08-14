@@ -52,7 +52,7 @@
 ---
 
 ## Step 1. Proxmox VE 설치
-- **상태**: HDD 2개(WD Red 8TB, White 12TB/18TB) SATA 케이블은 메인보드에서 **완전히 빼둔 상태** 유지.
+- **상태**: HDD 2개(WD Red 8TB, White 18TB) SATA 케이블은 메인보드에서 **완전히 빼둔 상태** 유지.
 - **작업**: Intel 710 SSD(100GB)에 Proxmox VE 8.x 설치 완료.
 - **접속**: 같은 네트워크 PC에서 웹 UI(`https://<Proxmox_IP>:8006`) 및 SSH 접속 확인.
 
@@ -119,7 +119,7 @@ DSM 기본 시스템이 SSD 상에 잘 구축되었으므로, 전원을 끄고 H
 
 ### 3-1. HDD 케이블 재결착 및 시스템 부팅
 1. Proxmox 및 헤놀로지 VM 종료 후 **컴퓨터 전원 OFF**.
-2. **WD Red 8TB** 및 **White 12TB/18TB** SATA 케이블을 메인보드에 결착.
+2. **WD Red 8TB** 및 **White 18TB** SATA 케이블을 메인보드에 결착.
 3. 컴퓨터 전원 ON → Proxmox 부팅.
 
 ### 3-2. Proxmox 터미널에서 디스크 고유 ID(`by-id`) 확인
@@ -128,15 +128,15 @@ ls -la /dev/disk/by-id/ | grep -v part
 ```
 *출력 예시:*
 - WD Red 8TB: `/dev/disk/by-id/ata-WDC_WD80EFAX-XXXXXXXX`
-- White 12TB/18TB: `/dev/disk/by-id/ata-WDC_WD120EMFZ-YYYYYYYY`
+- White 18TB: `/dev/disk/by-id/ata-WDC_WD180EDGZ-YYYYYYYY`
 
 ### 3-3. 헤놀로지 VM (ID: 101)에 디스크 패스스루 연결
 ```bash
 # 8TB HDD를 sata2로 패스스루
 qm set 101 -sata2 /dev/disk/by-id/ata-WDC_WD80EFAX-XXXXXXXX
 
-# 12TB/18TB HDD를 sata3로 패스스루
-qm set 101 -sata3 /dev/disk/by-id/ata-WDC_WD120EMFZ-YYYYYYYY
+# 18TB HDD를 sata3로 패스스루
+qm set 101 -sata3 /dev/disk/by-id/ata-WDC_WD180EDGZ-YYYYYYYY
 ```
 
 ---
