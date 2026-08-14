@@ -69,8 +69,11 @@ qm set 101 -boot order=sata0
 ## 4. 데이터 디스크 연결 (Cold 디스크 패스스루)
 `03_disk_passthrough.md`에서 준비한 by-id 경로 그대로 sata2, sata3에 연결:
 ```bash
-qm set 101 -sata2 /dev/disk/by-id/ata-WDC_WD80EFAX-XXXXXXXX
-qm set 101 -sata3 /dev/disk/by-id/ata-WDC_WD180EDGZ-XXXXXXXX
+# 8TB Cold HDD (WD80EMAZ)
+qm set 101 -sata2 /dev/disk/by-id/ata-WDC_WD80EMAZ-00WJTA0_XXXXXXXX
+
+# 18TB Cold HDD (WUH721818ALE604)
+qm set 101 -sata3 /dev/disk/by-id/ata-WDC_WUH721818ALE604_YYYYYYYY
 ```
 - 기존 DSM에서 쓰던 디스크 슬롯 순서와 최대한 맞춰주는 게 안전 (볼륨 인식 문제 예방)
 

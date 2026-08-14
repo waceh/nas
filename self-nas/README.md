@@ -9,7 +9,7 @@
 |:----------------|:-------------------------------------|:---------------------------|
 | **CPU**         | Intel Core i5-9500T (6 Cores)        | 저전력 고효율 (T모델, UHD 630 iGPU) |
 | **RAM**         | DDR4 8GB x 2 (16GB)                  | 듀얼 채널                    |
-| **Storage**     | Intel 710 SSD 100GB (MLC, Non-Disk)<br/>Intel 530 SSD 120GB (MLC, Non-Disk)<br/>WD Gold 4TB (7200RPM Enterprise)<br/>WD Red 8TB (CMR)<br/>WD White 18TB | 4-Tier 스토리지 (OS / 고속앱 / 작업+사진 / NAS+미디어) |
+| **Storage**     | Intel 710 SSD 100GB (MLC, Non-Disk)<br/>Intel 530 SSD 120GB (MLC, Non-Disk)<br/>WD Gold 4TB (7200RPM Enterprise)<br/>WD Red 8TB (`WD80EMAZ-00WJTA0`, CMR)<br/>WD White 18TB (`WUH721818ALE604`, Ultrastar) | 4-Tier 스토리지 (OS / 고속앱 / 작업+사진 / NAS+미디어) |
 | **CPU Cooler**  | TDP <= 200W, 120mm, PWM              | XUANFENG 가성비 CPU 쿨러        |
 | **Motherboard** | Server(NAS) Board Vpro C246          | 서버급 안정성, 확장성(SATAX8, LANX4) |
 | **Case**        | Fractal Design Node 304 (Black)      | 미니 ITX, 쿨링 최적화 구조          |
@@ -22,7 +22,7 @@
 - **`HOST OS 전용 (Non-Disk)` Intel 710 SSD (MLC 100GB, Non-Disk):** Proxmox VE 베이스 OS 및 부팅 전용 (안정성 최우선, 기타 서비스 미설치, 무소음/무회전)
 - **`상시 고속 서비스 (Non-Disk)` Intel 530 SSD (MLC 120GB, Non-Disk):** 24/7 상시 무소음 서비스 (AdGuard Home, Plex LXC 루트/캐시, Immich DB/앱 고속 I/O)
 - **`사진 저장 & 백업 금고` WD Gold 4TB (7200RPM Enterprise):** Immich 원본 사진/동영상 저장소, Proxmox VM 전체 백업 및 핵심 시스템 설정 백업 보관소
-- **`COLD 스토리지` WD Red 8TB + White 18TB:** 헤놀로지(NAS) Raw 패스스루 전용, 대용량 미디어 라이브러리 및 콜드 아카이빙 (필요 시에만 호출)
+- **`COLD 스토리지` WD Red 8TB (`WD80EMAZ`) + WD White 18TB (`WUH721818ALE604`):** 헤놀로지(NAS) Raw 패스스루 전용, 대용량 미디어 라이브러리 및 콜드 아카이빙 (필요 시에만 호출)
 
 ## 🏗️ 3. Virtualization (Proxmox VE)
 | 가상 머신 (VM) / 컨테이너 | 할당 자원 | 스토리지 (위치) | 주요 역할 |

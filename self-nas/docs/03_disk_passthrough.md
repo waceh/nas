@@ -15,9 +15,9 @@ ls -la /dev/disk/by-id/ | grep -v part
 ```
 출력 예시:
 ```
-ata-WDC_WD80EFAX-...  -> ../../sdb   (WD Red 8TB - Cold Storage)
-ata-WDC_WD180EDGZ-... -> ../../sdc   (White 18TB - Cold Media)
-ata-WDC_WD40EFRX-...  -> ../../sdd   (WD Gold 4TB - Backup & Photos)
+ata-WDC_WD80EMAZ-00WJTA0_... -> ../../sdb   (WD Red 8TB - Cold Storage)
+ata-WDC_WUH721818ALE604_...  -> ../../sdc   (White 18TB - Cold Media)
+ata-WDC_WD40EFRX-...         -> ../../sdd   (WD Gold 4TB - Backup & Photos)
 ```
 모델명/용량으로 디스크 매칭. 헷갈리면 `hdparm -I /dev/sdX | grep Serial`로 시리얼 재확인 후 라벨/구매내역과 대조.
 
@@ -29,11 +29,11 @@ qm list
 
 Cold 디스크 2개 추가 (예: VM ID 101, Red/White를 SATA 버스로 연결):
 ```bash
-# 8TB Cold HDD를 sata2로 패스스루
-qm set 101 -sata2 /dev/disk/by-id/ata-WDC_WD80EFAX-XXXXXXXX
+# 8TB Cold HDD (WD80EMAZ)를 sata2로 패스스루
+qm set 101 -sata2 /dev/disk/by-id/ata-WDC_WD80EMAZ-00WJTA0_XXXXXXXX
 
-# 18TB Cold HDD를 sata3로 패스스루
-qm set 101 -sata3 /dev/disk/by-id/ata-WDC_WD180EDGZ-XXXXXXXX
+# 18TB Cold HDD (WUH721818ALE604)를 sata3로 패스스루
+qm set 101 -sata3 /dev/disk/by-id/ata-WDC_WUH721818ALE604_YYYYYYYY
 ```
 - Xpenology(헤놀로지)는 부트로더가 SATA 컨트롤러 인식에 민감 → **SATA 버스** 권장 (`-scsi`보다 호환성 좋음)
 - `sata0`(가상 부트로더 `rr.img`), `sata1`(DSM 32GB OS 가상디스크)은 그대로 유지하고 추가 슬롯에 패스스루
