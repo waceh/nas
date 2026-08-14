@@ -21,8 +21,8 @@
 
 - **`HOST OS 전용 (Non-Disk)` Intel 710 SSD (MLC 100GB, Non-Disk):** Proxmox VE 베이스 OS 및 부팅 전용 (안정성 최우선, 기타 서비스 미설치, 무소음/무회전)
 - **`상시 고속 서비스 (Non-Disk)` Intel 530 SSD (MLC 120GB, Non-Disk):** 24/7 상시 무소음 서비스 (AdGuard Home, Jellyfin LXC 루트/캐시, Immich DB/앱 고속 I/O)
-- **`사진 저장 & 백업 금고` WD Gold 4TB (7200RPM Enterprise):** 헤놀로지 Raw 패스스루(`sata4`), Immich 원본 미디어, 사용자 수동 GUI 저장, Proxmox VM 전체 백업 금고
-- **`COLD 스토리지` WD White 8TB (`WD80EMAZ`) + WD White 18TB (`WUH721818ALE604`):** 헤놀로지 Raw 패스스루(`sata2`, `sata3`), 대용량 미디어 라이브러리 및 콜드 아카이빙 (필요 시에만 호출)
+- **`미디어 & 백업 스토리지` WD Gold 4TB (7200RPM Enterprise):** 헤놀로지 Raw 패스스루(`sata4`), Immich 사진 & Jellyfin 미디어 원본 저장, 사용자 수동 GUI 저장, Proxmox VM 전체 백업 금고
+- **`COLD 스토리지` WD White 8TB (`WD80EMAZ`) + WD White 18TB (`WUH721818ALE604`):** 헤놀로지 Raw 패스스루(`sata2`, `sata3`), 순수 개인 데이터 보관 및 대용량 콜드 아카이빙 (필요 시에만 호출)
 
 ## 🏗️ 3. Virtualization (Proxmox VE)
 | 가상 머신 (VM) / 컨테이너 | 할당 자원 | 스토리지 (위치) | 주요 역할 |
@@ -30,7 +30,7 @@
 | **VM 101: 헤놀로지**<br/>*(Pure Storage Core)* | 2 Core / 4GB | WD Gold 4TB, WD White 8TB, WD White 18TB (Raw Passthrough) | **순수 NAS 스토리지 코어** (Samba / NFS 파일 공유 데몬 전용, 도커 미구동으로 초경량 유지) |
 | **LXC 102: AdGuard Home** | 1 Core / 512MB | Intel 530 SSD (MLC, Non-Disk) | 24/7 상시 무소음 DNS 쿼리 캐시 & 네트워크 광고 차단 |
 | **LXC 103: Immich Server** | 2 Core / 4GB | Intel 530 SSD (DB/앱) + 헤놀로지 4TB Gold (NFS 원본 저장) | AI 기반 사진 백업 백엔드 + PostgreSQL + Vector Search DB |
-| **LXC 105: Jellyfin Server** | 2 Core / 2GB | Intel 530 SSD (루트/캐시) + 헤놀로지 18TB White (NFS 미디어) | Intel UHD 630 iGPU QuickSync HW 트랜스코딩 미디어 스트리밍 |
+| **LXC 105: Jellyfin Server** | 2 Core / 2GB | Intel 530 SSD (루트/캐시) + 헤놀로지 4TB Gold (NFS 미디어 저장) | Intel UHD 630 iGPU QuickSync HW 트랜스코딩 미디어 스트리밍 |
 | **LXC 106: Dev Web Server** | 2 Core / 2GB | Intel 530 SSD (MLC, Non-Disk) | Spring Boot / Node.js / Nginx 개인 프로젝트 개발 & 테스트 웹 서버 |
 | *(선택 확장) Windows VM* | *2~4 Core / 4GB* | *Intel 530 SSD or WD Gold 4TB* | *추후 필요 시에만 최소 리소스로 On-Demand 생성 예정* |
 
@@ -39,7 +39,7 @@
 
 * **DNS & Network Security**: `LXC 102 (AdGuard Home)` — 24/7 무소음 DNS 필터링/캐시
 * **AI Photo Cloud**: `LXC 103 (Immich)` — 초고속 PostgreSQL/벡터 DB는 SSD에서 구동, 대용량 원본 사진은 4TB Gold NFS로 저장
-* **Media Streaming**: `LXC 105 (Jellyfin)` — iGPU 하드웨어 가속, 18TB White NFS 미디어 라이브러리 연동
+* **Media Streaming**: `LXC 105 (Jellyfin)` — iGPU 하드웨어 가속, 4TB Gold NFS 미디어 라이브러리 연동
 * **Development Web Server**: `LXC 106 (Dev Web)` — 개인 웹 애플리케이션 개발/배포 환경
 
 ## 🌐 5. Network Topology & ISP Bridge Mode (LG U+)
@@ -82,6 +82,6 @@ LG U+ 공유기와 ASUS 공유기 사이 **이중 NAT** 상태. 포트포워딩/
 - [ ] 9. Intel 530 SSD 위에 Proxmox Native LXC 컨테이너 순차 구축:
   - [ ] 9-1. `LXC 102 (AdGuard Home)` DNS 캐시 구축
   - [ ] 9-2. `LXC 103 (Immich Photo Server)` 구축 및 4TB Gold NFS 연동
-  - [ ] 9-3. `LXC 105 (Jellyfin Media Server)` 구축 및 iGPU 트랜스코딩 가속 → [`lxc/jellyfin/README.md`](lxc/jellyfin/README.md)
+  - [ ] 9-3. `LXC 105 (Jellyfin Media Server)` 구축 및 4TB Gold NFS 연동 (iGPU 트랜스코딩 가속) → [`lxc/jellyfin/README.md`](lxc/jellyfin/README.md)
   - [ ] 9-4. `LXC 106 (Dev Web Server)` Spring Boot / Node.js 개발 서버 구축
 - [ ] 10. (선택 확장) Windows VM 필요 시 Intel 530 SSD or WD Gold에 On-Demand 생성

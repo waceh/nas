@@ -206,12 +206,12 @@ pct create 105 local:vztmpl/debian-12-standard_12.x_amd64.tar.zst \
   --net0 name=eth0,bridge=vmbr0,ip=dhcp \
   --unprivileged 1 --features nesting=1
 
-# 2. 18TB White 미디어 라이브러리 NFS 마운트 & Jellyfin 설치
+# 2. 4TB Gold 미디어 라이브러리 NFS 마운트 & Jellyfin 설치
 pct start 105
 pct enter 105
 apt update && apt install -y nfs-common curl
 mkdir -p /mnt/media
-echo "<헤놀로지_IP>:/volume3/media /mnt/media nfs defaults,_netdev 0 0" >> /etc/fstab
+echo "<헤놀로지_IP>:/volume2/media /mnt/media nfs defaults,_netdev 0 0" >> /etc/fstab
 mount -a
 curl https://repo.jellyfin.org/install-debuntu.sh | bash
 

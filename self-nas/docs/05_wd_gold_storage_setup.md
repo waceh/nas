@@ -9,13 +9,14 @@
 ```
 💾 WD Gold 4TB (헤놀로지 sata4 패스스루 ➔ Volume 2 Btrfs / 실 사용 약 3.6TB)
  ├── 📁 /volume2/immich-photos  (NFS) ➔ Immich 원본 사진/동영상 저장소 (할당량: 무제한 동적 공유)
+ ├── 📁 /volume2/media          (NFS) ➔ Jellyfin 미디어 라이브러리 저장소 (할당량: 무제한 동적 공유)
  ├── 📁 /volume2/personal-data  (SMB) ➔ 사용자 수동 저장 (Mac Finder / Win 탐색기 / File Station)
  └── 📁 /volume2/pve-backups    (NFS) ➔ Proxmox VM 백업 금고 (🛡️ 할당량: 500GB 제한 + Keep Last 3)
 ```
 
 ### 💡 용량 공유 원리: 유동적 공간 공유 (Dynamic Space Sharing)
 - 볼륨 2(4TB) 안의 모든 폴더는 기본적으로 **전체 빈 공간을 유동적으로 함께 공유**해서 씁니다.
-- 단, 백업 파일(`pve-backups`)이 무한정 증식하여 디스크를 꽉 채우고 Immich 사진 업로드가 중단되는 사고를 방지하기 위해 **2중 안전장치(Quota + Retention)**를 구성합니다.
+- 단, 백업 파일(`pve-backups`)이 무한정 증식하여 디스크를 꽉 채우고 Immich 사진 및 Jellyfin 미디어 업로드가 중단되는 사고를 방지하기 위해 **2중 안전장치(Quota + Retention)**를 구성합니다.
 
 ---
 
@@ -69,9 +70,9 @@ qm config 101
 
 ---
 
-## 4단계. 4TB 볼륨 안에 3대 공유 폴더 생성 & 용량 할당량(Quota) 설정
+## 4단계. 4TB 볼륨 안에 4대 공유 폴더 생성 & 용량 할당량(Quota) 설정
 
-헤놀로지 DSM **`제어판 ➔ 공유 폴더 ➔ 생성`** 에서 용도별로 3개 폴더를 만듭니다:
+헤놀로지 DSM **`제어판 ➔ 공유 폴더 ➔ 생성`** 에서 용도별로 4개 폴더를 만듭니다:
 
 ### ① `immich-photos` (Immich 미디어 저장소)
 1. **위치**: 볼륨 2 (4TB)
@@ -82,17 +83,26 @@ qm config 101
    - **Squash**: `매핑 없음` (또는 `admin으로 모든 사용자 매핑`)
    - **비동기(Asynchronous)**: 활성화 체크
 
-### ② `personal-data` (수동 GUI 저장소)
+### ② `media` (Jellyfin 미디어 라이브러리 저장소)
+1. **위치**: 볼륨 2 (4TB)
+2. **할당량**: 제한 없음
+3. **NFS 권한 탭** ➔ **[생성]**:
+   - **호스트/IP**: Jellyfin LXC IP (예: `192.168.50.105` 또는 서브넷 `192.168.50.0/24`)
+   - **권한**: `읽기/쓰기` (또는 `읽기 전용`)
+   - **Squash**: `매핑 없음`
+   - **비동기**: 활성화 체크
+
+### ③ `personal-data` (수동 GUI 저장소)
 1. **위치**: 볼륨 2 (4TB)
 2. **할당량**: 제한 없음
 3. **권한 탭**: 사용자 계정에 `읽기/쓰기` 권한 부여 (일반 SMB 공유).
 
-### ③ `pve-backups` (Proxmox 백업 금고 & 🛡️ 용량 제한)
+### ④ `pve-backups` (Proxmox 백업 금고 & 🛡️ 용량 제한)
 1. **위치**: 볼륨 2 (4TB)
 2. **용량 상한선(Quota) 설정 (🛡️ 필수 안전장치)**:
    - 공유 폴더 생성/편집 창 ➔ **`고급`** 탭 이동
    - **[공유 폴더 할당량 활성화]** 체크 ➔ **`500` GB** (또는 `1000` GB) 입력.
-   - *효과: 백업 파일이 아무리 늘어나도 500GB를 넘을 수 없으므로 Immich 사진 저장용 3TB 공간이 영구 보장됩니다.*
+   - *효과: 백업 파일이 아무리 늘어나도 500GB를 넘을 수 없으므로 Immich/Jellyfin 미디어 공간이 영구 보장됩니다.*
 3. **NFS 권한 탭** ➔ **[생성]**:
    - **호스트/IP**: Proxmox 호스트 IP (예: `192.168.50.2`)
    - **권한**: `읽기/쓰기`
@@ -123,7 +133,7 @@ qm config 101
 - **Web GUI**: 브라우저로 DSM 접속 ➔ **`File Station`** 앱에서 마우스 드래그 & 드롭으로 업로드.
 
 ### 3. Immich 사진/동영상 원본 저장소 연동
-1. Immich 컨테이너(또는 LXC) 내부의 `/etc/fstab`에 NFS 자동 마운트 추가:
+1. Immich 컨테이너(또는 LXC 103) 내부의 `/etc/fstab`에 NFS 자동 마운트 추가:
    ```bash
    <헤놀로지_IP>:/volume2/immich-photos  /mnt/immich-photos  nfs  defaults,_netdev  0  0
    ```
@@ -135,6 +145,17 @@ qm config 101
    ```env
    UPLOAD_LOCATION=/mnt/immich-photos
    ```
+
+### 4. Jellyfin 미디어 라이브러리 연동
+1. Jellyfin LXC(105) 내부의 `/etc/fstab`에 NFS 자동 마운트 추가:
+   ```bash
+   <헤놀로지_IP>:/volume2/media  /mnt/media  nfs  defaults,_netdev  0  0
+   ```
+2. 마운트 적용:
+   ```bash
+   mount -a
+   ```
+3. Jellyfin 웹 UI(`:8096`) 접속 ➔ `대시보드` ➔ `라이브러리` ➔ 미디어 폴더를 `/mnt/media`로 등록.
 
 ---
 

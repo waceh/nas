@@ -1,9 +1,9 @@
 # 디스크 패스스루 설정 가이드
 
 대상: **HDD 3대 전체 → 헤놀로지(Xpenology) VM 101 Raw 패스스루**
+- **WD Gold 4TB** (`WD40EFRX`) → `sata4` (Immich 사진 & Jellyfin 미디어 / 수동 저장 / Proxmox 백업 금고)
 - **WD White 8TB** (`WD80EMAZ-00WJTA0`) → `sata2` (Cold 스토리지 풀)
-- **WD White 18TB** (`WUH721818ALE604`) → `sata3` (Cold 미디어 아카이브)
-- **WD Gold 4TB** (`WD40EFRX`) → `sata4` (Immich 원본 사진 / 수동 저장 / Proxmox 백업 금고)
+- **WD White 18TB** (`WUH721818ALE604`) → `sata3` (Cold 아카이브 풀)
 
 전제: `01_proxmox_install.md` 완료, BIOS에서 VT-d 활성화됨, HDD SATA 케이블 재결착 완료
 
@@ -47,7 +47,7 @@ qm set 101 -sata2 /dev/disk/by-id/ata-WDC_WD80EMAZ-00WJTA0_XXXXXXXX
 # 2. 18TB Cold 미디어 HDD 연결 (sata3)
 qm set 101 -sata3 /dev/disk/by-id/ata-WDC_WUH721818ALE604_YYYYYYYY
 
-# 3. 4TB Gold (Immich/수동저장/백업금고) HDD 연결 (sata4)
+# 3. 4TB Gold (Immich/Jellyfin/수동저장/백업금고) HDD 연결 (sata4)
 qm set 101 -sata4 /dev/disk/by-id/ata-WDC_WD40EFRX-ZZZZZZZZ
 ```
 
@@ -76,10 +76,10 @@ qm config 101
 헤놀로지가 3대 디스크를 모두 장악하고 있으므로, 다른 서비스들은 **헤놀로지의 초고속 내부 네트워크 공유(NFS/SMB)**를 통해 접근합니다:
 
 ### 4-1. Jellyfin LXC (미디어 재생)
-- **헤놀로지**: 18TB 볼륨 위의 `/volume3/media`에 NFS 권한 부여 (LXC IP 허용).
+- **헤놀로지**: WD Gold 4TB 볼륨 위의 `/volume2/media`에 NFS 권한 부여 (LXC IP 허용).
 - **Jellyfin LXC (`/etc/fstab`)**:
   ```bash
-  <헤놀로지_IP>:/volume3/media /mnt/media nfs defaults,_netdev 0 0
+  <헤놀로지_IP>:/volume2/media /mnt/media nfs defaults,_netdev 0 0
   ```
 
 ### 4-2. Immich (사진/동영상 원본 저장)
