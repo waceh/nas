@@ -1,14 +1,14 @@
 # 헤놀로지(Xpenology) VM 설치 가이드
 
 전제: `01_proxmox_install.md`, `02_network_setup.md`, `03_disk_passthrough.md` 완료
-대상 디스크: WD White 8TB + White 18TB (이미 by-id로 SATA 패스스루 설정됨)
+대상 디스크: WD Gold 4TB, WD White 8TB, WD White 18TB (by-id로 SATA 패스스루 설정)
 
 ## 0. 어디에 설치하나 — VM (LXC 아님)
 DSM은 자체 커널/부트로더가 통째로 필요해서 호스트 커널을 공유하는 LXC로는 못 돌림 → **반드시 별도 VM**으로 생성.
 LXC는 이후 Jellyfin 등 커널 공유해도 되는 가벼운 서비스용으로 따로 씀 (`lxc/jellyfin/README.md`).
 
 > ⚠️ **데이터 보호 및 디스크 분리/결착 절차**  
-> 1. Proxmox VE 설치 및 Xpenology 최초 VM/부트로더 구성 단계에서는 데이터 안전을 위해 **COLD 디스크(WD White 8TB, WD White 18TB)의 SATA 케이블을 분리해 둡니다.**  
+> 1. Proxmox VE 설치 및 Xpenology 최초 VM/부트로더 구성 단계에서는 데이터 안전을 위해 **HDD 3대(WD White 8TB, WD White 18TB, WD Gold 4TB)의 SATA 케이블을 분리해 둡니다.**  
 > 2. VM 및 부트로더 생성이 완료되면 시스템을 종료(`poweroff`)한 후 **SATA 케이블을 재결착**합니다.  
 > 3. Proxmox 재부팅 후 물리 디스크 패스스루를 연결합니다. (자동 설치 스크립트 실행 시 케이블이 연결되어 있으면 미사용 디스크가 자동 인식되며, 케이블 분리 상태에서 스크립트를 먼저 실행한 경우 케이블 결착 후 수동으로 `qm set 101 -sata1 ...` 연결하시면 됩니다.)
 
@@ -66,14 +66,17 @@ qm set 101 -boot order=sata0
 ```
 - 로더는 `sata0`에 부팅 디스크로 연결 (실제 시놀로지 부팅 USB 역할)
 
-## 4. 데이터 디스크 연결 (Cold 디스크 패스스루)
-`03_disk_passthrough.md`에서 준비한 by-id 경로 그대로 sata2, sata3에 연결:
+## 4. 데이터 디스크 연결 (HDD 3대 패스스루)
+`03_disk_passthrough.md` 및 `05_wd_gold_storage_setup.md`에서 준비한 by-id 경로 그대로 sata2, sata3, sata4에 연결:
 ```bash
-# 8TB Cold HDD (WD80EMAZ)
+# 1. 8TB Cold HDD (WD80EMAZ)
 qm set 101 -sata2 /dev/disk/by-id/ata-WDC_WD80EMAZ-00WJTA0_XXXXXXXX
 
-# 18TB Cold HDD (WUH721818ALE604)
+# 2. 18TB Cold HDD (WUH721818ALE604)
 qm set 101 -sata3 /dev/disk/by-id/ata-WDC_WUH721818ALE604_YYYYYYYY
+
+# 3. 4TB Gold HDD (Immich / 수동저장 / PVE 백업금고)
+qm set 101 -sata4 /dev/disk/by-id/ata-WDC_WD40EFRX-ZZZZZZZZ
 ```
 - 기존 DSM에서 쓰던 디스크 슬롯 순서와 최대한 맞춰주는 게 안전 (볼륨 인식 문제 예방)
 

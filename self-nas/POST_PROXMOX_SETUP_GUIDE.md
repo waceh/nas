@@ -131,15 +131,18 @@ ls -la /dev/disk/by-id/ | grep -v part
 - White 18TB (Cold): `/dev/disk/by-id/ata-WDC_WUH721818ALE604_YYYYYYYY`
 - WD Gold 4TB (Backup/Photo): `/dev/disk/by-id/ata-WDC_WD40EFRX-ZZZZZZZZ`
 
-### 3-3. 헤놀로지 VM (ID: 101)에 Cold 디스크 패스스루 연결
+### 3-3. 헤놀로지 VM (ID: 101)에 HDD 3대 디스크 패스스루 연결
 ```bash
-# 8TB Cold HDD (WD White / WD80EMAZ)를 sata2로 패스스루
+# 1. 8TB Cold HDD (WD White / WD80EMAZ)를 sata2로 패스스루
 qm set 101 -sata2 /dev/disk/by-id/ata-WDC_WD80EMAZ-00WJTA0_XXXXXXXX
 
-# 18TB Cold HDD (WD White / WUH721818ALE604)를 sata3로 패스스루
+# 2. 18TB Cold HDD (WD White / WUH721818ALE604)를 sata3로 패스스루
 qm set 101 -sata3 /dev/disk/by-id/ata-WDC_WUH721818ALE604_YYYYYYYY
+
+# 3. 4TB Gold HDD (Immich / 수동저장 / PVE 백업금고)를 sata4로 패스스루
+qm set 101 -sata4 /dev/disk/by-id/ata-WDC_WD40EFRX-ZZZZZZZZ
 ```
-*(💡 **WD Gold 4TB**는 헤놀로지에 패스스루하지 않고, Proxmox 호스트 레벨에서 포맷/마운트하여 **VM 백업 금고(`vzdump`)** 및 **Immich 사진/동영상 저장소**로 활용합니다.)*
+*(💡 상세한 4TB 디스크 볼륨 생성 및 Immich / Proxmox 백업 연동은 [`docs/05_wd_gold_storage_setup.md`](docs/05_wd_gold_storage_setup.md)를 참고하세요.)*
 
 ---
 
