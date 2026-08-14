@@ -237,8 +237,8 @@ declare -A MSG_ko=(
 # Return the current-language string for a key; fall back to English, then the key itself.
 t() {
     local -n _tbl="MSG_${LANG_CHOICE}"
-    if [[ -v _tbl[$1] ]]; then echo "${_tbl[$1]}"
-    elif [[ -v MSG_en[$1] ]]; then echo "${MSG_en[$1]}"
+    if [[ -n "${_tbl[$1]+x}" ]]; then echo "${_tbl[$1]}"
+    elif [[ -n "${MSG_en[$1]+x}" ]]; then echo "${MSG_en[$1]}"
     else echo "$1"; fi
 }
 # printf template: tf <key> [args...]

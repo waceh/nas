@@ -250,9 +250,9 @@ mongo:
 ## 📝 설치 가이드
 
 각 도구의 상세 설치 가이드는 다음을 참조하세요:
-- [Wiki.js 설치 가이드](MANAGEMENT_TOOLS_WIKIJS.md) (작성 예정)
-- [BookStack 설치 가이드](MANAGEMENT_TOOLS_BOOKSTACK.md) (작성 예정)
-- [Taiga 설치 가이드](MANAGEMENT_TOOLS_TAIGA.md) (작성 예정)
+- **Wiki.js 설치 가이드** (작성 예정)
+- **BookStack 설치 가이드** (작성 예정)
+- **Taiga 설치 가이드** (작성 예정)
 
 ---
 
