@@ -40,7 +40,7 @@ HDD 3대(WD White 8TB, WD White 18TB, WD Gold 4TB)는 설치 중 SATA 케이블 
 ### 2-2. 내장 그래픽(iGPU) 설정 (`Advanced` ➔ `Graphics Configuration`)
 
 - **Internal Graphics (iGPU)**: `Enabled` (또는 `Auto`)
-  - i5-9500T의 Intel UHD 630 내장 그래픽을 활성화합니다. Plex LXC의 QuickSync 하드웨어 트랜스코딩에 필수입니다.
+  - i5-9500T의 Intel UHD 630 내장 그래픽을 활성화합니다. Jellyfin LXC의 QuickSync 하드웨어 트랜스코딩에 필수입니다.
 - **DVMT Pre-Allocated**: `64MB` 또는 `128MB`
   - 내장 그래픽 비디오 메모리 기본 할당량을 64MB 이상으로 설정하여 그래픽 가속 안정성을 확보합니다.
 - **Primary Display**: `IGFX`

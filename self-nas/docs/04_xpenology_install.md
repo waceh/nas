@@ -5,7 +5,7 @@
 
 ## 0. 어디에 설치하나 — VM (LXC 아님)
 DSM은 자체 커널/부트로더가 통째로 필요해서 호스트 커널을 공유하는 LXC로는 못 돌림 → **반드시 별도 VM**으로 생성.
-LXC는 이후 Plex 등 커널 공유해도 되는 가벼운 서비스용으로 따로 씀 (`lxc/plex/README.md`).
+LXC는 이후 Jellyfin 등 커널 공유해도 되는 가벼운 서비스용으로 따로 씀 (`lxc/jellyfin/README.md`).
 
 > ⚠️ **데이터 보호 및 디스크 분리/결착 절차**  
 > 1. Proxmox VE 설치 및 Xpenology 최초 VM/부트로더 구성 단계에서는 데이터 안전을 위해 **COLD 디스크(WD White 8TB, WD White 18TB)의 SATA 케이블을 분리해 둡니다.**  
@@ -151,4 +151,4 @@ qm rollback 101 before-dsm-install
 ```
 
 ## 다음 단계
-헤놀로지 VM 정상 동작 확인되면 → LXC 구성 (`lxc/plex/README.md`)으로 진행. 현재는 Plex 하나만 먼저 세팅, 나머지 도커 서비스(Nextcloud/Immich 등)는 헤놀로지 안정화 이후 순차 진행.
+헤놀로지 VM 정상 동작 확인되면 → LXC 구성 (`lxc/jellyfin/README.md`)으로 진행. 현재는 Jellyfin 하나만 먼저 세팅, 나머지 도커 서비스(Nextcloud/Immich 등)는 헤놀로지 안정화 이후 순차 진행.

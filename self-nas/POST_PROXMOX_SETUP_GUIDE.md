@@ -1,6 +1,6 @@
 # 🚀 Proxmox 설치 이후 통합 구축 가이드 (Master Setup Guide)
 
-본 가이드는 Proxmox VE 설치(Step 3) 완료 후, **가상 부팅 디스크 개념부터 RR 부트로더 선택 이유, SSD 헤놀로지 선설치 후 HDD 디스크 패스스루 연결**, 그리고 Plex LXC 및 Docker 서비스 배포까지의 모든 과정을 한눈에 보고 따라 할 수 있도록 정리한 통합 마스터 문서입니다.
+본 가이드는 Proxmox VE 설치(Step 3) 완료 후, **가상 부팅 디스크 개념부터 RR 부트로더 선택 이유, SSD 헤놀로지 선설치 후 HDD 디스크 패스스루 연결**, 그리고 Jellyfin LXC 및 Docker 서비스 배포까지의 모든 과정을 한눈에 보고 따라 할 수 있도록 정리한 통합 마스터 문서입니다.
 
 ---
 
@@ -46,7 +46,7 @@
 2. [Step 2. 헤놀로지(Xpenology) VM 생성 및 DSM 기본 설치 (SSD 기반)](#step-2-헤놀로지-xpenology-vm-생성-및-dsm-기본-설치)
 3. [Step 3. HDD 케이블 재결착 및 디스크 패스스루 (qm set)](#step-3-hdd-케이블-재결착-및-디스크-패스스루)
 4. [Step 4. DSM 스토리지 관리자에서 HDD 볼륨 인식 & 마이그레이션](#step-4-dsm-스토리지-관리자에서-hdd-볼륨-인식--마이그레이션)
-5. [Step 5. Plex 미디어 서버 LXC 구축 및 iGPU 트랜스코딩 (선택)](#step-5-plex-미디어-서버-lxc-구축-및-igpu-트랜스코딩)
+5. [Step 5. Jellyfin 미디어 서버 LXC 구축 및 iGPU 트랜스코딩 (선택)](#step-5-jellyfin-미디어-서버-lxc-구축-및-igpu-트랜스코딩-선택)
 6. [Step 6. 공유기 & 외부 접근 세팅 (내부 구축 완결 후 나중에)](#step-6-공유기--외부-접근-세팅-나중에-진행)
 
 ---
@@ -156,14 +156,14 @@ qm set 101 -sata3 /dev/disk/by-id/ata-WDC_WUH721818ALE604_YYYYYYYY
 
 ---
 
-## Step 5. Plex 미디어 서버 LXC 구축 및 iGPU 트랜스코딩 (선택)
+## Step 5. Jellyfin 미디어 서버 LXC 구축 및 iGPU 트랜스코딩 (선택)
 
-헤놀로지 스토리지 조립이 완료된 후, Plex용 LXC 컨테이너를 생성하여 헤놀로지 NFS 디스크를 연동합니다.
+헤놀로지 스토리지 조립이 완료된 후, Jellyfin용 LXC 컨테이너를 생성하여 헤놀로지 NFS 디스크를 연동합니다.
 
-### 5-1. Plex LXC 컨테이너 생성 (ID: 105)
+### 5-1. Jellyfin LXC 컨테이너 생성 (ID: 105)
 ```bash
 pct create 105 local:vztmpl/debian-12-standard_12.x_amd64.tar.zst \
-  --hostname plex \
+  --hostname jellyfin \
   --cores 2 \
   --memory 2048 \
   --swap 512 \
@@ -181,14 +181,20 @@ echo "<헤놀로지_VM_IP>:/volume1/media /mnt/media nfs defaults,_netdev 0 0" >
 mount -a
 ```
 
-### 5-3. Intel iGPU (UHD630) 하드웨어 가속 패스스루
+### 5-3. Jellyfin 설치
+```bash
+# LXC 컨테이너 콘솔 내부에서 공식 설치 스크립트 실행
+curl https://repo.jellyfin.org/install-debuntu.sh | bash
+```
+
+### 5-4. Intel iGPU (UHD630) 하드웨어 가속 패스스루
 Proxmox 호스트의 `/etc/pve/lxc/105.conf` 하단에 추가:
 ```ini
 lxc.cgroup2.devices.allow: c 226:0 rwm
 lxc.cgroup2.devices.allow: c 226:128 rwm
 lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file
 ```
-- `pct restart 105` 실행 후 Plex 웹 UI(`:32400/web`)에서 트랜스코더 하드웨어 가속 체크.
+- `pct restart 105` 실행 후 Jellyfin 웹 UI(`:8096`)에서 대시보드 ➔ 재생 ➔ 트랜스코딩 하드웨어 가속(Intel QuickSync / VAAPI) 활성화.
 
 ---
 
@@ -196,5 +202,5 @@ lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,creat
 
 모든 서비스가 로컬 내부 IP에서 완성된 후 진행합니다.
 
-1. **ASUS 공유기 고정 IP 예약**: Proxmox, 헤놀로지 VM, Plex LXC MAC 주소에 고정 IP 부여.
+1. **ASUS 공유기 고정 IP 예약**: Proxmox, 헤놀로지 VM, Jellyfin LXC MAC 주소에 고정 IP 부여.
 2. **이중 NAT 정리 / 포트포워딩**: 외부 접속이 필요할 때 포트포워딩 및 DDNS/VPN 세팅.

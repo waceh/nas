@@ -55,12 +55,12 @@ qm config 101
 - 정상이면 RAID/볼륨 정보 그대로 유지된 상태로 마운트됨 (디스크 순서 바뀌어도 by-id라 문제없음)
 - 인식 안 되면: `qm config <id>`에서 버스 타입 확인 → SATA로 되어 있는지, 디스크 순서가 기존 DSM 구성과 어긋나지 않는지 점검
 
-## 4. Plex LXC에서 미디어 디스크 접근
+## 4. Jellyfin LXC에서 미디어 디스크 접근
 LXC는 VM과 달리 raw 블록 디바이스 패스스루 대신 **디렉터리 마운트(bind mount)** 방식 사용.
 
 방법 A) 헤놀로지 DSM이 이미 디스크를 점유 중이면 → **NFS/SMB 공유**로 접근
 ```bash
-# Plex LXC 컨테이너 안에서
+# Jellyfin LXC 컨테이너 안에서
 apt install -y nfs-common
 mkdir -p /mnt/media
 mount -t nfs <헤놀로지_VM_IP>:/volume1/media /mnt/media
