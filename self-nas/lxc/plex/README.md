@@ -24,7 +24,7 @@ pct create 105 local:vztmpl/debian-12-standard_12.x_amd64.tar.zst \
 - ASUS 공유기에서 이 LXC도 고정 IP 예약 권장 (`02_network_setup.md` 방식과 동일)
 
 ## 2. 미디어 디스크 접근
-`03_disk_passthrough.md`의 **방법 A(NFS/SMB)** 사용 — Red/White 디스크는 이미 헤놀로지 VM에 raw로 패스스루된 상태라 호스트/다른 LXC에서 직접 마운트 불가.
+`03_disk_passthrough.md`의 **방법 A(NFS/SMB)** 사용 — White 8TB/18TB 디스크는 이미 헤놀로지 VM에 raw로 패스스루된 상태라 호스트/다른 LXC에서 직접 마운트 불가.
 
 LXC 컨테이너 안에서:
 ```bash

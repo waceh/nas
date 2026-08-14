@@ -1,14 +1,14 @@
 # 헤놀로지(Xpenology) VM 설치 가이드
 
 전제: `01_proxmox_install.md`, `02_network_setup.md`, `03_disk_passthrough.md` 완료
-대상 디스크: WD Red 8TB + White 18TB (이미 by-id로 SATA 패스스루 설정됨)
+대상 디스크: WD White 8TB + White 18TB (이미 by-id로 SATA 패스스루 설정됨)
 
 ## 0. 어디에 설치하나 — VM (LXC 아님)
 DSM은 자체 커널/부트로더가 통째로 필요해서 호스트 커널을 공유하는 LXC로는 못 돌림 → **반드시 별도 VM**으로 생성.
 LXC는 이후 Plex 등 커널 공유해도 되는 가벼운 서비스용으로 따로 씀 (`lxc/plex/README.md`).
 
 > ⚠️ **데이터 보호 및 디스크 분리/결착 절차**  
-> 1. Proxmox VE 설치 및 Xpenology 최초 VM/부트로더 구성 단계에서는 데이터 안전을 위해 **COLD 디스크(WD Red 8TB, WD White 18TB)의 SATA 케이블을 분리해 둡니다.**  
+> 1. Proxmox VE 설치 및 Xpenology 최초 VM/부트로더 구성 단계에서는 데이터 안전을 위해 **COLD 디스크(WD White 8TB, WD White 18TB)의 SATA 케이블을 분리해 둡니다.**  
 > 2. VM 및 부트로더 생성이 완료되면 시스템을 종료(`poweroff`)한 후 **SATA 케이블을 재결착**합니다.  
 > 3. Proxmox 재부팅 후 물리 디스크 패스스루를 연결합니다. (자동 설치 스크립트 실행 시 케이블이 연결되어 있으면 미사용 디스크가 자동 인식되며, 케이블 분리 상태에서 스크립트를 먼저 실행한 경우 케이블 결착 후 수동으로 `qm set 101 -sata1 ...` 연결하시면 됩니다.)
 
@@ -34,8 +34,8 @@ LXC는 이후 Plex 등 커널 공유해도 되는 가벼운 서비스용으로 �
 > **3) 스크립트 완료 후 단계**:
 > 1. VM 101 시작 (`qm start 101`)
 > 2. 웹 브라우저에서 `http://<VM_IP>:7681` 접속 ➔ RR 로더 설정 (모델: `DS920+` 또는 `SA6400`, DSM: `DSM 7.2.2`)
-> 3. 설정 완료 후 호스트 종료 (`poweroff`) ➔ COLD 디스크(WD Red/White) SATA 케이블 재결착 ➔ 서버 부팅
-> 4. 디스크 패스스루 연결 (`qm set 101 -sata1 /dev/disk/by-id/ata-...`)
+> 3. 설정 완료 후 호스트 종료 (`poweroff`) ➔ COLD 디스크(WD White 8TB/18TB) SATA 케이블 재결착 ➔ 서버 부팅
+> 4. 디스크 패스스루 연결 (`qm set 101 -sata2 ...`)
 
 ## 1. 로더 준비 (ARPL / RR)
 - 구형 jun's loader는 최신 DSM 미지원 → **ARPL(Automated Redpill Loader)** 또는 후속 프로젝트 **RR(Redpill Recovery)** 사용 권장

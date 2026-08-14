@@ -52,7 +52,7 @@
 ---
 
 ## Step 1. Proxmox VE 설치
-- **상태**: HDD 3개(WD Red 8TB, White 18TB, Gold 4TB) SATA 케이블은 메인보드에서 **완전히 빼둔 상태** 유지 (Intel 710 Host OS SSD 및 Intel 530 SSD — 둘 다 MLC, Non-Disk만 연결).
+- **상태**: HDD 3개(WD White 8TB, White 18TB, Gold 4TB) SATA 케이블은 메인보드에서 **완전히 빼둔 상태** 유지 (Intel 710 Host OS SSD 및 Intel 530 SSD — 둘 다 MLC, Non-Disk만 연결).
 - **작업**: Intel 710 SSD(100GB MLC, Non-Disk)에 Proxmox VE 8.x 설치 완료 (Host OS 전용 구동).
 - **접속**: 같은 네트워크 PC에서 웹 UI(`https://<Proxmox_IP>:8006`) 및 SSH 접속 확인.
 
@@ -119,7 +119,7 @@ DSM 기본 시스템이 SSD 상에 잘 구축되었으므로, 전원을 끄고 H
 
 ### 3-1. HDD 케이블 재결착 및 시스템 부팅
 1. Proxmox 및 헤놀로지 VM 종료 후 **컴퓨터 전원 OFF**.
-2. **WD Red 8TB**, **White 18TB**, **WD Gold 4TB** SATA 케이블을 메인보드에 결착.
+2. **WD White 8TB**, **White 18TB**, **WD Gold 4TB** SATA 케이블을 메인보드에 결착.
 3. 컴퓨터 전원 ON → Proxmox 부팅.
 
 ### 3-2. Proxmox 터미널에서 디스크 고유 ID(`by-id`) 확인
@@ -127,16 +127,16 @@ DSM 기본 시스템이 SSD 상에 잘 구축되었으므로, 전원을 끄고 H
 ls -la /dev/disk/by-id/ | grep -v part
 ```
 *출력 예시:*
-- WD Red 8TB (Cold): `/dev/disk/by-id/ata-WDC_WD80EMAZ-00WJTA0_XXXXXXXX`
+- WD White 8TB (Cold): `/dev/disk/by-id/ata-WDC_WD80EMAZ-00WJTA0_XXXXXXXX`
 - White 18TB (Cold): `/dev/disk/by-id/ata-WDC_WUH721818ALE604_YYYYYYYY`
 - WD Gold 4TB (Backup/Photo): `/dev/disk/by-id/ata-WDC_WD40EFRX-ZZZZZZZZ`
 
 ### 3-3. 헤놀로지 VM (ID: 101)에 Cold 디스크 패스스루 연결
 ```bash
-# 8TB Cold HDD (WD80EMAZ)를 sata2로 패스스루
+# 8TB Cold HDD (WD White / WD80EMAZ)를 sata2로 패스스루
 qm set 101 -sata2 /dev/disk/by-id/ata-WDC_WD80EMAZ-00WJTA0_XXXXXXXX
 
-# 18TB Cold HDD (WUH721818ALE604)를 sata3로 패스스루
+# 18TB Cold HDD (WD White / WUH721818ALE604)를 sata3로 패스스루
 qm set 101 -sata3 /dev/disk/by-id/ata-WDC_WUH721818ALE604_YYYYYYYY
 ```
 *(💡 **WD Gold 4TB**는 헤놀로지에 패스스루하지 않고, Proxmox 호스트 레벨에서 포맷/마운트하여 **VM 백업 금고(`vzdump`)** 및 **Immich 사진/동영상 저장소**로 활용합니다.)*

@@ -1,6 +1,6 @@
 # 디스크 패스스루 설정 가이드
 
-대상: WD Red 8TB + White 18TB (COLD) → 헤놀로지(Xpenology) VM 101 Raw 패스스루  
+대상: WD White 8TB + White 18TB (COLD) → 헤놀로지(Xpenology) VM 101 Raw 패스스루  
 *(💡 **WD Gold 4TB**는 VM 패스스루가 아닌 Proxmox 호스트 레벨 스토리지로 마운트하여 **백업 금고 & Immich 원본 저장소**로 활용)*  
 전제: `01_proxmox_install.md` 완료, BIOS에서 VT-d 활성화됨, HDD SATA 케이블 재결착 완료
 
@@ -15,7 +15,7 @@ ls -la /dev/disk/by-id/ | grep -v part
 ```
 출력 예시:
 ```
-ata-WDC_WD80EMAZ-00WJTA0_... -> ../../sdb   (WD Red 8TB - Cold Storage)
+ata-WDC_WD80EMAZ-00WJTA0_... -> ../../sdb   (WD White 8TB - Cold Storage)
 ata-WDC_WUH721818ALE604_...  -> ../../sdc   (White 18TB - Cold Media)
 ata-WDC_WD40EFRX-...         -> ../../sdd   (WD Gold 4TB - Backup & Photos)
 ```
@@ -27,12 +27,12 @@ VM ID 확인:
 qm list
 ```
 
-Cold 디스크 2개 추가 (예: VM ID 101, Red/White를 SATA 버스로 연결):
+Cold 디스크 2개 추가 (예: VM ID 101, White 8TB/18TB를 SATA 버스로 연결):
 ```bash
-# 8TB Cold HDD (WD80EMAZ)를 sata2로 패스스루
+# 8TB Cold HDD (WD White / WD80EMAZ)를 sata2로 패스스루
 qm set 101 -sata2 /dev/disk/by-id/ata-WDC_WD80EMAZ-00WJTA0_XXXXXXXX
 
-# 18TB Cold HDD (WUH721818ALE604)를 sata3로 패스스루
+# 18TB Cold HDD (WD White / WUH721818ALE604)를 sata3로 패스스루
 qm set 101 -sata3 /dev/disk/by-id/ata-WDC_WUH721818ALE604_YYYYYYYY
 ```
 - Xpenology(헤놀로지)는 부트로더가 SATA 컨트롤러 인식에 민감 → **SATA 버스** 권장 (`-scsi`보다 호환성 좋음)

@@ -9,7 +9,7 @@
 |:----------------|:-------------------------------------|:---------------------------|
 | **CPU**         | Intel Core i5-9500T (6 Cores)        | 저전력 고효율 (T모델, UHD 630 iGPU) |
 | **RAM**         | DDR4 8GB x 2 (16GB)                  | 듀얼 채널                    |
-| **Storage**     | Intel 710 SSD 100GB (MLC, Non-Disk)<br/>Intel 530 SSD 120GB (MLC, Non-Disk)<br/>WD Gold 4TB (7200RPM Enterprise)<br/>WD Red 8TB (`WD80EMAZ-00WJTA0`, CMR)<br/>WD White 18TB (`WUH721818ALE604`, Ultrastar) | 4-Tier 스토리지 (OS / 고속앱 / 작업+사진 / NAS+미디어) |
+| **Storage**     | Intel 710 SSD 100GB (MLC, Non-Disk)<br/>Intel 530 SSD 120GB (MLC, Non-Disk)<br/>WD Gold 4TB (7200RPM Enterprise)<br/>WD White 8TB (`WD80EMAZ-00WJTA0`, CMR)<br/>WD White 18TB (`WUH721818ALE604`, Ultrastar) | 4-Tier 스토리지 (OS / 고속앱 / 작업+사진 / NAS+미디어) |
 | **CPU Cooler**  | TDP <= 200W, 120mm, PWM              | XUANFENG 가성비 CPU 쿨러        |
 | **Motherboard** | Server(NAS) Board Vpro C246          | 서버급 안정성, 확장성(SATAX8, LANX4) |
 | **Case**        | Fractal Design Node 304 (Black)      | 미니 ITX, 쿨링 최적화 구조          |
@@ -22,12 +22,12 @@
 - **`HOST OS 전용 (Non-Disk)` Intel 710 SSD (MLC 100GB, Non-Disk):** Proxmox VE 베이스 OS 및 부팅 전용 (안정성 최우선, 기타 서비스 미설치, 무소음/무회전)
 - **`상시 고속 서비스 (Non-Disk)` Intel 530 SSD (MLC 120GB, Non-Disk):** 24/7 상시 무소음 서비스 (AdGuard Home, Plex LXC 루트/캐시, Immich DB/앱 고속 I/O)
 - **`사진 저장 & 백업 금고` WD Gold 4TB (7200RPM Enterprise):** Immich 원본 사진/동영상 저장소, Proxmox VM 전체 백업 및 핵심 시스템 설정 백업 보관소
-- **`COLD 스토리지` WD Red 8TB (`WD80EMAZ`) + WD White 18TB (`WUH721818ALE604`):** 헤놀로지(NAS) Raw 패스스루 전용, 대용량 미디어 라이브러리 및 콜드 아카이빙 (필요 시에만 호출)
+- **`COLD 스토리지` WD White 8TB (`WD80EMAZ`) + WD White 18TB (`WUH721818ALE604`):** 헤놀로지(NAS) Raw 패스스루 전용, 대용량 미디어 라이브러리 및 콜드 아카이빙 (필요 시에만 호출)
 
 ## 🏗️ 3. Virtualization (Proxmox VE)
 | 가상 머신 (VM) / 컨테이너 | 할당 자원 | 스토리지 (위치) | 주요 역할 |
 | :--- | :--- | :--- | :--- |
-| **VM 101: 헤놀로지** | 2 Core / 4GB | WD Red 8TB & White 18TB (Cold Passthrough 전용) | 메인 NAS 환경 복구, Docker 컨테이너 호스트 |
+| **VM 101: 헤놀로지** | 2 Core / 4GB | WD White 8TB & White 18TB (Cold Passthrough 전용) | 메인 NAS 환경 복구, Docker 컨테이너 호스트 |
 | **LXC 105: Plex** | 2 Core / 2GB | Intel 530 SSD (컨테이너 루트/캐시) + 헤놀로지 미디어 (NFS 마운트) | Intel iGPU 트랜스코딩 가속 기반 고속 Plex 미디어 서버 |
 | *(선택 확장) Windows VM* | *2~4 Core / 4GB* | *Intel 530 SSD or WD Gold 4TB* | *추후 필요 시에만 최소 리소스로 On-Demand 생성 예정* |
 
@@ -73,12 +73,12 @@ LG U+ 공유기와 ASUS 공유기 사이 **이중 NAT** 상태. 포트포워딩/
 
 ## ⚙️ 6. Build & Setup Checklist (빌드 순서)
 - [ ] 1. 모든 하드웨어 1차 가조립 (Node 304 전면->후면 쿨링 터널 확인)
-- [ ] 2. 하드디스크(Red 8TB, White 18TB, Gold 4TB) SATA 케이블 메인보드에서 분리해 두기 (OS 설치 시 데이터 보호)
+- [ ] 2. 하드디스크(White 8TB, White 18TB, Gold 4TB) SATA 케이블 메인보드에서 분리해 두기 (OS 설치 시 데이터 보호)
 - [ ] 3. Intel 710 SSD에 Proxmox VE 설치 (Host OS 전용) → [`01_proxmox_install.md`](docs/01_proxmox_install.md)
 - [ ] 4. Proxmox 네트워크 설정 (관리용 vmbr0 / 10Gbps 맥북 직결 vmbr1) → [`02_network_setup.md`](docs/02_network_setup.md)
 - [ ] 5. Intel 530 SSD(상시 고속 서비스) 및 WD Gold 4TB(사진/백업 금고) Proxmox 스토리지 등록
-- [ ] 6. 시스템 종료 후 Red, White, Gold SATA 케이블 메인보드에 결착
-- [ ] 7. Proxmox 부팅 후 터미널에서 헤놀로지 전용 Cold 디스크(Red 8TB, White 18TB) 패스스루 설정 → [`03_disk_passthrough.md`](docs/03_disk_passthrough.md)
+- [ ] 6. 시스템 종료 후 White 8TB, White 18TB, Gold 4TB SATA 케이블 메인보드에 결착
+- [ ] 7. Proxmox 부팅 후 터미널에서 헤놀로지 전용 Cold 디스크(White 8TB, White 18TB) 패스스루 설정 → [`03_disk_passthrough.md`](docs/03_disk_passthrough.md)
 - [ ] 8. 헤놀로지 VM(101) 설치 및 기존 Cold 데이터 인식 확인 → [`04_xpenology_install.md`](docs/04_xpenology_install.md)
 - [ ] 9. Intel 530 SSD 위에 Plex LXC(105) 컨테이너 생성 및 미디어 NFS 마운트 연동 → [`lxc/plex/README.md`](lxc/plex/README.md)
 - [ ] 10. 상시 도커 서비스 순차적 배포 (AdGuard Home, Immich DB/앱 고속화, *arr, Nextcloud 등)
