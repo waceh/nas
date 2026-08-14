@@ -4,14 +4,18 @@
 
 ---
 
-## 📋 구성 개요 및 구조
+## 📋 구성 개요 및 디스크 용량 관리 구조
 
 ```
-💾 WD Gold 4TB (헤놀로지 sata4 패스스루 ➔ Volume 2 - Btrfs)
- ├── 📁 /volume2/immich-photos  (NFS) ➔ Immich 원본 사진/동영상 저장소
+💾 WD Gold 4TB (헤놀로지 sata4 패스스루 ➔ Volume 2 Btrfs / 실 사용 약 3.6TB)
+ ├── 📁 /volume2/immich-photos  (NFS) ➔ Immich 원본 사진/동영상 저장소 (할당량: 무제한 동적 공유)
  ├── 📁 /volume2/personal-data  (SMB) ➔ 사용자 수동 저장 (Mac Finder / Win 탐색기 / File Station)
- └── 📁 /volume2/pve-backups    (NFS) ➔ Proxmox VE 전체 VM/LXC 스냅샷 백업 금고 (vzdump)
+ └── 📁 /volume2/pve-backups    (NFS) ➔ Proxmox VM 백업 금고 (🛡️ 할당량: 500GB 제한 + Keep Last 3)
 ```
+
+### 💡 용량 공유 원리: 유동적 공간 공유 (Dynamic Space Sharing)
+- 볼륨 2(4TB) 안의 모든 폴더는 기본적으로 **전체 빈 공간을 유동적으로 함께 공유**해서 씁니다.
+- 단, 백업 파일(`pve-backups`)이 무한정 증식하여 디스크를 꽉 채우고 Immich 사진 업로드가 중단되는 사고를 방지하기 위해 **2중 안전장치(Quota + Retention)**를 구성합니다.
 
 ---
 
@@ -65,13 +69,14 @@ qm config 101
 
 ---
 
-## 4단계. 4TB 볼륨 안에 3대 공유 폴더 생성 & 권한 설정
+## 4단계. 4TB 볼륨 안에 3대 공유 폴더 생성 & 용량 할당량(Quota) 설정
 
 헤놀로지 DSM **`제어판 ➔ 공유 폴더 ➔ 생성`** 에서 용도별로 3개 폴더를 만듭니다:
 
 ### ① `immich-photos` (Immich 미디어 저장소)
 1. **위치**: 볼륨 2 (4TB)
-2. **NFS 권한 탭** ➔ **[생성]**:
+2. **할당량**: 제한 없음 (빈 공간을 유동적으로 최대 사용)
+3. **NFS 권한 탭** ➔ **[생성]**:
    - **호스트/IP**: Proxmox 호스트 IP 또는 Immich LXC IP (또는 서브넷 `192.168.50.0/24`)
    - **권한**: `읽기/쓰기`
    - **Squash**: `매핑 없음` (또는 `admin으로 모든 사용자 매핑`)
@@ -79,11 +84,16 @@ qm config 101
 
 ### ② `personal-data` (수동 GUI 저장소)
 1. **위치**: 볼륨 2 (4TB)
-2. **권한 탭**: 사용자 계정에 `읽기/쓰기` 권한 부여 (일반 SMB 공유).
+2. **할당량**: 제한 없음
+3. **권한 탭**: 사용자 계정에 `읽기/쓰기` 권한 부여 (일반 SMB 공유).
 
-### ③ `pve-backups` (Proxmox 백업 금고)
+### ③ `pve-backups` (Proxmox 백업 금고 & 🛡️ 용량 제한)
 1. **위치**: 볼륨 2 (4TB)
-2. **NFS 권한 탭** ➔ **[생성]**:
+2. **용량 상한선(Quota) 설정 (🛡️ 필수 안전장치)**:
+   - 공유 폴더 생성/편집 창 ➔ **`고급`** 탭 이동
+   - **[공유 폴더 할당량 활성화]** 체크 ➔ **`500` GB** (또는 `1000` GB) 입력.
+   - *효과: 백업 파일이 아무리 늘어나도 500GB를 넘을 수 없으므로 Immich 사진 저장용 3TB 공간이 영구 보장됩니다.*
+3. **NFS 권한 탭** ➔ **[생성]**:
    - **호스트/IP**: Proxmox 호스트 IP (예: `192.168.50.2`)
    - **권한**: `읽기/쓰기`
    - **Squash**: `root를 admin으로 매핑` (또는 `매핑 없음`)
@@ -93,22 +103,24 @@ qm config 101
 
 ---
 
-## 5단계. 각 서비스 및 PC 연동 실전
+## 5단계. 각 서비스 및 Proxmox 백업 연동 실전
 
-### 1. PC / 맥북에서 수동 파일 저장 (외장하드처럼 사용)
-- **Mac Finder**: Finder 실행 ➔ `Cmd + K` ➔ `smb://<헤놀로지_IP>/personal-data` 연결.
-- **Windows**: 파일 탐색기 주소창 ➔ `\\<헤놀로지_IP>\personal-data` 연결.
-- **Web GUI**: 브라우저로 DSM 접속 ➔ **`File Station`** 앱에서 마우스 드래그 & 드롭으로 업로드.
-
-### 2. Proxmox VE 전체 백업 금고 등록 (`vzdump`)
+### 1. Proxmox VE 백업 스토리지 등록 & 자동 삭제(Retention) 설정 (🛡️ 필수)
 1. Proxmox 웹 관리자(`https://<Proxmox_IP>:8006`) 접속.
 2. 좌측 트리에서 **`Datacenter`** 클릭 ➔ **`Storage`** ➔ **`Add` ➔ `NFS`** 선택:
    - **ID**: `wd4tb-backup`
    - **Server**: `<헤놀로지_IP>` (예: `192.168.50.101`)
    - **Export**: `/volume2/pve-backups`
    - **Content**: **`VZDump backup file`** 선택
-3. **[Add]** 클릭 완료.
-4. 이제 `Datacenter` ➔ `Backup` 메뉴에서 일일/주간 VM 자동 스냅샷 백업 일정을 추가하면 4TB 엔터프라이즈 디스크에 안전하게 보관됩니다.
+3. **`Backup Retention` (보관 정책) 탭 설정 (핵심 ⭐)**:
+   - **`Keep Last`**: **`3`** 입력 (또는 `Keep Daily: 7`)
+   - *효과: 최신 3개의 백업만 유지하고 오래된 백업은 Proxmox가 자동 삭제하므로 실제 백업 점유 용량이 항상 100~200GB 수준으로 유지됩니다.*
+4. **[Add]** 클릭 완료.
+
+### 2. PC / 맥북에서 수동 파일 저장 (외장하드처럼 사용)
+- **Mac Finder**: Finder 실행 ➔ `Cmd + K` ➔ `smb://<헤놀로지_IP>/personal-data` 연결.
+- **Windows**: 파일 탐색기 주소창 ➔ `\\<헤놀로지_IP>\personal-data` 연결.
+- **Web GUI**: 브라우저로 DSM 접속 ➔ **`File Station`** 앱에서 마우스 드래그 & 드롭으로 업로드.
 
 ### 3. Immich 사진/동영상 원본 저장소 연동
 1. Immich 컨테이너(또는 LXC) 내부의 `/etc/fstab`에 NFS 자동 마운트 추가:
