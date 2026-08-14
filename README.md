@@ -66,19 +66,58 @@ graph TD
     end
 
     %% Storage & Passthrough Links
-    SSD -->|Host OS & Boot| PVE
-    WD_Gold -->|Virtual Disk| VM102
-    WD_Red & WD_White -->|Disk Passthrough (qm set by-id)| VM101
+    SSD -->|"Host OS & Boot"| PVE
+    WD_Gold -->|"Virtual Disk"| VM102
+    WD_Red -->|"Disk Passthrough (qm set by-id)"| VM101
+    WD_White -->|"Disk Passthrough (qm set by-id)"| VM101
     
     %% Hardware Acceleration
-    CPU -.->|iGPU Passthrough (/dev/dri/renderD128)| LXC105
+    CPU -.->|"iGPU Passthrough (/dev/dri/renderD128)"| LXC105
     
     %% Network & Shared Storage
     VMBR0 --- VM101
     VMBR0 --- VM102
     VMBR0 --- LXC105
-    VM101 -.->|NFS Mount (/volume1/media)| LXC105
 ```
+
+<details open>
+<summary><b>📐 텍스트 다이어그램 (플러그인 없이 바로보기)</b></summary>
+
+```text
+========================================================================================
+ 🖥️ Physical Hardware (Fractal Node 304 / Vpro C246 Motherboard)
+   ├─ CPU: Intel Core i5-9500T (6C/6T, Intel UHD Graphics 630 iGPU)
+   ├─ RAM: DDR4 RAM
+   ├─ NIC: Onboard 1GbE LAN x4 (향후 10Gbps PCIe NIC 확장)
+   └─ Storage Array:
+       ├─ [OS]   Intel 710 SSD 100GB (MLC)  ── Proxmox 베이스 시스템 및 가상 부팅
+       ├─ [HOT]  WD Gold 4TB (7200RPM)      ── 고속 VM(Windows 11) 가상 디스크
+       └─ [COLD] WD Red 8TB + White 12TB    ── 헤놀로지 패스스루 아카이빙/미디어
+========================================================================================
+                                   │
+                                   ▼
+========================================================================================
+ ⚡ Proxmox VE 8.x Hypervisor (on Intel 710 SSD)
+   └─ Network: vmbr0 (1GbE LAN - 192.168.50.x)
+ ──────────────────────────────────────────────────────────────────────────────────────
+   ┌─────────────────────────────────┐  ┌─────────────────────┐  ┌────────────────────┐
+   │ 📦 VM 101: 헤놀로지 (DS920+)    │  │ 💻 VM 102: Win 11   │  │ 🎬 LXC 105: Plex   │
+   │  - 2 vCPU / 4GB RAM             │  │  - 4 vCPU / 8GB RAM │  │  - 2 Cores / 2GB  │
+   │  - Boot: rr.img (sata0)         │  │  - WD Gold 4TB vDisk│  │  - Debian 12 CT   │
+   │  - OS: 32GB vDisk (sata1)       │  │  - RDP 원격 작업용  │  │  - UHD 630 iGPU    │
+   │  - Disks: Red 8TB + White 12TB  │  └─────────────────────┘  │    HW 가속 패스스루│
+   │    (by-id 패스스루)             │                           │  - NFS 미디어 연동 │
+   │                                 │                           └────────────────────┘
+   │  [🐳 Docker (Container Manager)]│                                      ▲
+   │   ├─ Nextcloud (외부 공유/동기화)│                                      │
+   │   ├─ Immich (AI 사진 백업)      │                                      │
+   │   ├─ *arr Stack (미디어 관리)   │──────────────────────────────────────┘
+   │   ├─ AdGuard Home (광고 차단)   │   NFS 공유 마운트 (/volume1/media)
+   │   └─ Vaultwarden (비밀번호 관리)│
+   └─────────────────────────────────┘
+========================================================================================
+```
+</details>
 
 ### 📋 주요 구성 요약
 
