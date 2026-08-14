@@ -41,6 +41,11 @@ flowchart TB
     subgraph PVE["⚡ Proxmox VE 8.x (Hypervisor)"]
         VMBR0["vmbr0 (1GbE LAN - 192.168.50.x)"]:::pve
         
+        %% VM 102: Windows 11
+        subgraph VM102["💻 VM 102: Windows 11 Pro"]
+            WIN_SPEC["4 vCPU / 8GB RAM<br/>RDP 원격 접속 / 금융·관공서 / 스크래치 작업"]:::vm
+        end
+
         %% VM 101: Xpenology
         subgraph VM101["📦 VM 101: 헤놀로지 Xpenology (DSM 7.2.1 / DS920+)"]
             NAS_SPEC["2 vCPU / 4GB RAM<br/>Boot: Virtual rr.img (sata0)<br/>OS: 32GB vDisk (sata1)"]:::vm
@@ -54,34 +59,31 @@ flowchart TB
             end
         end
 
-        %% VM 102: Windows 11
-        subgraph VM102["💻 VM 102: Windows 11 Pro"]
-            WIN_SPEC["4 vCPU / 8GB RAM<br/>RDP 원격 접속 / 금융·관공서 / 스크래치 작업"]:::vm
-        end
-
         %% LXC 105: Plex
         subgraph LXC105["🎬 LXC 105: Plex Media Server (Debian 12 CT)"]
             PLEX_SPEC["2 Cores / 2GB RAM<br/>Plex Media Server"]:::lxc
         end
     end
 
-    %% 상하 세로 배치 순서 강제
-    HW ~~~ PVE
+    %% 상하 세로 배치 제약
+    CPU ~~~ SSD
+    RAM ~~~ WD_Gold
+    NIC ~~~ WD_Red
 
     %% Storage & Passthrough Links
-    SSD -->|"Host OS & Boot"| PVE
-    WD_Gold -->|"Virtual Disk"| VM102
-    WD_Red -->|"Disk Passthrough (qm set by-id)"| VM101
-    WD_White -->|"Disk Passthrough (qm set by-id)"| VM101
+    SSD -->|"Host OS & Boot"| VMBR0
+    WD_Gold -->|"Virtual Disk"| WIN_SPEC
+    WD_Red -->|"Disk Passthrough (qm set by-id)"| NAS_SPEC
+    WD_White -->|"Disk Passthrough (qm set by-id)"| NAS_SPEC
     
     %% Hardware Acceleration
-    CPU -.->|"iGPU Passthrough (/dev/dri/renderD128)"| LXC105
+    CPU -.->|"iGPU Passthrough (/dev/dri/renderD128)"| PLEX_SPEC
     
     %% Network & Shared Storage
-    VMBR0 --- VM101
     VMBR0 --- VM102
+    VMBR0 --- VM101
     VMBR0 --- LXC105
-    VM101 -.->|"NFS Mount (/volume1/media)"| LXC105
+    NAS_SPEC -.->|"NFS Mount (/volume1/media)"| PLEX_SPEC
 ```
 
 ### 📋 주요 구성 요약
