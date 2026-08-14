@@ -73,12 +73,13 @@ LG U+ 공유기와 ASUS 공유기 사이 **이중 NAT** 상태. 포트포워딩/
 
 ## ⚙️ 6. Build & Setup Checklist (빌드 순서)
 - [ ] 1. 모든 하드웨어 1차 가조립 (Node 304 전면->후면 쿨링 터널 확인)
-- [ ] 2. 하드디스크(Red, White) SATA 케이블 메인보드에서 분리해 두기 (데이터 보호)
-- [ ] 3. Intel 710 SSD에 Proxmox VE 설치 → [`01_proxmox_install.md`](docs/01_proxmox_install.md)
+- [ ] 2. 하드디스크(Red 8TB, White 18TB, Gold 4TB) SATA 케이블 메인보드에서 분리해 두기 (OS 설치 시 데이터 보호)
+- [ ] 3. Intel 710 SSD에 Proxmox VE 설치 (Host OS 전용) → [`01_proxmox_install.md`](docs/01_proxmox_install.md)
 - [ ] 4. Proxmox 네트워크 설정 (관리용 vmbr0 / 10Gbps 맥북 직결 vmbr1) → [`02_network_setup.md`](docs/02_network_setup.md)
-- [ ] 5. WD Gold 4TB에 Windows 11 VM 구성 및 RDP 원격 테스트
-- [ ] 6. 시스템 종료 후 Red, White SATA 케이블 메인보드에 결착
-- [ ] 7. Proxmox 부팅 후 터미널에서 디스크 패스스루(Passthrough) 설정 → [`03_disk_passthrough.md`](docs/03_disk_passthrough.md)
-- [ ] 8. 헤놀로지 VM 설치 및 기존 데이터 인식 확인 → [`04_xpenology_install.md`](docs/04_xpenology_install.md)
-- [ ] 9. Plex LXC 컨테이너 생성 및 미디어 디스크 마운트 → [`lxc/plex/README.md`](lxc/plex/README.md)
-- [ ] 10. 도커 서비스 순차적 배포 (*arr -> Nextcloud 등)
+- [ ] 5. Intel 530 SSD(상시 고속 서비스) 및 WD Gold 4TB(사진/백업 금고) Proxmox 스토리지 등록
+- [ ] 6. 시스템 종료 후 Red, White, Gold SATA 케이블 메인보드에 결착
+- [ ] 7. Proxmox 부팅 후 터미널에서 헤놀로지 전용 Cold 디스크(Red 8TB, White 18TB) 패스스루 설정 → [`03_disk_passthrough.md`](docs/03_disk_passthrough.md)
+- [ ] 8. 헤놀로지 VM(101) 설치 및 기존 Cold 데이터 인식 확인 → [`04_xpenology_install.md`](docs/04_xpenology_install.md)
+- [ ] 9. Intel 530 SSD 위에 Plex LXC(105) 컨테이너 생성 및 미디어 NFS 마운트 연동 → [`lxc/plex/README.md`](lxc/plex/README.md)
+- [ ] 10. 상시 도커 서비스 순차적 배포 (AdGuard Home, Immich DB/앱 고속화, *arr, Nextcloud 등)
+- [ ] 11. (선택 확장) Windows VM 필요 시 Intel 530 SSD or WD Gold에 On-Demand 생성

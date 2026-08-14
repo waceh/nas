@@ -1,7 +1,7 @@
 # Proxmox VE 설치 가이드
 
-대상 하드웨어: Vpro C246 보드, Intel 710 SSD (100GB, MLC) → OS 디스크
-HDD(WD Gold/Red/White)는 설치 중 SATA 케이블 분리 상태 유지 (데이터 보호, `README.md` 체크리스트 2번 참고)
+대상 하드웨어: Vpro C246 보드, Intel 710 SSD (100GB, MLC) → Host OS 전용 디스크, Intel 530 SSD (120GB) → 상시 고속 서비스용
+HDD 3대(WD Red 8TB, WD White 18TB, WD Gold 4TB)는 설치 중 SATA 케이블 분리 상태 유지 (데이터 보호, `README.md` 체크리스트 2번 참고)
 
 ## 0. 준비물
 
