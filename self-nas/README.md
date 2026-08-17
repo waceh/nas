@@ -79,7 +79,7 @@ LG U+ 공유기와 ASUS 공유기 사이 **이중 NAT** 상태. 포트포워딩/
 - [ ] 6. 시스템 종료 후 White 8TB, White 18TB, Gold 4TB SATA 케이블 메인보드에 결착
 - [ ] 7. Proxmox 부팅 후 터미널에서 HDD 3대(White 8TB, White 18TB, Gold 4TB) 패스스루 설정 → [`03_disk_passthrough.md`](docs/03_disk_passthrough.md), [`05_wd_gold_storage_setup.md`](docs/05_wd_gold_storage_setup.md)
 - [ ] 8. 헤놀로지 VM(101) 부팅 및 순수 NAS 스토리지 풀(Samba/NFS) 구성 → [`04_xpenology_install.md`](docs/04_xpenology_install.md)
-- [ ] 9. Intel 530 SSD 위에 Proxmox Native LXC 컨테이너 순차 구축:
+- [ ] 9. Intel 530 SSD 위에 Proxmox Native LXC 컨테이너 순차 구축 → [아키텍처 및 상세 구축 가이드](docs/06_immich_jellyfin_architecture.md):
   - [ ] 9-1. `LXC 102 (AdGuard Home)` DNS 캐시 구축
   - [ ] 9-2. `LXC 103 (Immich Photo Server)` 구축 및 4TB Gold NFS 연동
   - [ ] 9-3. `LXC 105 (Jellyfin Media Server)` 구축 및 4TB Gold NFS 연동 (iGPU 트랜스코딩 가속) → [`lxc/jellyfin/README.md`](lxc/jellyfin/README.md)

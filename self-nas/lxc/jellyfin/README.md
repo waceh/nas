@@ -87,4 +87,4 @@ lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,creat
 - [ ] (선택) 하드웨어 트랜스코딩 동작 확인
 
 ## 다음 단계
-Jellyfin 안정화 후 나머지 도커 서비스(*arr Stack, Nextcloud, Immich, AdGuard Home, Vaultwarden)는 헤놀로지 VM 내부 Container Manager로 순차 배포 (`README.md` 체크리스트 참고).
+Immich 및 Jellyfin 전체 아키텍처 및 설정은 [`docs/06_immich_jellyfin_architecture.md`](../../docs/06_immich_jellyfin_architecture.md) 및 [`POST_PROXMOX_SETUP_GUIDE.md`](../../POST_PROXMOX_SETUP_GUIDE.md)를 참고하세요.

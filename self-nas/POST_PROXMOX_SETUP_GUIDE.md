@@ -160,6 +160,8 @@ qm set 101 -sata4 /dev/disk/by-id/ata-WDC_WD40EFRX-ZZZZZZZZ
 
 ## Step 5. Proxmox Native LXC 컨테이너 구축 (Intel 530 SSD 고속 구동)
 
+> 📘 **상세 아키텍처 및 Mermaid 구성도**: [`docs/06_immich_jellyfin_architecture.md`](docs/06_immich_jellyfin_architecture.md) 참고
+
 헤놀로지는 최소한의 순수 NAS 스토리지(Samba/NFS)로만 가볍게 운용하고, 모든 상시 서비스는 **Proxmox Native LXC 컨테이너**로 Intel 530 SSD 위에서 구동합니다.
 
 ### 5-1. AdGuard Home LXC (ID: 102 - 24/7 무소음 DNS 캐시)
