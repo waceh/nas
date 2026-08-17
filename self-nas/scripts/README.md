@@ -50,6 +50,6 @@ bash /Users/w/IdeaProjects/nas/self-nas/scripts/install_xpenology.sh
 
 ## ⚙️ 실행 전 필수 체크: 헤놀로지 NFS 공유 폴더 준비 (최초 1회)
 
-스크립트를 돌리기 전, **헤놀로지 DSM(`https://waceh.asuscomm.com:5001`)**에서 아래 2개 폴더가 생성되어 있어야 합니다:
+스크립트를 돌리기 전, **헤놀로지 DSM(`https://your-domain.asuscomm.com:5001` 또는 내부 IP)**에서 아래 2개 폴더가 생성되어 있어야 합니다:
 1. `photo` 폴더 생성 (볼륨 2 4TB) ➔ NFS 권한: `192.168.1.0/24` (읽기/쓰기, 비동기 ON)
 2. `video` 폴더 생성 (볼륨 2 4TB) ➔ NFS 권한: `192.168.1.0/24` (읽기/쓰기, 비동기 ON)
