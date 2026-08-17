@@ -181,46 +181,49 @@ curl -s -S -L https://raw.githubusercontent.com/AdguardTeam/AdGuardHome/master/s
 ```
 
 ### 5-2. Immich AI 사진 백업 LXC (ID: 103)
-- **특징**: 고속 PostgreSQL 및 벡터 검색 DB는 Intel 530 SSD에서 초고속 처리, 원본 사진/동영상은 4TB Gold NFS로 저장.
+- **특징**: 고속 PostgreSQL 및 벡터 검색 DB는 Intel 530 SSD에서 초고속 처리, 원본 사진/동영상은 4TB Gold NFS(`/volume2/photo`)로 저장 (Synology Photos와 원본 100% 동시 공유).
 ```bash
 # 1. LXC 생성
 pct create 103 local:vztmpl/debian-12-standard_12.x_amd64.tar.zst \
   --hostname immich \
   --cores 2 --memory 4096 --swap 1024 \
-  --net0 name=eth0,bridge=vmbr0,ip=dhcp \
-  --unprivileged 1 --features nesting=1
+  --net0 name=eth0,bridge=vmbr0,ip=192.168.1.103/24,gw=192.168.1.1 \
+  --unprivileged 1 --features nesting=1,keyctl=1
 
-# 2. 4TB Gold 미디어 NFS 마운트
+# 2. 4TB Gold photo NFS 마운트 & Immich 배포
 pct start 103
 pct enter 103
-apt update && apt install -y nfs-common docker.io docker-compose
-mkdir -p /mnt/immich-photos
-echo "<헤놀로지_IP>:/volume2/immich-photos /mnt/immich-photos nfs defaults,_netdev 0 0" >> /etc/fstab
+apt update && apt install -y nfs-common docker.io docker-compose-v2
+mkdir -p /mnt/photo
+echo "192.168.1.132:/volume2/photo /mnt/photo nfs defaults,_netdev 0 0" >> /etc/fstab
 mount -a
 ```
 
 ### 5-3. Jellyfin 미디어 서버 LXC (ID: 105 - iGPU 하드웨어 가속)
+- **특징**: Intel UHD 630 iGPU QuickSync 하드웨어 트랜스코딩 가속, 미디어 원본은 4TB Gold NFS(`/volume2/video`)로 저장 (DS video와 원본 100% 동시 공유).
 ```bash
 # 1. LXC 생성
 pct create 105 local:vztmpl/debian-12-standard_12.x_amd64.tar.zst \
   --hostname jellyfin \
   --cores 2 --memory 2048 --swap 512 \
-  --net0 name=eth0,bridge=vmbr0,ip=dhcp \
-  --unprivileged 1 --features nesting=1
+  --net0 name=eth0,bridge=vmbr0,ip=192.168.1.105/24,gw=192.168.1.1 \
+  --unprivileged 0 --features nesting=1
 
-# 2. 4TB Gold 미디어 라이브러리 NFS 마운트 & Jellyfin 설치
+# 2. Intel iGPU (UHD 630) 가속 패스스루 (/etc/pve/lxc/105.conf 하단 추가)
+cat << 'EOF' >> /etc/pve/lxc/105.conf
+lxc.cgroup2.devices.allow: c 226:0 rwm
+lxc.cgroup2.devices.allow: c 226:128 rwm
+lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir
+EOF
+
+# 3. 4TB Gold video 라이브러리 NFS 마운트 & Jellyfin 설치
 pct start 105
 pct enter 105
-apt update && apt install -y nfs-common curl
-mkdir -p /mnt/media
-echo "<헤놀로지_IP>:/volume2/media /mnt/media nfs defaults,_netdev 0 0" >> /etc/fstab
+apt update && apt install -y nfs-common curl gnupg
+mkdir -p /mnt/video
+echo "192.168.1.132:/volume2/video /mnt/video nfs defaults,_netdev 0 0" >> /etc/fstab
 mount -a
 curl https://repo.jellyfin.org/install-debuntu.sh | bash
-
-# 3. Intel iGPU (UHD 630) 가속 패스스루 (/etc/pve/lxc/105.conf 하단 추가)
-# lxc.cgroup2.devices.allow: c 226:0 rwm
-# lxc.cgroup2.devices.allow: c 226:128 rwm
-# lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file
 ```
 
 ### 5-4. 개발용 웹 서버 LXC (ID: 106 - Spring Boot / Node.js / Nginx)
