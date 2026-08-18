@@ -109,7 +109,23 @@ flowchart TB
 
 ---
 
-## 🚀 5. 내일 이어서 진행할 작업 (Next Steps Checklist)
+## 🔄 5. Proxmox 호스트 재부팅 시 자동 기동 순서 (Boot Order)
+
+정전 복구 및 호스트 재부팅 시 스토리지(NFS)가 먼저 열린 후 서비스들이 안전하게 마운트되도록 완벽한 부팅 시퀀스를 설정합니다:
+
+```bash
+# Proxmox 셸에서 1줄 설정
+qm set 101 --onboot 1 --startup order=1,up=45
+pct set 103 --onboot 1 --startup order=2,up=15
+pct set 104 --onboot 1 --startup order=2,up=10
+```
+
+- **[1순위 (order=1, up=45)]**: **헤놀로지 VM 101** 먼저 기동 ➔ 45초간 Btrfs 마운트 및 NFS 데몬 정상화 대기
+- **[2순위 (order=2)]**: **Immich (LXC 103)** & **Navidrome (LXC 104)** 기동 ➔ 4TB Gold 하드의 `photo`/`music` NFS 즉시 마운트
+
+---
+
+## 🚀 6. 내일 이어서 진행할 작업 (Next Steps Checklist)
 
 - [ ] **1. Jellyfin Media Server (LXC 105) 구축**:
   - Intel Core i5-9500T UHD 630 iGPU 하드웨어 가속(`/dev/dri` QuickSync 4K 트랜스코딩) 패스스루
