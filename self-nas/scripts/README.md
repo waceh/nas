@@ -14,24 +14,12 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
 
 - **컨테이너 ID**: `103` (Debian 12 Privileged, 2 Core, 4GB RAM, 16GB SSD)
 - **NFS 스토리지**: `192.168.1.132:/volume1/photo` ➔ `/mnt/photo`
+- **웹/API 포트**: `http://your-domain.asuscomm.com:2283`
 - **상세 가이드**: [`docs/09_immich_caddy_https_and_storage_setup.md`](../docs/09_immich_caddy_https_and_storage_setup.md)
 
 ---
 
-## 🔒 2. Immich 다이렉트 HTTPS (Caddy SSL 10년 인증서) 장착
-
-헤놀로지를 거치지 않고, Immich LXC 103 내부에 Caddy를 심어 군사 등급 TLS 1.3 암호화(HTTPS 🔒) 터널을 완성합니다.
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/enable_immich_https.sh | bash
-```
-
-- **외부 접속**: `https://your-domain.asuscomm.com:2283`
-- **보안**: OpenSSL 10년 RSA SSL 인증서 + Caddy TLS 1.3 리버스 프록시
-
----
-
-## 🎵 3. Navidrome Music Server LXC 자동 구축 (ID: 104)
+## 🎵 2. Navidrome Music Server LXC 자동 구축 (ID: 104)
 
 RAM을 단 50MB만 소비하는 Go 기반 초경량 음악 스트리밍 서버를 배포하고 4TB Gold의 `music` 폴더를 연동합니다.
 
@@ -45,7 +33,7 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
 
 ---
 
-## 🎬 4. Jellyfin Media Server LXC 자동 구축 (ID: 105)
+## 🎬 3. Jellyfin Media Server LXC 자동 구축 (ID: 105)
 
 Intel i5-9500T의 UHD 630 iGPU 하드웨어 가속(`/dev/dri`)을 패스스루하고, 4TB `video` 및 26TB 콜드 스토리지(`PDS1`, `PDS2`)를 연동합니다.
 
@@ -58,7 +46,7 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
 
 ---
 
-## 📦 5. 헤놀로지 (Xpenology) VM 자동 생성 (ID: 101)
+## 📦 4. 헤놀로지 (Xpenology) VM 자동 생성 (ID: 101)
 
 최신 RR 부트로더 기반 가상 USB 부팅 및 물리 HDD Raw 패스스루를 구성합니다.
 
