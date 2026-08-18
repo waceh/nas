@@ -101,13 +101,8 @@ pct exec "$CTID" -- bash -c "
 
   LATEST_TAG=\$(curl -sfL -w '%{url_effective}' -o /dev/null https://github.com/navidrome/navidrome/releases/latest | awk -F'/' '{print \$NF}')
   ARCH=\$(dpkg --print-architecture)
-  if [ \"\$ARCH\" = \"amd64\" ]; then
-    ND_ARCH=\"x86_64\"
-  else
-    ND_ARCH=\"arm64\"
-  fi
 
-  curl -fsSL \"https://github.com/navidrome/navidrome/releases/download/\${LATEST_TAG}/navidrome_\${LATEST_TAG#v}_linux_\${ND_ARCH}.tar.gz\" -o navidrome.tar.gz
+  curl -fsSL \"https://github.com/navidrome/navidrome/releases/download/\${LATEST_TAG}/navidrome_\${LATEST_TAG#v}_linux_\${ARCH}.tar.gz\" -o navidrome.tar.gz
   tar -xzf navidrome.tar.gz
   rm -f navidrome.tar.gz
 
