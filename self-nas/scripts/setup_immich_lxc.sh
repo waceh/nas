@@ -86,13 +86,19 @@ log_info "LXC 내부 패키지 설치 및 Docker/Immich 환경 구성 중..."
 pct exec "$CTID" -- bash -c "
   export DEBIAN_FRONTEND=noninteractive
   apt-get update -qq
-  apt-get install -y -qq nfs-common curl ca-certificates gnupg docker.io docker-compose-v2
+  apt-get install -y -qq nfs-common curl ca-certificates gnupg
+
+  # Docker 공식 원클릭 설치 (Docker Engine + Docker Compose Plugin)
+  if ! command -v docker &>/dev/null; then
+    curl -fsSL https://get.docker.com | sh
+  fi
 
   # 4TB Gold photo NFS 마운트
   mkdir -p /mnt/photo
   if ! grep -q '${NAS_IP}:${NFS_SHARE}' /etc/fstab; then
     echo '${NAS_IP}:${NFS_SHARE} /mnt/photo nfs defaults,_netdev 0 0' >> /etc/fstab
   fi
+  systemctl daemon-reload
   mount -a || true
 
   # Immich Docker Compose 다운로드 & 설정
