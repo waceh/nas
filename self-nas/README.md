@@ -84,14 +84,14 @@ LG U+ 공유기와 ASUS 공유기 사이 **이중 NAT** 상태. 포트포워딩/
 - [ ] 2. 하드디스크(White 8TB, White 18TB, Gold 4TB) SATA 케이블 메인보드에서 분리해 두기 (OS 설치 시 데이터 보호)
 - [ ] 3. Intel 710 SSD에 Proxmox VE 설치 (Host OS 전용) → [`01_proxmox_install.md`](docs/01_proxmox_install.md)
 - [ ] 4. Proxmox 네트워크 설정 (관리용 vmbr0 / 10Gbps 맥북 직결 vmbr1) → [`02_network_setup.md`](docs/02_network_setup.md)
-- [ ] 5. Intel 530 SSD(상시 고속 LXC 컨테이너 스토리지) Proxmox 스토리지 등록
-- [ ] 6. 시스템 종료 후 White 8TB, White 18TB, Gold 4TB SATA 케이블 메인보드에 결착
-- [ ] 7. Proxmox 부팅 후 터미널에서 HDD 3대(White 8TB, White 18TB, Gold 4TB) 패스스루 설정 → [`03_disk_passthrough.md`](docs/03_disk_passthrough.md), [`05_wd_gold_storage_setup.md`](docs/05_wd_gold_storage_setup.md)
-- [ ] 8. 헤놀로지 VM(101) 부팅 및 순수 NAS 스토리지 풀(Samba/NFS) 구성 → [`04_xpenology_install.md`](docs/04_xpenology_install.md)
-- [ ] 9. Intel 530 SSD 위에 Proxmox Native LXC 컨테이너 순차 구축 → [통합 미디어 마스터 가이드](docs/07_media_services_master_guide.md), [Immich/Jellyfin 아키텍처](docs/06_immich_jellyfin_architecture.md):
+- [x] 5. Intel 530 SSD(상시 고속 LXC 컨테이너 스토리지) Proxmox `local-530` LVM-Thin 스토리지 등록
+- [x] 6. 시스템 종료 후 White 8TB, White 18TB, Gold 4TB SATA 케이블 메인보드에 결착
+- [x] 7. Proxmox 부팅 후 터미널에서 HDD 3대(White 8TB, White 18TB, Gold 4TB) 패스스루 설정 → [`03_disk_passthrough.md`](docs/03_disk_passthrough.md), [`05_wd_gold_storage_setup.md`](docs/05_wd_gold_storage_setup.md)
+- [x] 8. 헤놀로지 VM(101) 부팅 및 순수 NAS 4TB 5대 공유폴더(`photo`, `video`, `music`, `temp`, `backups`) & NFS 구성 → [`04_xpenology_install.md`](docs/04_xpenology_install.md), [`09_immich_caddy_https_and_storage_setup.md`](docs/09_immich_caddy_https_and_storage_setup.md)
+- [ ] 9. Intel 530 SSD 위에 Proxmox Native LXC 컨테이너 순차 구축 → [통합 미디어 마스터 가이드](docs/07_media_services_master_guide.md), [Immich/Caddy HTTPS 가이드](docs/09_immich_caddy_https_and_storage_setup.md):
   - [ ] 9-1. `LXC 102 (AdGuard Home)` DNS 캐시 구축
-  - [ ] 9-2. `LXC 103 (Immich Photo Server)` 구축 (4TB Gold 실시간 백업 + 18TB 아카이브)
-  - [ ] 9-3. `LXC 105 (Jellyfin Media Server)` 구축 (18TB 영상 라이브러리 연동 & iGPU 가속) → [`lxc/jellyfin/README.md`](lxc/jellyfin/README.md)
-  - [ ] 9-4. `LXC (Navidrome Music Server)` 구축 (18TB 음악 라이브러리 연동)
+  - [x] 9-2. `LXC 103 (Immich Photo Server)` 구축 (4TB Gold 실시간 백업 + Caddy 다이렉트 HTTPS 🔒) → [`09_immich_caddy_https_and_storage_setup.md`](docs/09_immich_caddy_https_and_storage_setup.md)
+  - [ ] 9-3. `LXC 104 (Navidrome Music Server)` 구축 (4TB 음악 라이브러리 연동 & CarPlay)
+  - [ ] 9-4. `LXC 105 (Jellyfin Media Server)` 구축 (18TB 영상 라이브러리 연동 & iGPU 가속) → [`lxc/jellyfin/README.md`](lxc/jellyfin/README.md)
   - [ ] 9-5. `LXC 106 (Dev Web Server)` Spring Boot / Node.js 개발 서버 구축
 - [ ] 10. (선택 확장) Windows VM 필요 시 Intel 530 SSD or WD Gold에 On-Demand 생성

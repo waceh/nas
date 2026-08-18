@@ -2,7 +2,7 @@
 # Immich Direct HTTPS (Caddy SSL + OpenSSL) Installer for self-nas
 set -e
 
-DOMAIN="${1:-waceh.asuscomm.com}"
+DOMAIN="${1:-your-domain.asuscomm.com}"
 PORT="${2:-2283}"
 
 echo "===================================================="

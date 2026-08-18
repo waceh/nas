@@ -111,4 +111,4 @@ flowchart TB
 
 ---
 
-상세 구축 과정 및 세부 설정 가이드는 [`self-nas/docs/08_storage_tiering_and_media_separation.md`](self-nas/docs/08_storage_tiering_and_media_separation.md), [`self-nas/README.md`](self-nas/README.md) 및 [`self-nas/POST_PROXMOX_SETUP_GUIDE.md`](self-nas/POST_PROXMOX_SETUP_GUIDE.md)를 참고하세요.
+상세 구축 과정 및 세부 설정 가이드는 [`self-nas/docs/09_immich_caddy_https_and_storage_setup.md`](self-nas/docs/09_immich_caddy_https_and_storage_setup.md), [`self-nas/docs/08_storage_tiering_and_media_separation.md`](self-nas/docs/08_storage_tiering_and_media_separation.md), [`self-nas/README.md`](self-nas/README.md) 및 [`self-nas/POST_PROXMOX_SETUP_GUIDE.md`](self-nas/POST_PROXMOX_SETUP_GUIDE.md)를 참고하세요.
