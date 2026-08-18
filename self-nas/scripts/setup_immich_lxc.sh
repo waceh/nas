@@ -71,7 +71,7 @@ pct create "$CTID" "$TEMPLATE" \
   --swap "$SWAP" \
   --rootfs "${STORAGE}:${DISK_SIZE}" \
   --net0 name=eth0,bridge="${BRIDGE}",ip="${IP_ADDR}",gw="${GATEWAY}" \
-  --unprivileged 1 \
+  --unprivileged 0 \
   --features nesting=1,keyctl=1 \
   --onboot 1
 
