@@ -87,7 +87,20 @@ flowchart TB
 
 ## 💡 4. Immich 핵심 설정 팁 및 운영 최적화 가이드
 
-### ① RAM 메모리 사용량 및 머신러닝(ML) 최적화 팁 ⭐
+### ① RAM 디스크(`tmpfs` / `/dev/shm`)를 활용한 SSD/HDD 수명 보호 및 초고속 변환 (핵심 팁 ⭐⭐⭐)
+- **배경 및 원리**: 
+  - Immich와 Jellyfin이 10GB+ 대용량 사진 썸네일을 생성하거나 동영상을 트랜스코딩할 때, 수십~수백 GB의 임시 파일들이 디스크에 계속 쓰여지면서 **SSD 수명(TBW)을 갉아먹고 I/O 부하**를 일으킵니다.
+- **해결책 (RAM 디스크 캐시)**:
+  - 임시 트랜스코딩/변환 디렉터리를 디스크 대신 **RAM 메모리 공간(`tmpfs` / `/dev/shm`)** 에 마운트합니다.
+  - 임시 파일들이 초고속 RAM에서 처리되고 즉시 증발하므로, **SSD 쓰기 수명을 100% 보호하고 변환 속도를 극대화**하며 하드디스크가 쓸데없이 스핀업되는 것을 방지합니다.
+- **적용 방법 (Docker Compose)**:
+  ```yaml
+  # immich-server 또는 machine-learning 서비스에 tmpfs 마운트
+  tmpfs:
+    - /tmp:size=1G,mode=1777
+  ```
+
+### ② RAM 메모리 사용량 및 머신러닝(ML) 동시성 최적화
 - **메모리 할당 기준**: Immich 전체 스택은 평소 **RAM 약 1.5GB ~ 2.5GB**를 소비합니다. (LXC에 4GB 할당 권장).
 - **머신러닝(AI) 스레드 조절**: 
   - Immich 웹 ➔ `Administration (관리)` ➔ `Settings (설정)` ➔ `Machine Learning Settings`
