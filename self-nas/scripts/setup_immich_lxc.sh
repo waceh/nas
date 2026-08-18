@@ -29,11 +29,12 @@ CORES="${CORES:-2}"
 RAM="${RAM:-4096}"
 SWAP="${SWAP:-1024}"
 DISK_SIZE="${DISK_SIZE:-16}"
+STORAGE="${STORAGE:-local-530}"
 BRIDGE="${BRIDGE:-vmbr0}"
 IP_ADDR="${IP_ADDR:-192.168.1.103/24}"
 GATEWAY="${GATEWAY:-192.168.1.1}"
 NAS_IP="${NAS_IP:-192.168.1.132}"
-NFS_SHARE="${NFS_SHARE:-/volume2/photo}"
+NFS_SHARE="${NFS_SHARE:-/volume1/photo}"
 
 echo -e "${GREEN}====================================================${NC}"
 echo -e "${GREEN}      Immich Photo Server LXC 자동 설치기           ${NC}"
@@ -41,6 +42,7 @@ echo -e "${GREEN}====================================================${NC}"
 echo "컨테이너 ID: ${CTID}"
 echo "호스트명: ${HOSTNAME}"
 echo "IP 주소: ${IP_ADDR}"
+echo "스토리지 풀: ${STORAGE}"
 echo "NFS 스토리지: ${NAS_IP}:${NFS_SHARE}"
 echo "===================================================="
 
@@ -55,18 +57,19 @@ fi
 
 # 2. 기존 컨테이너 확인
 if pct status "$CTID" &>/dev/null; then
-    log_err "CTID ${CTID} 가 이미 존재합니다. 삭제 후 다시 실행하거나 다른 ID를 지정하세요."
-    exit 1
+    log_info "기존 CTID ${CTID} 컨테이너 정리 중..."
+    pct stop "$CTID" &>/dev/null || true
+    pct destroy "$CTID" &>/dev/null || true
 fi
 
-# 3. LXC 103 생성
+# 3. LXC 103 생성 (Intel 530 SSD local-530 위)
 log_info "LXC ${CTID} (${HOSTNAME}) 생성 중..."
 pct create "$CTID" "$TEMPLATE" \
   --hostname "$HOSTNAME" \
   --cores "$CORES" \
   --memory "$RAM" \
   --swap "$SWAP" \
-  --rootfs local-lvm:${DISK_SIZE} \
+  --rootfs "${STORAGE}:${DISK_SIZE}" \
   --net0 name=eth0,bridge="${BRIDGE}",ip="${IP_ADDR}",gw="${GATEWAY}" \
   --unprivileged 1 \
   --features nesting=1,keyctl=1 \
@@ -97,8 +100,9 @@ pct exec "$CTID" -- bash -c "
   curl -fsSL https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml -o docker-compose.yml
   curl -fsSL https://github.com/immich-app/immich/releases/latest/download/example.env -o .env
 
-  # 업로드 경로를 NFS 마운트 경로로 변경
+  # 업로드 경로 및 DB 패스워드 설정
   sed -i 's|UPLOAD_LOCATION=.*|UPLOAD_LOCATION=/mnt/photo|g' .env
+  sed -i 's|DB_PASSWORD=.*|DB_PASSWORD=immichpassword|g' .env
 
   docker compose up -d
 "
