@@ -104,12 +104,11 @@ flowchart TB
 
 | 티어 (Tier) | 디스크 모델 | 연결 방식 / 마운트 위치 | 주요 용도 및 역할 |
 | :--- | :--- | :--- | :--- |
-| **`HOST OS 전용`<br/>*(Non-Disk)*** | **Intel 710 SSD 100GB**<br/>(MLC, Non-Disk) | Proxmox 호스트 직접 설치 | - **Proxmox VE Host OS 전용** 구동 (초고내구성 HET-MLC 기반 안정성 극대화)<br>- Host OS 외 일체 서비스 미설치 (무소음/무회전 Non-Disk) |
-| **`상시 고속 서비스`<br/>*(Non-Disk)*** | **Intel 530 SSD 120GB**<br/>(MLC, Non-Disk) | Proxmox 로컬 컨테이너 스토리지 | - **24/7 상시 무소음 LXC 컨테이너 전용** (무소음/무회전 Non-Disk, 대형 HDD 스핀다운 유지)<br>- **LXC 102 (AdGuard Home)** DNS 로그 및 필터 캐시<br>- **LXC 103 (Immich)** PostgreSQL DB & 벡터 검색 엔진 I/O 초고속 가속<br>- **LXC 105 (Jellyfin)** 루트 컨테이너 및 메타데이터/트랜스코딩 캐시<br>- **LXC 106 (Dev Web Server)** 개발용 웹 서버 및 앱 구동 환경 |
-| **`미디어 & 백업 스토리지`** | **WD Gold 4TB**<br/>(7200RPM Enterprise) | VM 101 (헤놀로지) Raw 패스스루 (`sata4`) | - **Immich 원본 사진 및 동영상 저장소** (`/volume2/immich-photos` NFS 공유)<br>- **Jellyfin 미디어 스트리밍 라이브러리 저장소** (`/volume2/media` NFS 공유)<br>- **사용자 수동 GUI 파일 저장소** (`/volume2/personal-data` SMB / File Station)<br>- **핵심 백업 금고** (`/volume2/pve-backups` NFS): Proxmox VM 전체 스냅샷(`vzdump`), 헤놀로지 설정 백업 보관 (🛡️ 500GB 할당량 + Keep Last 3) |
-| **`COLD (스토리지)`** | **WD White 8TB**<br/>(`WD80EMAZ-00WJTA0`, CMR) | VM 101 (헤놀로지) Raw 패스스루 (`sata2`) | - **Cold Storage Pool**: 헤놀로지 메인 콜드 보관 풀 및 개인 데이터 보관 (`/volume1/data`) |
-| **`COLD (아카이브)`** | **WD White 18TB**<br/>(`WUH721818ALE604`, Ultrastar) | VM 101 (헤놀로지) Raw 패스스루 (`sata3`) | - **Cold Archive Pool**: 대용량 콜드 데이터 아카이빙 및 2차 백업 보관 (`/volume3/archive`) |
+| **`HOST OS 전용`<br/>*(Non-Disk)*** | **Intel 710 SSD 100GB**<br/>(eMLC, Non-Disk) | Proxmox 호스트 직접 설치 | - **Proxmox VE Host OS 전용** 구동 (초고내구성 eMLC 기반 안정성 극대화)<br>- Host OS 외 일체 서비스 미설치 (시스템 로그 / RRD 통계 I/O 전담) |
+| **`상시 고속 서비스`<br/>*(Non-Disk)*** | **Intel 530 SSD 120GB**<br/>(MLC, Non-Disk) | Proxmox 로컬 컨테이너 스토리지 | - **24/7 상시 무소음 LXC 컨테이너 전용** (SSD 무소음/고속 I/O, HDD 스핀다운 유지)<br>- **LXC 102 (AdGuard Home)** DNS 로그 및 필터 캐시<br>- **LXC 103 (Immich)** PostgreSQL DB & 벡터 검색 엔진 I/O 초고속 가속<br>- **LXC (Navidrome)** 음악 메타데이터 SQLite DB & 앨범아트 캐시<br>- **LXC 105 (Jellyfin)** 루트 컨테이너 및 메타데이터/포스터/트랜스코딩 캐시<br>- **LXC 106 (Dev Web Server)** 개발용 웹 서버 및 앱 구동 환경 |
+| **`홈 & 라이프 허브`<br/>*(24/7 Enterprise)* | **WD Gold 4TB**<br/>(7200RPM Enterprise) | Proxmox 직접 마운트 또는 헤놀로지 패스스루 | - **📸 사진 전체**: 개인 스마트폰 자동동기화 + 가족여행/기념일 사진 (Immich)<br>- **🎥 라이프 영상**: 스마트폰 일상 영상 + 가족 기념행사 홈비디오 (Immich & Jellyfin 홈비디오)<br>- **🎵 음원 라이브러리 전체**: 무손실 FLAC / MP3 음악 (Navidrome)<br>- **📦 핵심 백업 금고**: Proxmox VM/LXC 일일 백업 (`vzdump`) **(🛡️ 3-2-1 핵심 백업 대상)** |
+| **`엔터테인먼트 COLD`<br/>*(26TB 대용량)* | **WD White 8TB** + **WD White 18TB**<br/>(총 26TB CMR) | Proxmox 직접 마운트 (또는 MergerFS / 헤놀로지) | - **🎬 소비성 엔터테인먼트 미디어 전용**: 4K/1080p 영화, 국내외 TV 드라마 시리즈, 예능, 애니메이션<br>- **💤 완전 절전 (Spin-down)**: 평소 모터 정지(무소음/초절전), 시청 시에만 스핀업<br>- **🛡️ 백업 불필요**: 언제든 다시 채울 수 있는 소비성 미디어이므로 백업 대상 제외 (관리 포인트 최소화) |
 
 ---
 
-상세 구축 과정 및 세부 설정 가이드는 [`self-nas/README.md`](self-nas/README.md) 및 [`self-nas/POST_PROXMOX_SETUP_GUIDE.md`](self-nas/POST_PROXMOX_SETUP_GUIDE.md)를 참고하세요.
+상세 구축 과정 및 세부 설정 가이드는 [`self-nas/docs/08_storage_tiering_and_media_separation.md`](self-nas/docs/08_storage_tiering_and_media_separation.md), [`self-nas/README.md`](self-nas/README.md) 및 [`self-nas/POST_PROXMOX_SETUP_GUIDE.md`](self-nas/POST_PROXMOX_SETUP_GUIDE.md)를 참고하세요.

@@ -17,20 +17,29 @@
 | **Network**     | 10Gbps Server NIC (PCIe)             | 맥북 직결 초고속 네트워크(추후 필요시)     |
 
 ## 💾 2. Storage Architecture
-디스크의 성격과 속도에 따라 역할을 완벽히 분리한 4-Tier 스토리지 구성입니다.
+디스크의 성격과 데이터의 용도에 따라 역할을 완벽히 분리한 4-Tier 스토리지 구성입니다.
 
-- **`HOST OS 전용 (Non-Disk)` Intel 710 SSD (MLC 100GB, Non-Disk):** Proxmox VE 베이스 OS 및 부팅 전용 (안정성 최우선, 기타 서비스 미설치, 무소음/무회전)
-- **`상시 고속 서비스 (Non-Disk)` Intel 530 SSD (MLC 120GB, Non-Disk):** 24/7 상시 무소음 서비스 (AdGuard Home, Jellyfin LXC 루트/캐시, Immich DB/앱 고속 I/O)
-- **`미디어 & 백업 스토리지` WD Gold 4TB (7200RPM Enterprise):** 헤놀로지 Raw 패스스루(`sata4`), Immich 사진 & Jellyfin 미디어 원본 저장, 사용자 수동 GUI 저장, Proxmox VM 전체 백업 금고
-- **`COLD 스토리지` WD White 8TB (`WD80EMAZ`) + WD White 18TB (`WUH721818ALE604`):** 헤놀로지 Raw 패스스루(`sata2`, `sata3`), 순수 개인 데이터 보관 및 대용량 콜드 아카이빙 (필요 시에만 호출)
+- **`HOST OS 전용 (Non-Disk)` Intel 710 SSD (MLC 100GB, Non-Disk):** Proxmox VE 베이스 OS 및 부팅 전용 (안정성 최우선, eMLC 초고내구성, 시스템 로그/RRD I/O)
+- **`상시 고속 서비스 (Non-Disk)` Intel 530 SSD (MLC 120GB, Non-Disk):** 24/7 상시 무소음 서비스 (AdGuard Home, Immich DB/벡터검색/썸네일, Navidrome DB, Jellyfin 메타데이터/캐시)
+- **`홈 & 라이프 허브 (Home & Life Hub)` WD Gold 4TB (7200RPM Enterprise):**
+  - 📸 **사진 전체**: 개인 스마트폰 자동동기화(빈번 쓰기/조회) + 가족여행/기념일 사진(가족 공유)
+  - 🎥 **라이프 영상**: 스마트폰 일상 영상 + 가족 기념행사/여행 홈비디오
+  - 🎵 **음악 라이브러리**: 무손실 음원 전체 (Navidrome)
+  - 📦 **Proxmox 백업 금고**: VM/LXC 일일 자동 백업 (3-2-1 핵심 백업 대상)
+- **`엔터테인먼트 COLD 스토리지` WD White 8TB (`WD80EMAZ`) + WD White 18TB (`WUH721818ALE604`) (총 26TB):**
+  - 🎬 **소비성 미디어**: 4K/1080p 영화, 국내외 TV 드라마 시리즈, 예능, 애니메이션
+  - 💤 **완전 절전 (Spin-down)**: 평소 모터 정지(무소음/초절전), 시청 시에만 스핀업
+
+> 📘 **상세 아키텍처 문서**: [`08_storage_tiering_and_media_separation.md`](docs/08_storage_tiering_and_media_separation.md)
 
 ## 🏗️ 3. Virtualization (Proxmox VE)
 | 가상 머신 (VM) / 컨테이너 | 할당 자원 | 스토리지 (위치) | 주요 역할 |
 | :--- | :--- | :--- | :--- |
 | **VM 101: 헤놀로지**<br/>*(Pure Storage Core)* | 2 Core / 4GB | WD Gold 4TB, WD White 8TB, WD White 18TB (Raw Passthrough) | **순수 NAS 스토리지 코어** (Samba / NFS 파일 공유 데몬 전용, 도커 미구동으로 초경량 유지) |
 | **LXC 102: AdGuard Home** | 1 Core / 512MB | Intel 530 SSD (MLC, Non-Disk) | 24/7 상시 무소음 DNS 쿼리 캐시 & 네트워크 광고 차단 |
-| **LXC 103: Immich Server** | 2 Core / 4GB | Intel 530 SSD (DB/앱) + 헤놀로지 4TB Gold (NFS 원본 저장) | AI 기반 사진 백업 백엔드 + PostgreSQL + Vector Search DB |
-| **LXC 105: Jellyfin Server** | 2 Core / 2GB | Intel 530 SSD (루트/캐시) + 헤놀로지 4TB Gold (NFS 미디어 저장) | Intel UHD 630 iGPU QuickSync HW 트랜스코딩 미디어 스트리밍 |
+| **LXC 103: Immich Server** | 2 Core / 4GB | Intel 530 SSD (DB/앱) + WD Gold 4TB (사진/영상 원본) | AI 기반 사진 백업 백엔드 + PostgreSQL + Vector Search DB |
+| **LXC 105: Jellyfin Server** | 2 Core / 2GB | Intel 530 SSD (루트/캐시) + WD Gold 4TB (홈비디오) + WD White 26TB (영화/드라마) | Intel UHD 630 iGPU QuickSync HW 가속 미디어 스트리밍 |
+| **LXC (Navidrome Music)** | 1 Core / 512MB | Intel 530 SSD (루트/DB) + WD Gold 4TB (음원 라이브러리) | 초경량 Go 기반 고음질 음악 스트리밍 서버 |
 | **LXC 106: Dev Web Server** | 2 Core / 2GB | Intel 530 SSD (MLC, Non-Disk) | Spring Boot / Node.js / Nginx 개인 프로젝트 개발 & 테스트 웹 서버 |
 | *(선택 확장) Windows VM* | *2~4 Core / 4GB* | *Intel 530 SSD or WD Gold 4TB* | *추후 필요 시에만 최소 리소스로 On-Demand 생성 예정* |
 
