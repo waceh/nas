@@ -101,11 +101,12 @@ pct exec "$CTID" -- bash -c "
   chmod +x /opt/gonic/gonic
 
   # 환경설정 파일 생성
+  mkdir -p /dev/shm/gonic-cache
   cat << 'ENV' > /etc/default/gonic
 GONIC_MUSIC_PATH=/mnt/music
 GONIC_PODCAST_PATH=/var/lib/gonic/podcasts
 GONIC_PLAYLISTS_PATH=/var/lib/gonic/playlists
-GONIC_CACHE_PATH=/var/lib/gonic/cache
+GONIC_CACHE_PATH=/dev/shm/gonic-cache
 GONIC_DB_PATH=/var/lib/gonic/data/gonic.db
 GONIC_LISTEN_ADDR=0.0.0.0:4747
 GONIC_SCAN_INTERVAL=60
