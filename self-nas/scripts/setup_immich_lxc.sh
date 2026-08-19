@@ -3,7 +3,7 @@
 # Immich Photo Server Proxmox Native LXC Installer (self-nas)
 # ==============================================================================
 # - LXC 103 생성 (Debian 12, 2 Core, 4GB RAM, 16GB SSD Root)
-# - 헤놀로지 4TB Gold NFS (/volume2/photo) -> /mnt/photo 자동 영구 마운트
+# - 헤놀로지 4TB Gold NFS (/volume1/photo) -> /mnt/photo 자동 영구 마운트
 # - Docker 및 Immich 최신 버전 자동 다운로드 및 배포
 # ==============================================================================
 
@@ -112,6 +112,9 @@ pct exec "$CTID" -- bash -c "
 
   docker compose up -d
 "
+
+# 6. 호스트 부팅 시 순차 기동 순서 설정 (헤놀로지 101 다음 기동)
+pct set "$CTID" --startup "order=2,up=10"
 
 echo ""
 echo -e "${GREEN}====================================================${NC}"

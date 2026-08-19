@@ -30,11 +30,12 @@ CORES="${CORES:-2}"
 RAM="${RAM:-2048}"
 SWAP="${SWAP:-512}"
 DISK_SIZE="${DISK_SIZE:-12}"
+STORAGE="${STORAGE:-local-530}"
 BRIDGE="${BRIDGE:-vmbr0}"
 IP_ADDR="${IP_ADDR:-192.168.1.105/24}"
 GATEWAY="${GATEWAY:-192.168.1.1}"
 NAS_IP="${NAS_IP:-192.168.1.132}"
-NFS_SHARE="${NFS_SHARE:-/volume2/video}"
+NFS_SHARE="${NFS_SHARE:-/volume1/video}"
 
 echo -e "${GREEN}====================================================${NC}"
 echo -e "${GREEN}      Jellyfin Media Server LXC 자동 설치기         ${NC}"
@@ -42,6 +43,7 @@ echo -e "${GREEN}====================================================${NC}"
 echo "컨테이너 ID: ${CTID}"
 echo "호스트명: ${HOSTNAME}"
 echo "IP 주소: ${IP_ADDR}"
+echo "스토리지 풀: ${STORAGE}"
 echo "iGPU HW 가속: Intel UHD Graphics 630 (/dev/dri)"
 echo "NFS 스토리지: ${NAS_IP}:${NFS_SHARE}"
 echo "===================================================="
@@ -68,7 +70,7 @@ pct create "$CTID" "$TEMPLATE" \
   --cores "$CORES" \
   --memory "$RAM" \
   --swap "$SWAP" \
-  --rootfs local-lvm:${DISK_SIZE} \
+  --rootfs "${STORAGE}:${DISK_SIZE}" \
   --net0 name=eth0,bridge="${BRIDGE}",ip="${IP_ADDR}",gw="${GATEWAY}" \
   --unprivileged 0 \
   --features nesting=1 \
@@ -108,6 +110,9 @@ pct exec "$CTID" -- bash -c "
   # Jellyfin 공식 설치 스크립트 비대화형 실행
   curl -fsSL https://repo.jellyfin.org/install-debuntu.sh | bash
 "
+
+# 7. 호스트 부팅 시 순차 기동 순서 설정 (헤놀로지 101 다음 기동)
+pct set "$CTID" --startup "order=2,up=10"
 
 echo ""
 echo -e "${GREEN}====================================================${NC}"
