@@ -48,7 +48,7 @@
 
 * **DNS & Network Security**: `LXC 102 (AdGuard Home)` — 24/7 무소음 DNS 필터링/캐시
 * **AI Photo Cloud**: `LXC 103 (Immich)` — 초고속 PostgreSQL/벡터 DB는 SSD에서 구동, 대용량 원본 사진은 4TB Gold NFS로 저장
-* **Folder-based Music Streaming**: `LXC 104 (Gonic)` — 폴더/디렉토리 구조 그대로 스트리밍, Subsonic 클라이언트(Symfonium/Amperfy 등) 및 CarPlay 연동
+* **Folder-based Music Streaming**: `LXC 104 (Gonic)` — 폴더/디렉토리 구조 그대로 스트리밍, 완전 무료 Subsonic 클라이언트(Amperfy/Ultrasonic/Substreamer) 및 CarPlay/Android Auto 연동
 * **Media Streaming**: `LXC 105 (Jellyfin)` — iGPU 하드웨어 가속, 4TB Gold NFS 미디어 라이브러리 연동
 * **Development Web Server**: `LXC 106 (Dev Web)` — 개인 웹 애플리케이션 개발/배포 환경
 
@@ -92,7 +92,7 @@ LG U+ 공유기와 ASUS 공유기 사이 **이중 NAT** 상태. 포트포워딩/
 - [ ] 9. Intel 530 SSD 위에 Proxmox Native LXC 컨테이너 순차 구축 → [통합 미디어 마스터 가이드](docs/07_media_services_master_guide.md), [Immich/Caddy HTTPS 가이드](docs/09_immich_caddy_https_and_storage_setup.md):
   - [ ] 9-1. `LXC 102 (AdGuard Home)` DNS 캐시 구축
   - [x] 9-2. `LXC 103 (Immich Photo Server)` 구축 (4TB Gold 실시간 백업 + 10GB+ 사진 인덱싱) → [`09_immich_caddy_https_and_storage_setup.md`](docs/09_immich_caddy_https_and_storage_setup.md)
-  - [x] 9-3. `LXC 104 (Gonic Music Server)` 구축 (4TB 음악 라이브러리 연동 & 폴더 기반 브라우징 / Subsonic 앱 / CarPlay)
+  - [x] 9-3. `LXC 104 (Gonic Music Server)` 구축 (4TB 음악 라이브러리 연동 & 폴더 기반 브라우징 / 완전 무료 앱 / CarPlay / Android Auto)
   - [ ] 9-4. `LXC 105 (Jellyfin Media Server)` 구축 (18TB 영상 라이브러리 연동 & iGPU 가속) → [`lxc/jellyfin/README.md`](lxc/jellyfin/README.md)
   - [ ] 9-5. `LXC 106 (Dev Web Server)` Spring Boot / Node.js 개발 서버 구축
 - [ ] 10. (선택 확장) Windows VM 필요 시 Intel 530 SSD or WD Gold에 On-Demand 생성

@@ -30,8 +30,7 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
 - **컨테이너 ID**: `104` (Debian 12, 1 Core, 512MB RAM, 8GB SSD)
 - **NFS 스토리지**: `192.168.1.132:/volume1/music` ➔ `/mnt/music`
 - **웹/API 포트**: `http://your-domain.asuscomm.com:4747`
-- **공유기 포트포워딩**: 외부 접속 시 기존 Navidrome 포트(`4533`) 대신 **`4747` 포트**(`192.168.1.104:4747`)로 변경 필요
-- **지원**: Symfonium(폴더 뷰 최강), Evermusic, Amperfy, Substreamer, Feishin, Apple CarPlay / Android Auto
+- **지원**: Amperfy(iOS 오픈소스 강추), Ultrasonic/DSub(Android FOSS), Substreamer, Feishin, Apple CarPlay / Android Auto (모두 100% 완전 무료)
 
 ---
 

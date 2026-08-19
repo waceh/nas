@@ -17,7 +17,7 @@ flowchart TB
     %% Clients
     subgraph Clients["📱 사용자 단말기 (스마트폰 / 차량 / 맥북 / PC)"]
         MobilePhoto["📸 Immich 모바일 앱 (사진 백업 & AI 검색)"]:::client
-        MobileMusic["🎵 Symfonium / Amperfy / Substreamer / Evermusic / CarPlay (폴더 기반 음악 스트리밍)"]:::client
+        MobileMusic["🎵 Amperfy / Ultrasonic / Substreamer / CarPlay (완전 무료 폴더 기반 음악 스트리밍)"]:::client
         Browser["💻 PC / Mac 웹 브라우저"]:::client
     end
 
@@ -92,16 +92,21 @@ flowchart TB
 - **머신러닝(AI) 동시성 조절**: `Machine Learning Settings ➔ Concurrency = 1` 로 설정하여 대량 업로드 시 CPU/RAM 피크 방지.
 - **브라우저 쿠키 트러블슈팅**: HTTPS ➔ HTTP 전환 후 로그인 에러 시 **시크릿 창(Incognito)** 으로 접속하면 즉시 해결.
 
-### ③ Gonic 폴더 기반 브라우징 & 추천 모바일 클라이언트
+### ③ Gonic 폴더 기반 브라우징 & 100% 완전 무료 추천 앱
+
 - **구형 MP3 한글 태그(EUC-KR ➔ UTF-8) 1초 일괄 복구 명령어**:
   ```bash
   pct exec 104 -- bash -c "apt-get update -qq && apt-get install -y -qq python3-mutagen && find /mnt/music -name '*.mp3' -exec mid3iconv -e euc-kr -d {} + && systemctl restart gonic"
   ```
-- **추천 모바일 스트리밍 앱 (Subsonic 규격)**:
-  - 🥇 **`Symfonium` (Android 최강 ⭐⭐⭐)**: **폴더 브라우징 완벽 지원**, 강력한 오프라인 캐시, 안드로이드 오토 & 고음질 DSP.
-  - 🥈 **`Evermusic` (iOS 무료 ⭐⭐⭐)**: **앱 전체 메뉴 100% 한국어 지원**, **폴더별 보기(Folder Tree) 최강자**, Apple CarPlay 지원.
-  - 🥉 **`Amperfy` / `Substreamer` (iOS 무료)**: 깔끔한 UI, 빠른 폴더 탐색 및 오프라인 재생.
-  - 💻 **`Feishin` (Mac / Windows)**: 깔끔한 현대적 데스크톱 플레이어.
+- **100% 완전 무료 & 오픈소스(FOSS) 모바일 스트리밍 앱 (인앱결제/광고 0원)**:
+  - 🍏 **iOS (아이폰/아이패드)**:
+    - 🥇 **`Amperfy` (오픈소스 ⭐강추)**: 애플뮤직 스타일 세련된 UI, **폴더(Directories) 탐색 완벽 지원**, 오프라인 다운로드, **Apple CarPlay** 지원.
+    - 🥈 **`Substreamer` (완전 무료)**: 가볍고 직관적인 UI, 폴더 뷰 탐색, 오프라인 캐시 및 CarPlay 지원.
+  - 🤖 **Android (갤럭시/안드로이드)**:
+    - 🥇 **`Ultrasonic` / `DSub` (오픈소스 ⭐강추)**: **폴더 트리 탐색 최강자**, 폴더 일괄 다운로드, **Android Auto** 지원.
+    - 🥈 **`Substreamer` (완전 무료)**: 모던한 인터페이스, 폴더 탭 탐색, Android Auto 지원.
+  - 💻 **PC / Mac**:
+    - **`Feishin`** (Mac / Windows 전용 100% 무료 오픈소스 무손실 플레이어)
 
 ---
 
@@ -134,7 +139,7 @@ flowchart TB
 
 > 💡 **포트 전환 주의사항**:
 > - 기존 Navidrome에서 쓰던 `4533` 포트포워딩 규칙은 삭제하거나 비활성화하고, **`4747` 포트 규칙을 새로 추가**해 주세요.
-> - 모바일 앱(Symfonium, Evermusic 등)에서 서버 주소 입력 시 `http://your-domain.asuscomm.com:4747` 로 포트 번호를 지정하여 연결합니다.
+> - 모바일 앱(Amperfy, Ultrasonic, Substreamer 등)에서 서버 주소 입력 시 `http://your-domain.asuscomm.com:4747` 로 포트 번호를 지정하여 연결합니다.
 
 ---
 

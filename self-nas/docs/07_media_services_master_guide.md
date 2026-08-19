@@ -18,7 +18,7 @@ flowchart TB
 
     %% Clients
     subgraph Clients["📱 사용자 단말기 (모바일 / 태블릿 / PC / 스마트 TV / 차량)"]
-        C_Music["🎵 음악: Symfonium / Amperfy / Substreamer / CarPlay"]:::client
+        C_Music["🎵 음악: Amperfy / Ultrasonic / Substreamer / CarPlay"]:::client
         C_Video["🎬 영상: Swiftfin / Jellyfin App / Android TV"]:::client
         C_Photo["📸 사진: Immich 모바일 앱 / 웹"]:::client
         C_File["📁 파일: Synology Drive / DS file / SMB"]:::client
@@ -66,8 +66,8 @@ flowchart TB
 | :--- | :--- |
 | **추천 서버 솔루션** | **`Gonic`** (Go 기반 초경량 **디렉토리/폴더 트리 탐색 특화** 음악 서버, Subsonic API 호환, RAM 30MB) 또는 **`Jellyfin`** |
 | **스토리지 위치** | **WD Gold 4TB** (`/volume2/music` 또는 18TB 보관 음원 NFS 마운트) |
-| **📱 스마트폰 / 태블릿 접근** | • **안드로이드/갤럭시**: **`Symfonium`** (폴더 브라우징 완벽 지원, 오프라인 캐시), **`Substreamer`**<br/>• **아이폰/아이패드**: **`Amperfy`** (애플뮤직 스타일), **`play:Sub`**, **`Substreamer`**<br/>• **차량 연동**: **Apple CarPlay / Android Auto** 완벽 지원 (오프라인 다운로드 재생 가능) |
-| **💻 PC / Mac 접근** | • **웹 브라우저**: `http://your-domain.asuscomm.com:4747`<br/>• **전용 데스크톱 앱**: **`Feishin`** (Mac / Windows 전용 고음질 무손실 플레이어) |
+| **📱 스마트폰 / 태블릿 접근 (100% 완전 무료 & 오픈소스)** | • **아이폰/아이패드 (iOS)**: **`Amperfy`** (오픈소스 100% 무료, 애플뮤직 스타일, 폴더 브라우징), **`Substreamer`** (완전 무료)<br/>• **안드로이드/갤럭시 (Android)**: **`Ultrasonic`** / **`DSub`** (오픈소스 FOSS, 폴더 트리 탐색 최강, 무료 다운로드), **`Substreamer`** (완전 무료)<br/>• **차량 연동**: **Apple CarPlay / Android Auto** 완벽 지원 (무료 오프라인 다운로드 재생) |
+| **💻 PC / Mac 접근** | • **웹 브라우저**: `http://your-domain.asuscomm.com:4747`<br/>• **전용 데스크톱 앱**: **`Feishin`** (Mac / Windows 전용 100% 무료 오픈소스 무손실 플레이어) |
 | **🛠️ NAS 설치 및 세팅** | 1. 헤놀로지 4TB(또는 18TB)의 `music` 공유 폴더에 NFS 권한 부여 (`192.168.1.0/24`)<br/>2. Proxmox에 초경량 LXC 컨테이너(104) 생성 후 `music` 폴더 NFS 마운트 ➔ Gonic 실행 |
 
 ---
@@ -113,10 +113,10 @@ flowchart TB
 
 ## 🌐 3. 네트워크 포트 및 접속 주소 총괄표
 
-| 서비스명 | 내부 IP & 포트 | 외부 접속 주소 (ASUS DDNS) | 추천 클라이언트 앱 |
+| 서비스명 | 내부 IP & 포트 | 외부 접속 주소 (ASUS DDNS) | 추천 클라이언트 앱 (100% 무료) |
 | :--- | :--- | :--- | :--- |
 | **📸 사진 (Immich)** | `192.168.1.103:2283` | `http://your-domain.asuscomm.com:2283` | Immich (iOS / Android / Web) |
-| **🎵 음악 (Gonic)** | `192.168.1.104:4747` | `http://your-domain.asuscomm.com:4747` | Symfonium, Amperfy, Substreamer, Feishin |
+| **🎵 음악 (Gonic)** | `192.168.1.104:4747` | `http://your-domain.asuscomm.com:4747` | Amperfy, Ultrasonic, DSub, Substreamer, Feishin |
 | **🎬 영상 (Jellyfin)** | `192.168.1.105:8096` | `http://your-domain.asuscomm.com:8096` | Swiftfin, Jellyfin Mobile, TV 앱 |
 | **📁 DSM 관리 / Drive** | `192.168.1.132:5001` | `https://your-domain.asuscomm.com:5001` (🔒) | Synology Drive, DS file, 웹 브라우저 |
 | **⚡ PVE 하이퍼바이저** | `192.168.1.200:8006` | `https://192.168.1.200:8006` | 웹 브라우저 (내부/VPN 전용) |
