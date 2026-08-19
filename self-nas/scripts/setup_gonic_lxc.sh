@@ -134,6 +134,7 @@ WorkingDirectory=/var/lib/gonic
 ExecStart=/opt/gonic/gonic
 Restart=always
 RestartSec=5
+TimeoutStopSec=5
 
 [Install]
 WantedBy=multi-user.target
