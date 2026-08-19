@@ -55,11 +55,11 @@ if [ -z "$TEMPLATE" ]; then
     TEMPLATE=$(pveam list local | grep -E "debian-12-standard" | awk '{print $1}' | head -n 1)
 fi
 
-# 2. 기존 컨테이너 확인
+# 2. 기존 컨테이너 확인 및 강제 완전 삭제
 if pct status "$CTID" &>/dev/null; then
-    log_info "기존 CTID ${CTID} 컨테이너 정리 중..."
-    pct stop "$CTID" &>/dev/null || true
-    pct destroy "$CTID" &>/dev/null || true
+    log_info "기존 CTID ${CTID} 컨테이너 강제 정리 중..."
+    pct stop "$CTID" --force &>/dev/null || true
+    pct destroy "$CTID" --purge --force &>/dev/null || true
 fi
 
 # 3. LXC 104 생성 (Intel 530 SSD local-530 위)
@@ -72,7 +72,7 @@ pct create "$CTID" "$TEMPLATE" \
   --rootfs "${STORAGE}:${DISK_SIZE}" \
   --net0 name=eth0,bridge="${BRIDGE}",ip="${IP_ADDR}",gw="${GATEWAY}" \
   --unprivileged 0 \
-  --features nesting=1 \
+  --features nesting=1,keyctl=1 \
   --onboot 1
 
 pct start "$CTID"
@@ -88,20 +88,16 @@ pct exec "$CTID" -- bash -c "
   apt-get update -qq
   apt-get install -y -qq nfs-common curl ffmpeg jq
 
-  # 4TB Gold music NFS 마운트
+  # 4TB Gold music NFS 마운트 (NFSv4 + nolock 완벽 안정화)
   mkdir -p /mnt/music
   if ! grep -q '${NAS_IP}:${NFS_SHARE}' /etc/fstab; then
-    echo '${NAS_IP}:${NFS_SHARE} /mnt/music nfs defaults,_netdev 0 0' >> /etc/fstab
+    echo '${NAS_IP}:${NFS_SHARE} /mnt/music nfs vers=4,nolock,defaults,_netdev 0 0' >> /etc/fstab
   fi
   mount -a || true
 
   # Gonic 최신 바이너리 초고속 다운로드 및 설치
   mkdir -p /var/lib/gonic/data /var/lib/gonic/cache /var/lib/gonic/podcasts /var/lib/gonic/playlists /opt/gonic
-  GONIC_URL=\$(curl -s https://api.github.com/repos/sentriz/gonic/releases/latest | grep "browser_download_url.*linux-amd64" | cut -d '\"' -f 4 | head -n 1)
-  if [ -z \"\$GONIC_URL\" ]; then
-    GONIC_URL=\"https://github.com/sentriz/gonic/releases/download/v0.22.0/gonic-linux-amd64-v0.22.0\"
-  fi
-  curl -fsSL \"\$GONIC_URL\" -o /opt/gonic/gonic
+  curl -fsSL https://github.com/sentriz/gonic/releases/download/v0.22.0/gonic-linux-amd64-v0.22.0 -o /opt/gonic/gonic
   chmod +x /opt/gonic/gonic
 
   # 환경설정 파일 생성
@@ -112,9 +108,7 @@ GONIC_PLAYLISTS_PATH=/var/lib/gonic/playlists
 GONIC_CACHE_PATH=/var/lib/gonic/cache
 GONIC_DB_PATH=/var/lib/gonic/data/gonic.db
 GONIC_LISTEN_ADDR=0.0.0.0:4747
-GONIC_SCAN_INTERVAL=1
-GONIC_SCAN_AT_START_ENABLED=true
-GONIC_SCAN_WATCHER_ENABLED=true
+GONIC_SCAN_INTERVAL=60
 GONIC_JUKEBOX_ENABLED=false
 ENV
 
