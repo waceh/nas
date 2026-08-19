@@ -143,19 +143,23 @@ flowchart TB
 
 ---
 
-## 🔄 5. Proxmox 호스트 재부팅 시 자동 기동 순서 (Boot Order)
+## 🔄 5. Proxmox 호스트 재부팅 및 종료 시퀀스 (Boot & Graceful Shutdown Order)
 
-정전 복구 및 호스트 재부팅 시 스토리지(NFS)가 먼저 열린 후 서비스들이 안전하게 마운트되도록 완벽한 부팅 시퀀스를 설정합니다:
+정전 복구/호스트 재부팅 및 전원 종료 시 스토리지(NFS)와 서비스들이 데이터 손상 없이 완벽하게 순차 기동 및 안전 종료되도록 설정합니다:
 
 ```bash
 # Proxmox 셸에서 1줄 설정
-qm set 101 --onboot 1 --startup order=1,up=45
-pct set 103 --onboot 1 --startup order=2,up=15
-pct set 104 --onboot 1 --startup order=2,up=10
+qm set 101 --onboot 1 --startup order=1,up=30,down=30
+pct set 103 --onboot 1 --startup order=2,up=5,down=15
+pct set 104 --onboot 1 --startup order=2,up=5,down=10
 ```
 
-- **[1순위 (order=1, up=45)]**: **헤놀로지 VM 101** 먼저 기동 ➔ 45초간 Btrfs 마운트 및 NFS 데몬 정상화 대기
-- **[2순위 (order=2)]**: **Immich (LXC 103)** & **Gonic (LXC 104)** 기동 ➔ 4TB Gold 하드의 `photo`/`music` NFS 즉시 마운트
+- **🟢 켜질 때 (Startup Flow)**:
+  - **[1순위 (order=1, up=30)]**: **헤놀로지 VM 101** 먼저 기동 ➔ 30초간 Btrfs 볼륨 마운트 및 NFS 데몬 정상화 대기
+  - **[2순위 (order=2)]**: **Immich (LXC 103)** & **Gonic (LXC 104)** 기동 ➔ 4TB Gold 하드의 `photo`/`music` NFS 즉시 안전 마운트
+- **🔴 꺼질 때 (Graceful Shutdown Flow)**:
+  - **[1순위 종료 (down=10~15)]**: 서비스 컨테이너(**LXC 103/104**)가 먼저 안전하게 프로세스를 종료하고 NFS 마운트 해제
+  - **[마지막 종료 (down=30)]**: 모든 서비스가 내려간 후 **헤놀로지 VM 101**이 Btrfs 캐시를 디스크에 안전하게 플러시하고 마지막으로 종료 (NFS 연결 끊김으로 인한 I/O 락 100% 방지)
 
 ---
 
