@@ -51,11 +51,13 @@ flowchart TB
         subgraph LXC_AREA["⚡ Proxmox Native LXC Containers (Intel 530 SSD 위 구동)"]
             LXC102["🛡️ LXC 102: AdGuard Home<br/>(24/7 무소음 DNS 캐시 / 광고 차단)"]:::lxc
             LXC103["📸 LXC 103: Immich Photo Server<br/>(PostgreSQL DB / 벡터 엔진 / 앱)"]:::lxc
+            LXC104["🎵 LXC 104: Gonic Music Server<br/>(폴더 기반 음악 스트리밍 / Subsonic API)"]:::lxc
             LXC105["🎬 LXC 105: Jellyfin Media Server<br/>(iGPU QuickSync 트랜스코딩 가속)"]:::lxc
             LXC106["💻 LXC 106: Dev Web Server<br/>(Spring Boot / Node.js / Nginx 개발 서버)"]:::lxc
             
             LXC102 ~~~ LXC103
-            LXC103 ~~~ LXC105
+            LXC103 ~~~ LXC104
+            LXC104 ~~~ LXC105
             LXC105 ~~~ LXC106
         end
     end
@@ -74,8 +76,9 @@ flowchart TB
     WD_White_8TB -->|"Cold Passthrough (sata2)"| NAS_SPEC
     WD_White_18TB -->|"Cold Passthrough (sata3)"| NAS_SPEC
     
-    %% WD Gold 4TB Shared Services Links (Immich, Jellyfin, PVE Backup)
+    %% WD Gold 4TB Shared Services Links (Immich, Gonic, Jellyfin, PVE Backup)
     NAS_SPEC -.->|"Immich Photos (/volume2/immich-photos NFS)"| LXC103
+    NAS_SPEC -.->|"Music Library (/volume2/music NFS)"| LXC104
     NAS_SPEC -.->|"Jellyfin Media (/volume2/media NFS)"| LXC105
     NAS_SPEC -.->|"PVE Backup Vault (/volume2/pve-backups NFS)"| PVE
     
@@ -97,6 +100,7 @@ flowchart TB
 | | *(선택 확장) Windows VM* | *(추후 필요 시에만 최소 리소스로 On-Demand 생성 예정)* |
 | **LXC 컨테이너**<br/>*(Intel 530 SSD 고속 구동)* | **LXC 102: AdGuard Home** | 1 Core / 512MB RAM, 24/7 무소음 DNS 쿼리 캐시 & 네트워크 광고 차단 |
 | | **LXC 103: Immich Server** | 2 Core / 4GB RAM, AI 사진 백업 백엔드 + PostgreSQL + Vector DB (미디어 저장은 **헤놀로지 WD Gold 4TB** NFS 연동) |
+| | **LXC 104: Gonic Server** | 1 Core / 512MB RAM, Go 기반 초경량 **폴더(디렉토리) 기반 고음질 음악 스트리밍** (Subsonic API 완벽 호환, 음원은 **헤놀로지 WD Gold 4TB** NFS 연동) |
 | | **LXC 105: Jellyfin Server** | 2 Core / 2GB RAM, Intel UHD 630 iGPU QuickSync HW 가속 미디어 서버 (미디어 라이브러리는 **헤놀로지 WD Gold 4TB** NFS 연동) |
 | | **LXC 106: Dev Web Server** | 2 Core / 2GB RAM, Spring Boot / Node.js / Nginx 개인 개발 및 테스트 웹 서버 |
 
@@ -105,8 +109,8 @@ flowchart TB
 | 티어 (Tier) | 디스크 모델 | 연결 방식 / 마운트 위치 | 주요 용도 및 역할 |
 | :--- | :--- | :--- | :--- |
 | **`HOST OS 전용`<br/>*(Non-Disk)*** | **Intel 710 SSD 100GB**<br/>(eMLC, Non-Disk) | Proxmox 호스트 직접 설치 | - **Proxmox VE Host OS 전용** 구동 (초고내구성 eMLC 기반 안정성 극대화)<br>- Host OS 외 일체 서비스 미설치 (시스템 로그 / RRD 통계 I/O 전담) |
-| **`상시 고속 서비스`<br/>*(Non-Disk)*** | **Intel 530 SSD 120GB**<br/>(MLC, Non-Disk) | Proxmox 로컬 컨테이너 스토리지 | - **24/7 상시 무소음 LXC 컨테이너 전용** (SSD 무소음/고속 I/O, HDD 스핀다운 유지)<br>- **LXC 102 (AdGuard Home)** DNS 로그 및 필터 캐시<br>- **LXC 103 (Immich)** PostgreSQL DB & 벡터 검색 엔진 I/O 초고속 가속<br>- **LXC (Navidrome)** 음악 메타데이터 SQLite DB & 앨범아트 캐시<br>- **LXC 105 (Jellyfin)** 루트 컨테이너 및 메타데이터/포스터/트랜스코딩 캐시<br>- **LXC 106 (Dev Web Server)** 개발용 웹 서버 및 앱 구동 환경 |
-| **`홈 & 라이프 허브`<br/>*(24/7 Enterprise)* | **WD Gold 4TB**<br/>(7200RPM Enterprise) | Proxmox 직접 마운트 또는 헤놀로지 패스스루 | - **📸 사진 전체**: 개인 스마트폰 자동동기화 + 가족여행/기념일 사진 (Immich)<br>- **🎥 라이프 영상**: 스마트폰 일상 영상 + 가족 기념행사 홈비디오 (Immich & Jellyfin 홈비디오)<br>- **🎵 음원 라이브러리 전체**: 무손실 FLAC / MP3 음악 (Navidrome)<br>- **📦 핵심 백업 금고**: Proxmox VM/LXC 일일 백업 (`vzdump`) **(🛡️ 3-2-1 핵심 백업 대상)** |
+| **`상시 고속 서비스`<br/>*(Non-Disk)*** | **Intel 530 SSD 120GB**<br/>(MLC, Non-Disk) | Proxmox 로컬 컨테이너 스토리지 | - **24/7 상시 무소음 LXC 컨테이너 전용** (SSD 무소음/고속 I/O, HDD 스핀다운 유지)<br>- **LXC 102 (AdGuard Home)** DNS 로그 및 필터 캐시<br>- **LXC 103 (Immich)** PostgreSQL DB & 벡터 검색 엔진 I/O 초고속 가속<br>- **LXC 104 (Gonic)** 폴더 기반 음악 인덱스 SQLite DB & 앨범아트 캐시<br>- **LXC 105 (Jellyfin)** 루트 컨테이너 및 메타데이터/포스터/트랜스코딩 캐시<br>- **LXC 106 (Dev Web Server)** 개발용 웹 서버 및 앱 구동 환경 |
+| **`홈 & 라이프 허브`<br/>*(24/7 Enterprise)* | **WD Gold 4TB**<br/>(7200RPM Enterprise) | Proxmox 직접 마운트 또는 헤놀로지 패스스루 | - **📸 사진 전체**: 개인 스마트폰 자동동기화 + 가족여행/기념일 사진 (Immich)<br>- **🎥 라이프 영상**: 스마트폰 일상 영상 + 가족 기념행사 홈비디오 (Immich & Jellyfin 홈비디오)<br>- **🎵 음원 라이브러리 전체**: 무손실 FLAC / MP3 음악 (Gonic 폴더 기반 스트리밍)<br>- **📦 핵심 백업 금고**: Proxmox VM/LXC 일일 백업 (`vzdump`) **(🛡️ 3-2-1 핵심 백업 대상)** |
 | **`엔터테인먼트 COLD`<br/>*(26TB 대용량)* | **WD White 8TB** + **WD White 18TB**<br/>(총 26TB CMR) | Proxmox 직접 마운트 (또는 MergerFS / 헤놀로지) | - **🎬 소비성 엔터테인먼트 미디어 전용**: 4K/1080p 영화, 국내외 TV 드라마 시리즈, 예능, 애니메이션<br>- **💤 완전 절전 (Spin-down)**: 평소 모터 정지(무소음/초절전), 시청 시에만 스핀업<br>- **🛡️ 백업 불필요**: 언제든 다시 채울 수 있는 소비성 미디어이므로 백업 대상 제외 (관리 포인트 최소화) |
 
 ---

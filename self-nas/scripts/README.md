@@ -19,17 +19,18 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
 
 ---
 
-## 🎵 2. Navidrome Music Server LXC 자동 구축 (ID: 104)
+## 🎵 2. Gonic Music Server LXC 자동 구축 (ID: 104)
 
-RAM을 단 50MB만 소비하는 Go 기반 초경량 음악 스트리밍 서버를 배포하고 4TB Gold의 `music` 폴더를 연동합니다.
+RAM을 단 30MB만 소비하는 Go 기반 초경량 **폴더(디렉토리) 기반 고음질 음악 스트리밍 서버**를 배포하고 4TB Gold의 `music` 폴더를 연동합니다.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/setup_navidrome_lxc.sh | bash
+curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/setup_gonic_lxc.sh | bash
 ```
 
 - **컨테이너 ID**: `104` (Debian 12, 1 Core, 512MB RAM, 8GB SSD)
 - **NFS 스토리지**: `192.168.1.132:/volume1/music` ➔ `/mnt/music`
-- **지원**: Symfonium, Amperfy, Finamp, Apple CarPlay / Android Auto
+- **웹/API 포트**: `http://your-domain.asuscomm.com:4747`
+- **지원**: Symfonium(폴더 뷰 최강), Evermusic, Amperfy, Substreamer, Feishin, Apple CarPlay / Android Auto
 
 ---
 

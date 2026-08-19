@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Navidrome Music Server Proxmox Native LXC Installer (self-nas)
+# Gonic Music Server Proxmox Native LXC Installer (self-nas)
 # ==============================================================================
 # - LXC 104 생성 (Debian 12, 1 Core, 512MB RAM, 8GB SSD Root)
 # - 헤놀로지 4TB Gold NFS (/volume1/music) -> /mnt/music 자동 영구 마운트
-# - Navidrome 초경량(50MB RAM) 음악 스트리밍 서버 자동 설치 및 systemd 등록
+# - 디렉토리/폴더 구조 기반 초경량(30MB RAM) 음악 스트리밍 서버 Gonic 설치 & systemd 등록
 # ==============================================================================
 
 set -e
@@ -24,7 +24,7 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 CTID="${CTID:-104}"
-HOSTNAME="${HOSTNAME:-navidrome-server}"
+HOSTNAME="${HOSTNAME:-gonic-server}"
 CORES="${CORES:-1}"
 RAM="${RAM:-512}"
 SWAP="${SWAP:-256}"
@@ -37,7 +37,7 @@ NAS_IP="${NAS_IP:-192.168.1.132}"
 NFS_SHARE="${NFS_SHARE:-/volume1/music}"
 
 echo -e "${GREEN}====================================================${NC}"
-echo -e "${GREEN}      Navidrome Music Server LXC 자동 설치기        ${NC}"
+echo -e "${GREEN}       Gonic Music Server LXC 자동 설치기           ${NC}"
 echo -e "${GREEN}====================================================${NC}"
 echo "컨테이너 ID: ${CTID}"
 echo "호스트명: ${HOSTNAME}"
@@ -81,12 +81,12 @@ log_ok "LXC ${CTID} 생성 및 시작 완료!"
 # 4. 네트워크 대기
 sleep 5
 
-# 5. 패키지 설치, NFS 마운트 및 Navidrome 배포 (LXC 내부)
-log_info "LXC 내부 패키지 설치 및 Navidrome 음악 서버 구성 중..."
+# 5. 패키지 설치, NFS 마운트 및 Gonic 배포 (LXC 내부)
+log_info "LXC 내부 패키지 설치 및 Gonic 음악 서버 구성 중..."
 pct exec "$CTID" -- bash -c "
   export DEBIAN_FRONTEND=noninteractive
   apt-get update -qq
-  apt-get install -y -qq nfs-common curl ffmpeg
+  apt-get install -y -qq nfs-common curl ffmpeg golang git
 
   # 4TB Gold music NFS 마운트
   mkdir -p /mnt/music
@@ -95,40 +95,41 @@ pct exec "$CTID" -- bash -c "
   fi
   mount -a || true
 
-  # Navidrome 최신 바이너리 설치
-  mkdir -p /opt/navidrome /var/lib/navidrome
-  cd /opt/navidrome
+  # Gonic 바이너리 빌드 및 설치
+  mkdir -p /var/lib/gonic/data /var/lib/gonic/cache /var/lib/gonic/podcasts /var/lib/gonic/playlists /opt/gonic
+  export GOPATH=/tmp/go
+  export GOCACHE=/tmp/go-cache
+  CGO_ENABLED=0 go install go.senan.xyz/gonic/cmd/gonic@latest
+  cp /tmp/go/bin/gonic /opt/gonic/gonic
+  rm -rf /tmp/go /tmp/go-cache
+  apt-get purge -y golang git && apt-get autoremove -y -qq
 
-  LATEST_TAG=\$(curl -sfL -w '%{url_effective}' -o /dev/null https://github.com/navidrome/navidrome/releases/latest | awk -F'/' '{print \$NF}')
-  ARCH=\$(dpkg --print-architecture)
-
-  curl -fsSL \"https://github.com/navidrome/navidrome/releases/download/\${LATEST_TAG}/navidrome_\${LATEST_TAG#v}_linux_\${ARCH}.tar.gz\" -o navidrome.tar.gz
-  tar -xzf navidrome.tar.gz
-  rm -f navidrome.tar.gz
-
-  # 설정 파일 생성
-  cat << 'CFG' > /var/lib/navidrome/navidrome.toml
-MusicFolder = \"/mnt/music\"
-DataFolder = \"/var/lib/navidrome\"
-Address = \"0.0.0.0\"
-Port = 4533
-ScanSchedule = \"@every 1m\"
-SessionTimeout = \"24h\"
-CFG
+  # 환경설정 파일 생성
+  cat << 'ENV' > /etc/default/gonic
+GONIC_MUSIC_PATH=/mnt/music
+GONIC_PODCAST_PATH=/var/lib/gonic/podcasts
+GONIC_PLAYLISTS_PATH=/var/lib/gonic/playlists
+GONIC_CACHE_PATH=/var/lib/gonic/cache
+GONIC_DB_PATH=/var/lib/gonic/data/gonic.db
+GONIC_LISTEN_ADDR=0.0.0.0:4747
+GONIC_SCAN_INTERVAL=1
+GONIC_JUKEBOX_ENABLED=false
+ENV
 
   # systemd 서비스 등록
-  cat << 'SVC' > /etc/systemd/system/navidrome.service
+  cat << 'SVC' > /etc/systemd/system/gonic.service
 [Unit]
-Description=Navidrome Music Server and Streamer
+Description=Gonic Music Streaming Server (Subsonic API)
 After=remote-fs.target network.target
-AssertPathExists=/var/lib/navidrome
+AssertPathExists=/var/lib/gonic
 
 [Service]
 Type=simple
 User=root
 Group=root
-WorkingDirectory=/var/lib/navidrome
-ExecStart=/opt/navidrome/navidrome --configfile /var/lib/navidrome/navidrome.toml
+EnvironmentFile=/etc/default/gonic
+WorkingDirectory=/var/lib/gonic
+ExecStart=/opt/gonic/gonic
 Restart=always
 RestartSec=5
 
@@ -137,15 +138,19 @@ WantedBy=multi-user.target
 SVC
 
   systemctl daemon-reload
-  systemctl enable --now navidrome
+  systemctl enable --now gonic
 "
+
+# 6. 호스트 부팅 시 순차 기동 순서 설정 (헤놀로지 101 다음 기동)
+pct set "$CTID" --startup "order=2,up=10"
 
 echo ""
 echo -e "${GREEN}====================================================${NC}"
-echo -e "${GREEN}      Navidrome Server (${CTID}) 설치 완료!         ${NC}"
+echo -e "${GREEN}        Gonic Server (${CTID}) 설치 완료!            ${NC}"
 echo -e "${GREEN}====================================================${NC}"
-echo -e " 1. 로컬 웹 접속: ${BLUE}http://${IP_ADDR%/*}:4533${NC}"
-echo -e " 2. 외부 접속: ${BLUE}http://your-domain.asuscomm.com:4533${NC} (공유기 4533 포트포워딩 후)"
-echo -e " 3. 음악 원본 저장 위치: ${GREEN}${NAS_IP}:${NFS_SHARE} (/mnt/music)${NC}"
-echo -e " 4. 추천 모바일 앱: Symfonium(안드로이드), Amperfy/play:Sub/Finamp(iOS), CarPlay 지원"
+echo -e " 1. 로컬 웹 접속: ${BLUE}http://${IP_ADDR%/*}:4747${NC}"
+echo -e " 2. 외부 접속: ${BLUE}http://your-domain.asuscomm.com:4747${NC} (공유기 4747 포트포워딩 후)"
+echo -e " 3. 초기 관리자 계정: ${GREEN}admin${NC} / ${GREEN}admin${NC} (접속 즉시 비밀번호 변경 권장)"
+echo -e " 4. 음악 원본 저장 위치: ${GREEN}${NAS_IP}:${NFS_SHARE} (/mnt/music)${NC}"
+echo -e " 5. 추천 모바일 앱: Symfonium(안드로이드 폴더뷰 최강), Evermusic/Amperfy/Substreamer(iOS), CarPlay 지원"
 echo -e "${GREEN}====================================================${NC}"

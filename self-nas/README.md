@@ -20,11 +20,11 @@
 디스크의 성격과 데이터의 용도에 따라 역할을 완벽히 분리한 4-Tier 스토리지 구성입니다.
 
 - **`HOST OS 전용 (Non-Disk)` Intel 710 SSD (MLC 100GB, Non-Disk):** Proxmox VE 베이스 OS 및 부팅 전용 (안정성 최우선, eMLC 초고내구성, 시스템 로그/RRD I/O)
-- **`상시 고속 서비스 (Non-Disk)` Intel 530 SSD (MLC 120GB, Non-Disk):** 24/7 상시 무소음 서비스 (AdGuard Home, Immich DB/벡터검색/썸네일, Navidrome DB, Jellyfin 메타데이터/캐시)
+- **`상시 고속 서비스 (Non-Disk)` Intel 530 SSD (MLC 120GB, Non-Disk):** 24/7 상시 무소음 서비스 (AdGuard Home, Immich DB/벡터검색/썸네일, Gonic DB, Jellyfin 메타데이터/캐시)
 - **`홈 & 라이프 허브 (Home & Life Hub)` WD Gold 4TB (7200RPM Enterprise):**
   - 📸 **사진 전체**: 개인 스마트폰 자동동기화(빈번 쓰기/조회) + 가족여행/기념일 사진(가족 공유)
   - 🎥 **라이프 영상**: 스마트폰 일상 영상 + 가족 기념행사/여행 홈비디오
-  - 🎵 **음악 라이브러리**: 무손실 음원 전체 (Navidrome)
+  - 🎵 **음악 라이브러리**: 무손실 음원 전체 (Gonic 폴더 기반 스트리밍)
   - 📦 **Proxmox 백업 금고**: VM/LXC 일일 자동 백업 (3-2-1 핵심 백업 대상)
 - **`엔터테인먼트 COLD 스토리지` WD White 8TB (`WD80EMAZ`) + WD White 18TB (`WUH721818ALE604`) (총 26TB):**
   - 🎬 **소비성 미디어**: 4K/1080p 영화, 국내외 TV 드라마 시리즈, 예능, 애니메이션
@@ -38,8 +38,8 @@
 | **VM 101: 헤놀로지**<br/>*(Pure Storage Core)* | 2 Core / 4GB | WD Gold 4TB, WD White 8TB, WD White 18TB (Raw Passthrough) | **순수 NAS 스토리지 코어** (Samba / NFS 파일 공유 데몬 전용, 도커 미구동으로 초경량 유지) |
 | **LXC 102: AdGuard Home** | 1 Core / 512MB | Intel 530 SSD (MLC, Non-Disk) | 24/7 상시 무소음 DNS 쿼리 캐시 & 네트워크 광고 차단 |
 | **LXC 103: Immich Server** | 2 Core / 4GB | Intel 530 SSD (DB/앱) + WD Gold 4TB (사진/영상 원본) | AI 기반 사진 백업 백엔드 + PostgreSQL + Vector Search DB |
+| **LXC 104: Gonic Music Server** | 1 Core / 512MB | Intel 530 SSD (루트/DB) + WD Gold 4TB (음원 라이브러리) | 초경량 Go 기반 **폴더(디렉토리) 기반 고음질 음악 스트리밍 서버** (Subsonic API) |
 | **LXC 105: Jellyfin Server** | 2 Core / 2GB | Intel 530 SSD (루트/캐시) + WD Gold 4TB (홈비디오) + WD White 26TB (영화/드라마) | Intel UHD 630 iGPU QuickSync HW 가속 미디어 스트리밍 |
-| **LXC (Navidrome Music)** | 1 Core / 512MB | Intel 530 SSD (루트/DB) + WD Gold 4TB (음원 라이브러리) | 초경량 Go 기반 고음질 음악 스트리밍 서버 |
 | **LXC 106: Dev Web Server** | 2 Core / 2GB | Intel 530 SSD (MLC, Non-Disk) | Spring Boot / Node.js / Nginx 개인 프로젝트 개발 & 테스트 웹 서버 |
 | *(선택 확장) Windows VM* | *2~4 Core / 4GB* | *Intel 530 SSD or WD Gold 4TB* | *추후 필요 시에만 최소 리소스로 On-Demand 생성 예정* |
 
@@ -48,6 +48,7 @@
 
 * **DNS & Network Security**: `LXC 102 (AdGuard Home)` — 24/7 무소음 DNS 필터링/캐시
 * **AI Photo Cloud**: `LXC 103 (Immich)` — 초고속 PostgreSQL/벡터 DB는 SSD에서 구동, 대용량 원본 사진은 4TB Gold NFS로 저장
+* **Folder-based Music Streaming**: `LXC 104 (Gonic)` — 폴더/디렉토리 구조 그대로 스트리밍, Subsonic 클라이언트(Symfonium/Amperfy 등) 및 CarPlay 연동
 * **Media Streaming**: `LXC 105 (Jellyfin)` — iGPU 하드웨어 가속, 4TB Gold NFS 미디어 라이브러리 연동
 * **Development Web Server**: `LXC 106 (Dev Web)` — 개인 웹 애플리케이션 개발/배포 환경
 
@@ -91,7 +92,7 @@ LG U+ 공유기와 ASUS 공유기 사이 **이중 NAT** 상태. 포트포워딩/
 - [ ] 9. Intel 530 SSD 위에 Proxmox Native LXC 컨테이너 순차 구축 → [통합 미디어 마스터 가이드](docs/07_media_services_master_guide.md), [Immich/Caddy HTTPS 가이드](docs/09_immich_caddy_https_and_storage_setup.md):
   - [ ] 9-1. `LXC 102 (AdGuard Home)` DNS 캐시 구축
   - [x] 9-2. `LXC 103 (Immich Photo Server)` 구축 (4TB Gold 실시간 백업 + 10GB+ 사진 인덱싱) → [`09_immich_caddy_https_and_storage_setup.md`](docs/09_immich_caddy_https_and_storage_setup.md)
-  - [x] 9-3. `LXC 104 (Navidrome Music Server)` 구축 (4TB 음악 라이브러리 연동 & Evermusic/CarPlay)
+  - [x] 9-3. `LXC 104 (Gonic Music Server)` 구축 (4TB 음악 라이브러리 연동 & 폴더 기반 브라우징 / Subsonic 앱 / CarPlay)
   - [ ] 9-4. `LXC 105 (Jellyfin Media Server)` 구축 (18TB 영상 라이브러리 연동 & iGPU 가속) → [`lxc/jellyfin/README.md`](lxc/jellyfin/README.md)
   - [ ] 9-5. `LXC 106 (Dev Web Server)` Spring Boot / Node.js 개발 서버 구축
 - [ ] 10. (선택 확장) Windows VM 필요 시 Intel 530 SSD or WD Gold에 On-Demand 생성

@@ -20,7 +20,7 @@ flowchart TB
     end
 
     subgraph Tier1["⚡ Tier 1: Fast Service & DB (MLC)"]
-        SSD_530["Intel 530 SSD 120GB<br/><b>LXC 컨테이너 루트 & DB/캐시</b><br/>• Immich: PostgreSQL / Vector DB / 썸네일<br/>• Navidrome: SQLite / 앨범아트 캐시<br/>• Jellyfin: 메타데이터 / 포스터 / 트랜스코딩 캐시"]:::ssd
+        SSD_530["Intel 530 SSD 120GB<br/><b>LXC 컨테이너 루트 & DB/캐시</b><br/>• Immich: PostgreSQL / Vector DB / 썸네일<br/>• Gonic: SQLite / 앨범아트 캐시<br/>• Jellyfin: 메타데이터 / 포스터 / 트랜스코딩 캐시"]:::ssd
     end
 
     subgraph Tier2["🔥 Tier 2: Home & Life Hub (24/7 Enterprise CMR)"]
@@ -32,17 +32,17 @@ flowchart TB
     end
 
     %% Apps
-    App_Immich["📸 Immich (LXC)"]:::app
-    App_Navi["🎵 Navidrome (LXC)"]:::app
-    App_Jelly["🎬 Jellyfin (LXC)"]:::app
+    App_Immich["📸 Immich (LXC 103)"]:::app
+    App_Gonic["🎵 Gonic (LXC 104)"]:::app
+    App_Jelly["🎬 Jellyfin (LXC 105)"]:::app
 
     %% Service Links
     SSD_530 -.->|"DB / 캐시"| App_Immich
-    SSD_530 -.->|"DB / 캐시"| App_Navi
+    SSD_530 -.->|"DB / 캐시"| App_Gonic
     SSD_530 -.->|"메타데이터"| App_Jelly
 
     WD_Gold -->|"사진/일상영상 마운트"| App_Immich
-    WD_Gold -->|"음원 마운트"| App_Navi
+    WD_Gold -->|"음원 마운트"| App_Gonic
     WD_Gold -->|"홈비디오 라이브러리 마운트"| App_Jelly
 
     WD_White -->|"영화/드라마/예능 마운트"| App_Jelly
@@ -84,6 +84,7 @@ flowchart TB
 ### ③ 음악 (Music) ➔ `WD Gold 4TB`
 * 무손실 FLAC / MP3 음원 라이브러리 전체.
 * 음악 라이브러리는 용량이 크지 않으며(수십~수백 GB), 언제든 모바일/CarPlay/PC에서 즉시 스트리밍할 수 있도록 Gold 4TB에 배치.
+* 폴더/디렉토리 구조 기반 탐색에 특화된 Gonic이 해당 디렉토리를 바로 인덱싱하여 서비스.
 
 ---
 
@@ -99,7 +100,7 @@ flowchart TB
 * 오직 거실 TV로 영화/드라마를 볼 때만 콜드 하드가 스핀업되므로 발열, 소음, 전기요금을 획기적으로 줄입니다.
 
 ### 3. 고속 브라우징과 무소음 경험 (SSD 분리 효과)
-* Immich, Jellyfin, Navidrome의 **메타데이터, 썸네일, 포스터, 검색 인덱스 DB가 Intel 530 SSD**에 상주합니다.
+* Immich, Jellyfin, Gonic의 **메타데이터, 썸네일, 포스터, 검색 인덱스 DB가 Intel 530 SSD**에 상주합니다.
 * 앱에서 수만 장의 사진이나 영화 목록을 스크롤할 때 하드디스크를 긁지 않고 즉각 렌더링됩니다.
 
 ---
@@ -116,7 +117,10 @@ flowchart TB
 | 서비스 (LXC) | 호스트 소스 경로 | LXC 내부 마운트 경로 | 접근 권한 | 용도 |
 | :--- | :--- | :--- | :---: | :--- |
 | **Immich** (LXC 103) | `/mnt/gold/photos` | `/mnt/photos` | `rw` (읽기/쓰기) | 개인 사진 + 가족 공유 사진/영상 |
-| **Navidrome** (LXC 104) | `/mnt/gold/music` | `/mnt/music` | `ro` (읽기 전용) | 전체 음악 라이브러리 |
+| **Gonic** (LXC 104) | `/mnt/gold/music` | `/mnt/music` | `ro` (읽기 전용) | 전체/폴더별 음악 라이브러리 |
+| **Jellyfin** (LXC 105) | `/mnt/gold/homevideos` | `/mnt/homevideos` | `ro` (읽기 전용) | **가족 여행 / 기념일 홈비디오** |
+| | `/mnt/cold-media/movies` | `/mnt/media/movies` | `ro` (읽기 전용) | **영화 라이브러리 (4K/1080p)** |
+| | `/mnt/cold-media/shows` | `/mnt/media/shows` | `ro` (읽기 전용) | **드라마 / 예능 라이브러리** |
 | **Jellyfin** (LXC 105) | `/mnt/gold/homevideos` | `/mnt/homevideos` | `ro` (읽기 전용) | **가족 여행 / 기념일 홈비디오** |
 | | `/mnt/cold-media/movies` | `/mnt/media/movies` | `ro` (읽기 전용) | **영화 라이브러리 (4K/1080p)** |
 | | `/mnt/cold-media/shows` | `/mnt/media/shows` | `ro` (읽기 전용) | **드라마 / 예능 라이브러리** |

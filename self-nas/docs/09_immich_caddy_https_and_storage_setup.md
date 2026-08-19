@@ -1,6 +1,6 @@
-# 📸🎵 Immich 사진 & Navidrome 음악 서버, 4TB 스토리지 연동 및 실전 운영 종합 가이드 (09)
+# 📸🎵 Immich 사진 & Gonic 음악 서버, 4TB 스토리지 연동 및 실전 운영 종합 가이드 (09)
 
-자작 홈서버(`self-nas`) 환경에서 **Intel 530 SSD 고속 컨테이너 풀(`local-530`) 구축, WD Gold 4TB 5대 공유 폴더 & NFS 연동, Immich Photo Server(LXC 103) & Navidrome Music Server(LXC 104) 배포, 10GB+ 사진 인덱싱, HTTPS(Caddy) 검토 및 최종 순수 직통 HTTP 아키텍처 결정, RAM 디스크(`tmpfs`) SSD 수명 보호, 그리고 한글 태그/음악 클라이언트 최적화**를 집대성한 마스터 문서입니다.
+자작 홈서버(`self-nas`) 환경에서 **Intel 530 SSD 고속 컨테이너 풀(`local-530`) 구축, WD Gold 4TB 5대 공유 폴더 & NFS 연동, Immich Photo Server(LXC 103) & Gonic Music Server(LXC 104) 배포, 10GB+ 사진 인덱싱, HTTPS(Caddy) 검토 및 최종 순수 직통 HTTP 아키텍처 결정, RAM 디스크(`tmpfs`) SSD 수명 보호, 폴더(디렉토리) 기반 스트리밍 및 음악 클라이언트 최적화**를 집대성한 마스터 문서입니다.
 
 ---
 
@@ -17,12 +17,12 @@ flowchart TB
     %% Clients
     subgraph Clients["📱 사용자 단말기 (스마트폰 / 차량 / 맥북 / PC)"]
         MobilePhoto["📸 Immich 모바일 앱 (사진 백업 & AI 검색)"]:::client
-        MobileMusic["🎵 Evermusic / Substreamer / CarPlay (음악 스트리밍)"]:::client
+        MobileMusic["🎵 Symfonium / Amperfy / Substreamer / Evermusic / CarPlay (폴더 기반 음악 스트리밍)"]:::client
         Browser["💻 PC / Mac 웹 브라우저"]:::client
     end
 
     %% Router
-    Router["🌐 ASUS 공유기 (DDNS: your-domain.asuscomm.com)<br/>• 포트 2283 ➔ 192.168.1.103:2283 (Immich Photo)<br/>• 포트 4533 ➔ 192.168.1.104:4533 (Navidrome Music)"]:::pve
+    Router["🌐 ASUS 공유기 (DDNS: your-domain.asuscomm.com)<br/>• 포트 2283 ➔ 192.168.1.103:2283 (Immich Photo)<br/>• 포트 4747 ➔ 192.168.1.104:4747 (Gonic Music)"]:::pve
 
     %% Proxmox Native LXC (Intel 530 SSD local-530 위 구동)
     subgraph PVE_Host["⚡ Proxmox VE 호스트 (192.168.1.200) - Intel 530 SSD (local-530)"]
@@ -30,20 +30,20 @@ flowchart TB
             ImmichStack["Docker Compose (Server + ML AI + Postgres Vector DB + Valkey)"]:::lxc
         end
 
-        subgraph LXC104["🎵 LXC 104: Navidrome Music Server (192.168.1.104:4533)"]
-            NavidromeNative["Go 단일 바이너리 네이티브 데몬 (RAM 50MB 초경량)"]:::lxc
+        subgraph LXC104["🎵 LXC 104: Gonic Music Server (192.168.1.104:4747)"]
+            GonicNative["Go 단일 바이너리 네이티브 데몬 (폴더/디렉토리 구조 브라우징 특화, RAM 30MB 초경량)"]:::lxc
         end
     end
 
     %% 헤놀로지 VM 101 (Pure NAS Storage Core)
     subgraph StorageCore["💾 헤놀로지 VM 101 (Pure NAS Storage Core - 192.168.1.132)"]
-        WD_Gold["💾 WD Gold 4TB (Volume 1 Btrfs)<br/>• 📁 photo (NFS) ➔ 사진/동영상 원본 저장소<br/>• 📁 video (NFS) ➔ 가족 홈비디오 라이브러리<br/>• 📁 music (NFS) ➔ 무손실 음원 라이브러리<br/>• 📁 temp (SMB) ➔ 개인 임시 작업실<br/>• 📁 backups (NFS) ➔ PVE 백업 금고 (500GB 제한)"]:::storage
+        WD_Gold["💾 WD Gold 4TB (Volume 1 Btrfs)<br/>• 📁 photo (NFS) ➔ 사진/동영상 원본 저장소<br/>• 📁 video (NFS) ➔ 가족 홈비디오 라이브러리<br/>• 📁 music (NFS) ➔ 폴더별 무손실 음원 라이브러리<br/>• 📁 temp (SMB) ➔ 개인 임시 작업실<br/>• 📁 backups (NFS) ➔ PVE 백업 금고 (500GB 제한)"]:::storage
         WD_White["💾 WD White 26TB (Volume 2 Btrfs)<br/>• 📁 PDS1 / PDS2 (NFS) ➔ 영화/드라마 콜드 스토리지"]:::storage
     end
 
     %% Connections
     MobilePhoto -->|"HTTP 직통 연결 (:2283)"| Router
-    MobileMusic -->|"HTTP 직통 연결 (:4533)"| Router
+    MobileMusic -->|"HTTP 직통 연결 (:4747)"| Router
     Browser --> Router
     Router --> LXC103
     Router --> LXC104
@@ -66,6 +66,12 @@ flowchart TB
    - 스마트폰 외부 접속은 **LTE/5G 통신사 기지국 100% 무선 암호화** 구간을 이용하므로 실생활에서 충분히 안전함.
    - **결과**: 모바일 앱 접속 에러 0%, 인증서 만료 스트레스 0%, 시스템 리소스 낭비 0% 달성!
 
+### 결정 2. 왜 Navidrome 대신 Gonic을 음악 서버로 채택했는가?
+1. **Navidrome의 한계**: ID3 메타데이터 태그 중심 인덱싱으로 인해, 태그가 정리되지 않은 음원, 믹스셋, 비정규 앨범, 사용자 정의 폴더 계층 구조 탐색에 한계가 있음.
+2. **Gonic의 결정적 이점**:
+   - **디렉토리(폴더) 트리 구조 브라우징을 완벽하게 지원**하여 폴더 정리 방식 그대로 음악 탐색 가능.
+   - **Go 기반 초경량(RAM 30MB)** + **Subsonic/OpenSubsonic API 완전 호환**으로 기존의 수많은 고품질 클라이언트 앱을 그대로 사용 가능.
+
 ---
 
 ## 💡 3. 핵심 실전 운영 & 최적화 꿀팁 총정리
@@ -86,15 +92,16 @@ flowchart TB
 - **머신러닝(AI) 동시성 조절**: `Machine Learning Settings ➔ Concurrency = 1` 로 설정하여 대량 업로드 시 CPU/RAM 피크 방지.
 - **브라우저 쿠키 트러블슈팅**: HTTPS ➔ HTTP 전환 후 로그인 에러 시 **시크릿 창(Incognito)** 으로 접속하면 즉시 해결.
 
-### ③ Navidrome 한글 깨짐 복구 & 추천 모바일 클라이언트
+### ③ Gonic 폴더 기반 브라우징 & 추천 모바일 클라이언트
 - **구형 MP3 한글 태그(EUC-KR ➔ UTF-8) 1초 일괄 복구 명령어**:
   ```bash
-  pct exec 104 -- bash -c "apt-get update -qq && apt-get install -y -qq python3-mutagen && find /mnt/music -name '*.mp3' -exec mid3iconv -e euc-kr -d {} + && systemctl restart navidrome"
+  pct exec 104 -- bash -c "apt-get update -qq && apt-get install -y -qq python3-mutagen && find /mnt/music -name '*.mp3' -exec mid3iconv -e euc-kr -d {} + && systemctl restart gonic"
   ```
 - **추천 모바일 스트리밍 앱 (Subsonic 규격)**:
-  - 🥇 **`Evermusic` (iOS 무료 ⭐⭐⭐)**: **앱 전체 메뉴 100% 한국어 지원**, **폴더별 보기(Folder Tree) 최강자**, Apple CarPlay 지원.
-  - 🥈 **`Substreamer` (iOS 무료)**: 깔끔한 디자인, 빠른 폴더 탐색 및 오프라인 재생.
-  - 🥉 **`Symfonium` (Android 최강)**: 안드로이드 오토 및 고음질 DSP 지원.
+  - 🥇 **`Symfonium` (Android 최강 ⭐⭐⭐)**: **폴더 브라우징 완벽 지원**, 강력한 오프라인 캐시, 안드로이드 오토 & 고음질 DSP.
+  - 🥈 **`Evermusic` (iOS 무료 ⭐⭐⭐)**: **앱 전체 메뉴 100% 한국어 지원**, **폴더별 보기(Folder Tree) 최강자**, Apple CarPlay 지원.
+  - 🥉 **`Amperfy` / `Substreamer` (iOS 무료)**: 깔끔한 UI, 빠른 폴더 탐색 및 오프라인 재생.
+  - 💻 **`Feishin` (Mac / Windows)**: 깔끔한 현대적 데스크톱 플레이어.
 
 ---
 
@@ -103,7 +110,7 @@ flowchart TB
 | 서비스 | 내부 접속 주소 | 외부 접속 주소 | 스토리지 위치 |
 | :--- | :--- | :--- | :--- |
 | **Immich Photo** | `http://192.168.1.103:2283` | `http://your-domain.asuscomm.com:2283` | **Intel 530 SSD** (LXC/DB)<br/>**WD Gold 4TB** (`/volume1/photo`) |
-| **Navidrome Music** | `http://192.168.1.104:4533` | `http://your-domain.asuscomm.com:4533` | **Intel 530 SSD** (LXC/DB)<br/>**WD Gold 4TB** (`/volume1/music`) |
+| **Gonic Music** | `http://192.168.1.104:4747` | `http://your-domain.asuscomm.com:4747` | **Intel 530 SSD** (LXC/DB)<br/>**WD Gold 4TB** (`/volume1/music`) |
 | **헤놀로지 DSM** | `https://192.168.1.132:5001` | 내부망 전용 관리 | **WD Gold / White HDD** |
 | **Proxmox Host** | `https://192.168.1.200:8006` | 내부망 전용 관리 | **Intel 710 SSD** (Host OS) |
 
@@ -121,7 +128,7 @@ pct set 104 --onboot 1 --startup order=2,up=10
 ```
 
 - **[1순위 (order=1, up=45)]**: **헤놀로지 VM 101** 먼저 기동 ➔ 45초간 Btrfs 마운트 및 NFS 데몬 정상화 대기
-- **[2순위 (order=2)]**: **Immich (LXC 103)** & **Navidrome (LXC 104)** 기동 ➔ 4TB Gold 하드의 `photo`/`music` NFS 즉시 마운트
+- **[2순위 (order=2)]**: **Immich (LXC 103)** & **Gonic (LXC 104)** 기동 ➔ 4TB Gold 하드의 `photo`/`music` NFS 즉시 마운트
 
 ---
 
