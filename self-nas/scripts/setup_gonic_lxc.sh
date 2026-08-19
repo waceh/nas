@@ -86,7 +86,7 @@ log_info "LXC 내부 패키지 설치 및 Gonic 음악 서버 구성 중..."
 pct exec "$CTID" -- bash -c "
   export DEBIAN_FRONTEND=noninteractive
   apt-get update -qq
-  apt-get install -y -qq nfs-common curl ffmpeg golang git
+  apt-get install -y -qq nfs-common curl ffmpeg jq
 
   # 4TB Gold music NFS 마운트
   mkdir -p /mnt/music
@@ -95,14 +95,14 @@ pct exec "$CTID" -- bash -c "
   fi
   mount -a || true
 
-  # Gonic 바이너리 빌드 및 설치
+  # Gonic 최신 바이너리 초고속 다운로드 및 설치
   mkdir -p /var/lib/gonic/data /var/lib/gonic/cache /var/lib/gonic/podcasts /var/lib/gonic/playlists /opt/gonic
-  export GOPATH=/tmp/go
-  export GOCACHE=/tmp/go-cache
-  CGO_ENABLED=0 go install go.senan.xyz/gonic/cmd/gonic@latest
-  cp /tmp/go/bin/gonic /opt/gonic/gonic
-  rm -rf /tmp/go /tmp/go-cache
-  apt-get purge -y golang git && apt-get autoremove -y -qq
+  GONIC_URL=\$(curl -s https://api.github.com/repos/sentriz/gonic/releases/latest | grep "browser_download_url.*linux-amd64" | cut -d '\"' -f 4 | head -n 1)
+  if [ -z \"\$GONIC_URL\" ]; then
+    GONIC_URL=\"https://github.com/sentriz/gonic/releases/download/v0.22.0/gonic-linux-amd64-v0.22.0\"
+  fi
+  curl -fsSL \"\$GONIC_URL\" -o /opt/gonic/gonic
+  chmod +x /opt/gonic/gonic
 
   # 환경설정 파일 생성
   cat << 'ENV' > /etc/default/gonic
