@@ -105,5 +105,6 @@ bash /root/nas_power.sh shutdown-host
 - [00. 작업 진행 현황 및 인수인계](00_progress_and_handover_notes.md) (현재 문서)
 - [09. Immich & Gonic 실전 운영 마스터 가이드](09_immich_caddy_https_and_storage_setup.md)
 - [10. NAS Graceful 순차 전원 & Jellyfin 구축 가이드](10_graceful_power_management_and_jellyfin_guide.md)
+- [11. Proxmox 백업 스토리지(물리 디스크 매핑) 및 재해 복구 가이드](11_proxmox_backup_and_disaster_recovery_guide.md)
 - [98. 향후 확장 서비스 후보군 및 Spring AI 검토](98_candidate_services_and_architecture_review.md)
 - [99. (번외편) KMP 모바일 음악 앱 아키텍처](99_kmp_gonic_mobile_app_architecture.md)
