@@ -139,7 +139,7 @@ flowchart TB
 
 ## 🤖 5. Java-Spring 백엔드 & AI 기술 접목 후보군 (고급 아키텍처)
 
-현역 15년 차 Java-Spring 백엔드 시니어 관점에서, **Spring Boot 3.x / Spring AI**, **NAS의 방대한 개인 미디어 데이터**, 그리고 **Oracle Cloud(24GB RAM Ampere) + Self-NAS 하이브리드 인프라**를 접목한 고수준 AI 아키텍처 후보군입니다.
+**Spring Boot 3.x / Spring AI**, **NAS의 방대한 개인 미디어 데이터**, 그리고 **Oracle Cloud(24GB RAM Ampere) + Self-NAS 하이브리드 인프라**를 접목한 고수준 AI 아키텍처 후보군입니다.
 
 ---
 
