@@ -81,7 +81,7 @@ sleep 5
 
 # 5. Docker 설치 및 Homepage 사전 구성 (LXC 내부)
 log_info "LXC 내부 Docker 설치 및 Homepage 대시보드 사전 설정 중..."
-pct exec "$CTID" -- bash -c "
+pct exec "$CTID" -- bash << 'INSIDE_LXC'
   export DEBIAN_FRONTEND=noninteractive
   apt-get update -qq
   apt-get install -y -qq curl ca-certificates gnupg
@@ -117,23 +117,23 @@ EOF
 - resources:
     cpu: true
     memory: true
-    c入り: false
+    disk: /
 EOF
 
   # 3. services.yaml (전체 5대 스토리지 및 미디어 서비스 링크)
   cat << 'EOF' > /opt/homepage/config/services.yaml
 - 미디어 서비스 (Media Core):
-    - Immich:
+    - Immich Photo:
         icon: immich.png
         href: http://192.168.1.103:2283
         description: AI 사진 백업 / 안면 인식 (WD Gold 4TB)
         ping: http://192.168.1.103:2283
-    - Gonic:
+    - Gonic Music:
         icon: gonic.png
         href: http://192.168.1.104:4747
         description: 무손실 음악 스트리밍 / Amperfy (WD Gold 4TB)
         ping: http://192.168.1.104:4747
-    - Jellyfin:
+    - Jellyfin Video:
         icon: jellyfin.png
         href: http://192.168.1.105:8096
         description: iGPU QuickSync 4K 비디오 (WD White 18TB / 8TB)
@@ -172,7 +172,7 @@ EOF
   # Homepage 실행
   cd /opt/homepage
   docker compose up -d
-"
+INSIDE_LXC
 
 # 6. 호스트 부팅 및 종료 순서 설정
 pct set "$CTID" --startup "order=2,up=5,down=10"
