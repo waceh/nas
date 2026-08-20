@@ -16,8 +16,10 @@ flowchart TB
     classDef storage fill:#2d3748,stroke:#4a5568,stroke-width:1px,color:#fff;
 
     subgraph Entry["🌐 접속 게이트웨이 & 시작페이지"]
-        Homepage["🏠 Homepage<br/>(홈서버 올인원 시작페이지)"]:::dash
+        Organizr["📑 Organizr<br/>(단일 창 탭 런처 & 통합 포털)"]:::dash
+        Homepage["🏠 Homepage<br/>(실시간 메트릭 & 상태 대시보드)"]:::dash
         Tailscale["🛡️ Tailscale<br/>(원클릭 암호화 외부 접속)"]:::dash
+        Organizr -.->|"Home 탭 임베드"| Homepage
     end
 
     subgraph Core["🎯 1. 핵심 미디어 스택 (구축 확정 / 24/7 상시)"]
@@ -68,11 +70,21 @@ flowchart TB
 ### ① ⚡ 홈서버 관제 & 인프라 편의 (삶의 질 향상 ⭐⭐⭐)
 | 서비스 | 권장 구동 환경 | 소모 RAM | 주요 특징 및 추천 이유 |
 | :--- | :---: | :---: | :--- |
+| 📑 **Organizr** | LXC / Docker | ~50 MB | • **통합 탭 런처 & 가족 포털**: 여러 웹 서비스를 새 탭 없이 한 화면에서 iframe 탭 전환<br>• Plex/Jellyfin SSO 로그인 연동, 사용자/역할별 탭 권한 제어 |
 | 🏠 **Homepage** | LXC / Docker | ~50 MB | • **홈서버 올인원 시작페이지**: Next.js 기반 초경량 대시보드<br>• Proxmox CPU/RAM 게이지, Immich 사진 장수, Jellyfin 시청자 수 실시간 위젯 표시<br>• DB 불필요, 간단한 YAML 설정으로 관리 |
 | 📊 **Uptime Kuma** | LXC / Docker | ~50 MB | • Proxmox 호스트, VM 101, Immich, Gonic, 네트워크 상태를 1분마다 모니터링<br>• 서버 장애 발생 시 **텔레그램 / 디스코드로 즉시 푸시 알림** 발송 |
 | 🛡️ **Tailscale** | LXC / PVE | ~30 MB | • 공유기 포트포워딩 없이 외부(LTE/카페/해외)에서 집안 로컬 IP로 암호화 직결 |
 | 🛡️ **AdGuard Home** | LXC 102 | ~100 MB | • 집안 모든 기기(스마트폰, 스마트TV, PC) 광고/추적기 원천 차단<br>• `photo.home`, `music.home` 등 내부 로컬 도메인 DNS 매핑 |
 | 🖥️ **Cockpit** | PVE Host 패키지 | ~20 MB | • Proxmox 호스트(Debian)에 웹 GUI 추가 (`:9090`)<br>• 하드 디스크 건강도(S.M.A.R.T), 온도 확인 및 클릭으로 Samba 공유 폴더 관리 |
+
+#### 💡 [심층 분석] Homepage + Organizr 듀얼 대시보드 시너지 (추천 조합)
+- **왜 둘을 함께 쓰면 좋은가?**:
+  - **Homepage 단독**: 시스템 리소스 및 위젯 메트릭 보기는 최강이지만, 링크 클릭 시 새 브라우저 창/탭이 계속 열림.
+  - **Organizr 단독**: 브라우저 단일 창에서 탭 전환하며 쓰기는 좋지만, 자체 위젯 대시보드 디자인이 다소 투박함.
+  - **결합 형태 (Best Practice)**: **Organizr를 브라우저 메인 포털로 두고, Home 탭에 Homepage를 iframe으로 임베드**하여 `실시간 관제(Homepage) + 단일 화면 작업(Organizr)`을 완벽히 양립.
+- **실전 팁 & 주의사항**:
+  - Proxmox 웹 콘솔이나 일부 보안 헤더(`X-Frame-Options`)가 걸린 서비스는 iframe 대신 Organizr 내 **'새 탭으로 열기'** 옵션 지정.
+  - 두 서비스 합산 메모리 소모량은 **100MB 미만**으로 하드웨어 리소스 부담이 전혀 없음.
 
 ---
 
@@ -117,7 +129,7 @@ flowchart TB
 | **LXC 103** | **Photo Core** | Immich (Server + ML + Postgres + Valkey) | 2 Core | **4.0 GB** | Intel 530 SSD + WD Gold |
 | **LXC 104** | **Music Core** | Gonic (초경량 Go 데몬) | 1 Core | **0.5 GB** | Intel 530 SSD + WD Gold |
 | **LXC 105** | **Media Core** | Jellyfin (iGPU QuickSync Passthrough) | 2 Core | **2.0 GB** | Intel 530 SSD + WD Gold/White |
-| **LXC 107** | **Dashboard & Monitor** *(후보)* | Homepage + Uptime Kuma + Vaultwarden + FileBrowser | 1 Core | **1.0 GB** | Intel 530 SSD (`local-530`) |
+| **LXC 107** | **Dashboard & Monitor** *(후보)* | Organizr + Homepage + Uptime Kuma + Vaultwarden + FileBrowser | 1 Core | **1.0 GB** | Intel 530 SSD (`local-530`) |
 | **LXC 108** | **Personal Web** *(후보)* | Ghost(블로그) or Quartz(위키) | 1 Core | **0.5 GB** | Intel 530 SSD (`local-530`) |
 | **LXC 109** | **Media Auto** *(후보)* | Jellyseerr + *Arr + qBittorrent | 2 Core | **1.5 GB** | Intel 530 SSD + WD White |
 | **Host** | **Proxmox VE 8.x** | Host OS + ZFS/ARC + Linux Page Cache | - | **~6.0 GB** | Intel 710 SSD |
@@ -212,7 +224,7 @@ flowchart LR
 1. **1단계 (기본 확정 스택 완성)**:
    - `Xpenology(On-Demand)` + `Immich` + `Gonic` + `Jellyfin` 셋업 완료 및 안정성 확인
 2. **2단계 (관리 편의성 & 대시보드 검토)**:
-   - `Homepage`(홈서버 시작페이지) + `Uptime Kuma`(상태 모니터링/장애알림) + `Tailscale` 연동
+   - `Organizr + Homepage`(통합 탭 포털 & 실시간 대시보드) + `Uptime Kuma`(상태 모니터링/장애알림) + `Tailscale` 연동
 3. **3단계 (개인 공간 & 생산성 검토)**:
    - `Ghost` / `Quartz`(개인 블로그/지식위키) + `Vaultwarden`(비밀번호 관리)
 4. **4단계 (미디어 자동 수집 검토)**:

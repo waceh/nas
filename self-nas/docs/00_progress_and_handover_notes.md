@@ -105,7 +105,7 @@ bash /root/nas_power.sh shutdown-host
 - [ ] **Step 3. Proxmox 자동 백업 스토리지 등록 (`vzdump`)**:
   - 4TB Gold의 `/volume1/backups`를 Proxmox NFS 백업 저장소로 등록하여 VM 101, LXC 103~105 주간 스냅샷 백업 설정
 - [ ] **Step 4. (선택 검토) 확장 서비스 후보군 검토**:
-  - `Homepage` 대시보드, `Uptime Kuma` 장애 알림, `Tailscale`, `Spring AI` 에이전트 연동 검토 → [`98_candidate_services_and_architecture_review.md`](98_candidate_services_and_architecture_review.md)
+  - `Organizr + Homepage` 통합 탭/대시보드, `Uptime Kuma` 장애 알림, `Tailscale`, `Spring AI` 에이전트 연동 검토 → [`98_candidate_services_and_architecture_review.md`](98_candidate_services_and_architecture_review.md)
 
 ---
 
