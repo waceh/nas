@@ -94,8 +94,10 @@ LG U+ 공유기와 ASUS 공유기 사이 **이중 NAT** 상태. 포트포워딩/
   - [ ] 9-1. `LXC 102 (AdGuard Home)` DNS 캐시 구축
   - [x] 9-2. `LXC 103 (Immich Photo Server)` 구축 (4TB Gold 실시간 백업 + 10GB+ 사진 인덱싱) → [`09_immich_caddy_https_and_storage_setup.md`](docs/09_immich_caddy_https_and_storage_setup.md)
   - [x] 9-3. `LXC 104 (Gonic Music Server)` 구축 (4TB 음악 라이브러리 연동 & 폴더 기반 브라우징 / 완전 무료 앱 / CarPlay / Android Auto)
-  - [x] 9-4. `LXC 105 (Jellyfin Media Server)` 구축 (18TB/4TB 영상 라이브러리 연동 & iGPU 가속) → [`docs/10_graceful_power_management_and_jellyfin_guide.md`](docs/10_graceful_power_management_and_jellyfin_guide.md)
-  - [ ] 9-5. `LXC 106 (Dev Web Server)` Spring Boot / Node.js 개발 서버 구축
+  - [x] 9-4. `LXC 105 (Jellyfin Media Server)` 구축 (18TB/8TB/4TB 미디어 연동 & iGPU QSV 가속 & RAM 트랜스코딩 캐시) → [`docs/10_graceful_power_management_and_jellyfin_guide.md`](docs/10_graceful_power_management_and_jellyfin_guide.md)
+  - [x] 9-5. `LXC 107 (Homepage Dashboard)` 구축 (올인원 시작 포털 & 실시간 리소스/스토리지 관제) → [`scripts/setup_homepage_lxc.sh`](scripts/setup_homepage_lxc.sh)
+  - [ ] 9-6. `LXC 106 (Dev Web Server)` Spring Boot / Node.js 개발 서버 구축
 - [ ] 10. (선택 확장) Windows VM 필요 시 Intel 530 SSD or WD Gold에 On-Demand 생성
-- [x] 11. (상시 전원 관리) NAS Graceful 순차 기동·종료 자동화 (`nas_power.sh`) → [`docs/10_graceful_power_management_and_jellyfin_guide.md`](docs/10_graceful_power_management_and_jellyfin_guide.md)
-- [ ] 12. (참고/검토) 향후 확장 서비스 후보군 및 대시보드 검토 → [`docs/98_candidate_services_and_architecture_review.md`](docs/98_candidate_services_and_architecture_review.md)
+- [x] 11. (상시 전원 관리) NAS Graceful 순차 기동·종료 자동화 (`nas_power.sh` + 5대 디스크 통합 모니터) → [`docs/10_graceful_power_management_and_jellyfin_guide.md`](docs/10_graceful_power_management_and_jellyfin_guide.md)
+- [x] 12. (백업 및 재해 복구) Proxmox 자동 백업 스토리지(`nas-backups`) 500GB 등록 및 주간 정기 백업(`mon 01:00`) 스케줄 활성화 → [`docs/11_proxmox_backup_and_disaster_recovery_guide.md`](docs/11_proxmox_backup_and_disaster_recovery_guide.md)
+- [ ] 13. (참고/검토) 향후 확장 서비스 후보군 및 대시보드 검토 → [`docs/98_candidate_services_and_architecture_review.md`](docs/98_candidate_services_and_architecture_review.md)

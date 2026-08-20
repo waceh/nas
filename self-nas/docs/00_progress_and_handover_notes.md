@@ -89,18 +89,33 @@ bash /root/nas_power.sh shutdown-host
 - [x] **Step 1. Jellyfin Media Server (LXC 105) 실제 배포**:
   - 배포 완료 (`http://192.168.1.105:8096`)
   - Intel QuickSync (QSV) 및 RAM 캐시(`/dev/shm/jellyfin-transcodes`) 연동 완료
-  - 미디어 라이브러리 `/mnt/video` (4TB Gold) 마운트 완료
-  - 공유기 포트포워딩: 외부 포트 `8096` ➔ 내부 `192.168.1.105:8096` (TCP)
-- [x] **Step 2. Graceful 순차 전원 제어 스크립트 등록 & 테스트**:
-  - `/root/nas_power.sh` 등록 완료
-  - `init-order` 실행 완료 (VM 101 `order=1`, LXC `order=2`)
-  - 전체 상태 모니터링(`bash /root/nas_power.sh status`) 정상 동작 확인
-- [x] **Step 3. Proxmox 자동 백업 스토리지 등록 (`vzdump`)**:
+  - 3단 스토리지 마운트 완료 (`/mnt/pds1` 18TB, `/mnt/pds2` 8TB, `/mnt/music` 4TB)
+  - 저전력 인코딩(i915 HuC 이슈 방지) 및 VPP Tone Mapping 하드웨어 가속 설정 완료
+- [x] **Step 2. Graceful 순차 전원 제어 스크립트 등록 & 5대 디스크 모니터링**:
+  - `/root/nas_power.sh` 등록 완료 (`init-order` 실행으로 VM 101 `order=1`, LXC 102~107 `order=2` 적용)
+  - 5대 디스크(710, 530, Gold, White 18T/8T) 통합 용량 조회 (`bash nas_power.sh disk`) 기능 탑재
+- [x] **Step 3. Proxmox 자동 백업 스토리지 등록 (`vzdump`) & 재해 복구 매뉴얼**:
   - `nas-backups` NFS 스토리지 등록 완료 (`192.168.1.132:/volume1/backups`, 500GB Quota)
-  - `pvesm status` 정상 (`active`) 확인 완료
-  - Proxmox Datacenter 백업 스케줄 등록 완료 (`mon 01:00`, ZSTD, Snapshot, Keep Last: 3)
-- [ ] **Step 4. (선택 검토) 확장 서비스 후보군 검토**:
-  - `Organizr + Homepage` 통합 탭/대시보드, `Uptime Kuma` 장애 알림, `Tailscale`, `Spring AI` 에이전트 연동 검토 → [`98_candidate_services_and_architecture_review.md`](98_candidate_services_and_architecture_review.md)
+  - Proxmox Datacenter 주간 자동 백업 스케줄 등록 완료 (`mon 01:00`, ZSTD, Snapshot, Keep Last: 3)
+  - 재해 복구 매뉴얼 [`11_proxmox_backup_and_disaster_recovery_guide.md`](11_proxmox_backup_and_disaster_recovery_guide.md) 작성 완료
+- [x] **Step 4. Homepage 올인원 대시보드 (LXC 107) 배포**:
+  - 배포 완료 (`http://192.168.1.107:3000`)
+  - 미디어 서비스(Immich, Gonic, Jellyfin) 및 인프라(Proxmox, 헤놀로지) 바로가기 & 실시간 상태 연동
+- [ ] **Step 5. (차기 목표) 헤놀로지 VM 101 완전 제거 및 Proxmox 네이티브 스토리지 전환**:
+  - 하드디스크 3대를 Proxmox 호스트 네이티브(ZFS / ext4)로 마운트
+  - LXC 컨테이너(103~105)에 초고속 바인드 마운트(`mp0`)로 직통 연결하여 VM 101 삭제 및 RAM 4GB 회수
+
+---
+
+## 🏛️ 7. 미래 아키텍처 전환 로드맵 (헤놀로지 탈출 플랜)
+
+1. **현재 1단계 (안전 과도기 - 운영 중)**:
+   - 기존 Synology Btrfs 데이터(6.8TB) 포맷 없이 즉시 활용을 위해 헤놀로지(VM 101)를 '스토리지 코어'로 유지
+   - 모든 미디어 서비스(LXC 103~107)가 NFS로 마운트하여 실사용
+2. **최종 2단계 (순수 리눅스 네이티브 Proxmox 스토리지)**:
+   - 데이터 검증/정리 완료 후 HDD 3대를 Proxmox 호스트의 네이티브 풀로 전환
+   - 헤놀로지 VM 101 완전 영구 삭제 (`qm destroy 101`) ➔ RAM 4GB 및 VM 오버헤드 100% 회수
+   - NFS 네트워크 계층 대신 Proxmox 호스트 ➔ LXC 간 커널 레벨 초고속 바인드 마운트(`mp0`)로 전환
 
 ---
 
