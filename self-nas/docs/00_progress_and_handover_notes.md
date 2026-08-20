@@ -93,12 +93,9 @@ bash /root/nas_power.sh shutdown-host
   - `/root/nas_power.sh` 등록 완료
   - `init-order` 실행 완료 (VM 101 `order=1`, LXC `order=2`)
   - 전체 상태 모니터링(`bash /root/nas_power.sh status`) 정상 동작 확인
-- [ ] **Step 3. Proxmox 자동 백업 스토리지 등록 (`vzdump`)**:
-  ```bash
-  # Proxmox 호스트 셸에서 헤놀로지 4TB Gold 백업 폴더를 PVE 스토리지로 원클릭 등록
-  pvesm add nfs nas-backups --server 192.168.1.132 --export /volume1/backups --content backup --options "vers=4,nolock"
-  ```
-  - 등록 후 PVE 웹 콘솔 (`Datacenter` ➔ `Backup`)에서 주간 자동 백업(일요일 새벽) 스케줄 활성화
+- [x] **Step 3. Proxmox 자동 백업 스토리지 등록 (`vzdump`)**:
+  - `nas-backups` NFS 스토리지 등록 완료 (`192.168.1.132:/volume1/backups`, 500GB Quota)
+  - `pvesm status` 정상 (`active`) 확인 완료
 - [ ] **Step 4. (선택 검토) 확장 서비스 후보군 검토**:
   - `Organizr + Homepage` 통합 탭/대시보드, `Uptime Kuma` 장애 알림, `Tailscale`, `Spring AI` 에이전트 연동 검토 → [`98_candidate_services_and_architecture_review.md`](98_candidate_services_and_architecture_review.md)
 
