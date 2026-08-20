@@ -2,6 +2,7 @@
 
 개인 영상 편집(Final Cut Pro), 음악 작업(Suno AI) 및 미디어 스트리밍을 위한 고성능 10Gbps 홈 서버 구축 기록입니다.
 
+> 📋 **[🚀 작업 진행 현황 및 인수인계 노트 (00)](docs/00_progress_and_handover_notes.md)** — 다른 세션에서 작업 재개 시 필수 참조!
 > 📘 **[Proxmox 설치 이후 전체 과정 한눈에 보기 (통합 가이드)](POST_PROXMOX_SETUP_GUIDE.md)**
 
 ## 🖥️ 1. Hardware Specifications
