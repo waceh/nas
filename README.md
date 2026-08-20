@@ -77,10 +77,10 @@ flowchart TB
     WD_White_18TB -->|"Cold Passthrough (sata3)"| NAS_SPEC
     
     %% WD Gold 4TB Shared Services Links (Immich, Gonic, Jellyfin, PVE Backup)
-    NAS_SPEC -.->|"Immich Photos (/volume2/immich-photos NFS)"| LXC103
-    NAS_SPEC -.->|"Music Library (/volume2/music NFS)"| LXC104
-    NAS_SPEC -.->|"Jellyfin Media (/volume2/media NFS)"| LXC105
-    NAS_SPEC -.->|"PVE Backup Vault (/volume2/pve-backups NFS)"| PVE
+    NAS_SPEC -.->|"Immich Photos (/volume1/photo NFS)"| LXC103
+    NAS_SPEC -.->|"Music Library (/volume1/music NFS)"| LXC104
+    NAS_SPEC -.->|"Jellyfin Media (/volume1/video NFS)"| LXC105
+    NAS_SPEC -.->|"PVE Backup Vault (/volume1/backups NFS)"| PVE
     
     %% Hardware Acceleration
     CPU -.->|"iGPU Passthrough (/dev/dri/renderD128)"| LXC105

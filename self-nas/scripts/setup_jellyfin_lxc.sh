@@ -4,7 +4,7 @@
 # ==============================================================================
 # - LXC 105 생성 (Debian 12, 2 Core, 2GB RAM, 12GB SSD Root)
 # - Intel UHD 630 iGPU QuickSync 하드웨어 트랜스코딩 가속 패스스루 (/dev/dri)
-# - 헤놀로지 4TB Gold NFS (/volume2/video) -> /mnt/video 자동 영구 마운트
+# - 헤놀로지 4TB Gold NFS (/volume1/video) -> /mnt/video 자동 영구 마운트
 # - Jellyfin 공식 최신 버전 자동 설치
 # ==============================================================================
 
