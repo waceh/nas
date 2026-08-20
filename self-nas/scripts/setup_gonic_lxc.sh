@@ -126,6 +126,7 @@ User=root
 Group=root
 EnvironmentFile=/etc/default/gonic
 WorkingDirectory=/var/lib/gonic
+ExecStartPre=/bin/mkdir -p /dev/shm/gonic-cache /var/lib/gonic/data
 ExecStart=/opt/gonic/gonic
 Restart=always
 RestartSec=5
