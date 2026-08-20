@@ -76,19 +76,19 @@ qm config 101
 헤놀로지가 3대 디스크를 모두 장악하고 있으므로, 다른 서비스들은 **헤놀로지의 초고속 내부 네트워크 공유(NFS/SMB)**를 통해 접근합니다:
 
 ### 4-1. Jellyfin LXC (미디어 재생)
-- **헤놀로지**: WD Gold 4TB 볼륨 위의 `/volume2/media`에 NFS 권한 부여 (LXC IP 허용).
+- **헤놀로지**: WD Gold 4TB 볼륨 위의 `/volume1/video`에 NFS 권한 부여 (LXC IP 허용).
 - **Jellyfin LXC (`/etc/fstab`)**:
   ```bash
-  <헤놀로지_IP>:/volume2/media /mnt/media nfs defaults,_netdev 0 0
+  <헤놀로지_IP>:/volume1/video /mnt/video nfs defaults,_netdev 0 0
   ```
 
 ### 4-2. Immich (사진/동영상 원본 저장)
-- **헤놀로지**: 4TB Gold 볼륨 위의 `/volume2/immich-photos`에 NFS 권한 부여.
-- **Immich 컨테이너**: 해당 NFS 경로를 `/mnt/immich-photos`로 마운트하고, Immich의 `UPLOAD_LOCATION`으로 지정.
+- **헤놀로지**: 4TB Gold 볼륨 위의 `/volume1/photo`에 NFS 권한 부여.
+- **Immich 컨테이너**: 해당 NFS 경로를 `/mnt/photo`로 마운트하고, Immich의 `UPLOAD_LOCATION`으로 지정.
 
 ### 4-3. Proxmox VE 전체 시스템 백업 (`vzdump`)
-- **헤놀로지**: 4TB Gold 볼륨 위에 `pve-backup` 공유 폴더 생성.
-- **Proxmox GUI**: `Datacenter` ➔ `Storage` ➔ `Add NFS` (서버: 헤놀로지 IP, 경로: `/volume2/pve-backup`, 용도: `VZDump backup file`).
+- **헤놀로지**: 4TB Gold 볼륨 위에 `backups` 공유 폴더 생성.
+- **Proxmox GUI**: `Datacenter` ➔ `Storage` ➔ `Add NFS` (서버: 헤놀로지 IP, 경로: `/volume1/backups`, 용도: `VZDump backup file`).
 
 ### 4-4. 사용자 수동 파일 저장 (문서/개인 자료)
 - **웹 브라우저**: 헤놀로지 DSM `File Station`에서 마우스 드래그 & 드롭.

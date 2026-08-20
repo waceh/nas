@@ -44,7 +44,7 @@ flowchart TB
     C_Photo -->|"포트 2283"| LXC_Photo
     C_File -->|"포트 5001 / SMB"| Storage
 
-    LXC_Music -->|"NFS (/volume2/music)"| HDD_4TB
+    LXC_Music -->|"NFS (/volume1/music)"| HDD_4TB
     LXC_Video -->|"NFS (/volumeX/video)"| HDD_18TB
     LXC_Video -.->|"SSD 트랜스코딩 캐시"| SSD_530
     LXC_Photo -->|"새 사진 저장 (NFS)"| HDD_4TB
@@ -65,7 +65,7 @@ flowchart TB
 | 구분 | 상세 내용 |
 | :--- | :--- |
 | **추천 서버 솔루션** | **`Gonic`** (Go 기반 초경량 **디렉토리/폴더 트리 탐색 특화** 음악 서버, Subsonic API 호환, RAM 30MB) 또는 **`Jellyfin`** |
-| **스토리지 위치** | **WD Gold 4TB** (`/volume2/music` 또는 18TB 보관 음원 NFS 마운트) |
+| **스토리지 위치** | **WD Gold 4TB** (`/volume1/music` 또는 18TB 보관 음원 NFS 마운트) |
 | **📱 스마트폰 / 태블릿 접근 (100% 완전 무료 & 오픈소스)** | • **아이폰/아이패드 (iOS)**: **`Amperfy`** (오픈소스 100% 무료, 애플뮤직 스타일, 폴더 브라우징), **`Substreamer`** (완전 무료)<br/>• **안드로이드/갤럭시 (Android)**: **`Ultrasonic`** / **`DSub`** (오픈소스 FOSS, 폴더 트리 탐색 최강, 무료 다운로드), **`Substreamer`** (완전 무료)<br/>• **차량 연동**: **Apple CarPlay / Android Auto** 완벽 지원 (무료 오프라인 다운로드 재생) |
 | **💻 PC / Mac 접근** | • **웹 브라우저**: `http://your-domain.asuscomm.com:4747`<br/>• **전용 데스크톱 앱**: **`Feishin`** (Mac / Windows 전용 100% 무료 오픈소스 무손실 플레이어) |
 | **🛠️ NAS 설치 및 세팅** | 1. 헤놀로지 4TB(또는 18TB)의 `music` 공유 폴더에 NFS 권한 부여 (`192.168.1.0/24`)<br/>2. Proxmox에 초경량 LXC 컨테이너(104) 생성 후 `music` 폴더 NFS 마운트 ➔ Gonic 실행 |
@@ -149,7 +149,7 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
 1. **기존 18TB 데이터 보존**: 기존 18TB에 있는 영상, 음악, 과거 사진을 4TB로 힘들게 복사할 필요 없이 **18TB 위치 그대로 NFS로 연결**합니다.
 2. **4TB WD Gold의 명확한 역할**:
    - 새로 찍는 스마트폰 일상 사진 실시간 백업 저장소
-   - Proxmox 전체 VM/LXC 일일 백업 금고 (`/volume2/pve-backups`)
+   - Proxmox 전체 VM/LXC 일일 백업 금고 (`/volume1/backups`)
    - 개인 주요 작업 파일 보관
 3. **Intel 530 SSD의 역할**:
    - Immich PostgreSQL DB, 안면 인식 벡터 검색 I/O 처리

@@ -7,11 +7,12 @@
 ## 📋 구성 개요 및 디스크 용량 관리 구조
 
 ```
-💾 WD Gold 4TB (헤놀로지 sata4 패스스루 ➔ Volume 2 Btrfs / 실 사용 약 3.6TB)
- ├── 📁 /volume2/immich-photos  (NFS) ➔ Immich 원본 사진/동영상 저장소 (할당량: 무제한 동적 공유)
- ├── 📁 /volume2/media          (NFS) ➔ Jellyfin 미디어 라이브러리 저장소 (할당량: 무제한 동적 공유)
- ├── 📁 /volume2/personal-data  (SMB) ➔ 사용자 수동 저장 (Mac Finder / Win 탐색기 / File Station)
- └── 📁 /volume2/pve-backups    (NFS) ➔ Proxmox VM 백업 금고 (🛡️ 할당량: 500GB 제한 + Keep Last 3)
+💾 WD Gold 4TB (헤놀로지 sata4 패스스루 ➔ Volume 1 Btrfs / 실 사용 약 3.6TB)
+ ├── 📁 /volume1/photo          (NFS) ➔ Immich 원본 사진/동영상 저장소 (할당량: 무제한 동적 공유)
+ ├── 📁 /volume1/video          (NFS) ➔ Jellyfin 미디어 라이브러리 저장소 (할당량: 무제한 동적 공유)
+ ├── 📁 /volume1/music          (NFS) ➔ Gonic 음악 라이브러리 저장소
+ ├── 📁 /volume1/temp           (SMB) ➔ 임시 작업 및 수동 파일 저장
+ └── 📁 /volume1/backups        (NFS) ➔ Proxmox VM 백업 금고 (🛡️ 할당량: 500GB 제한 + Keep Last 3)
 ```
 
 ### 💡 용량 공유 원리: 유동적 공간 공유 (Dynamic Space Sharing)
@@ -118,9 +119,9 @@ qm config 101
 ### 1. Proxmox VE 백업 스토리지 등록 & 자동 삭제(Retention) 설정 (🛡️ 필수)
 1. Proxmox 웹 관리자(`https://<Proxmox_IP>:8006`) 접속.
 2. 좌측 트리에서 **`Datacenter`** 클릭 ➔ **`Storage`** ➔ **`Add` ➔ `NFS`** 선택:
-   - **ID**: `wd4tb-backup`
-   - **Server**: `<헤놀로지_IP>` (예: `192.168.50.101`)
-   - **Export**: `/volume2/pve-backups`
+   - **ID**: `nas-backups`
+   - **Server**: `<헤놀로지_IP>` (예: `192.168.1.132`)
+   - **Export**: `/volume1/backups`
    - **Content**: **`VZDump backup file`** 선택
 3. **`Backup Retention` (보관 정책) 탭 설정 (핵심 ⭐)**:
    - **`Keep Last`**: **`3`** 입력 (또는 `Keep Daily: 7`)
@@ -128,14 +129,14 @@ qm config 101
 4. **[Add]** 클릭 완료.
 
 ### 2. PC / 맥북에서 수동 파일 저장 (외장하드처럼 사용)
-- **Mac Finder**: Finder 실행 ➔ `Cmd + K` ➔ `smb://<헤놀로지_IP>/personal-data` 연결.
-- **Windows**: 파일 탐색기 주소창 ➔ `\\<헤놀로지_IP>\personal-data` 연결.
+- **Mac Finder**: Finder 실행 ➔ `Cmd + K` ➔ `smb://<헤놀로지_IP>/temp` 연결.
+- **Windows**: 파일 탐색기 주소창 ➔ `\\<헤놀로지_IP>\temp` 연결.
 - **Web GUI**: 브라우저로 DSM 접속 ➔ **`File Station`** 앱에서 마우스 드래그 & 드롭으로 업로드.
 
 ### 3. Immich 사진/동영상 원본 저장소 연동
 1. Immich 컨테이너(또는 LXC 103) 내부의 `/etc/fstab`에 NFS 자동 마운트 추가:
    ```bash
-   <헤놀로지_IP>:/volume2/immich-photos  /mnt/immich-photos  nfs  defaults,_netdev  0  0
+   <헤놀로지_IP>:/volume1/photo  /mnt/photo  nfs  defaults,_netdev  0  0
    ```
 2. 마운트 적용:
    ```bash
@@ -143,19 +144,19 @@ qm config 101
    ```
 3. Immich의 `.env` 환경설정 파일에서 사진 업로드 경로 지정:
    ```env
-   UPLOAD_LOCATION=/mnt/immich-photos
+   UPLOAD_LOCATION=/mnt/photo
    ```
 
 ### 4. Jellyfin 미디어 라이브러리 연동
 1. Jellyfin LXC(105) 내부의 `/etc/fstab`에 NFS 자동 마운트 추가:
    ```bash
-   <헤놀로지_IP>:/volume2/media  /mnt/media  nfs  defaults,_netdev  0  0
+   <헤놀로지_IP>:/volume1/video  /mnt/video  nfs  defaults,_netdev  0  0
    ```
 2. 마운트 적용:
    ```bash
    mount -a
    ```
-3. Jellyfin 웹 UI(`:8096`) 접속 ➔ `대시보드` ➔ `라이브러리` ➔ 미디어 폴더를 `/mnt/media`로 등록.
+3. Jellyfin 웹 UI(`:8096`) 접속 ➔ `대시보드` ➔ `라이브러리` ➔ 미디어 폴더를 `/mnt/video`로 등록.
 
 ---
 

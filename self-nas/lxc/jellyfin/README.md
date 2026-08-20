@@ -29,15 +29,15 @@ pct create 105 local:vztmpl/debian-12-standard_12.x_amd64.tar.zst \
 LXC 컨테이너 안에서:
 ```bash
 apt update && apt install -y nfs-common
-mkdir -p /mnt/media
+mkdir -p /mnt/video
 ```
 `/etc/fstab`에 추가 (영구 마운트):
 ```
-<헤놀로지_VM_IP>:/volume2/media  /mnt/media  nfs  defaults,_netdev  0  0
+<헤놀로지_VM_IP>:/volume1/video  /mnt/video  nfs  defaults,_netdev,nolock  0  0
 ```
 ```bash
 mount -a
-df -h /mnt/media   # 정상 마운트 확인
+df -h /mnt/video   # 정상 마운트 확인
 ```
 - 헤놀로지 DSM 쪽에서 미리 NFS 서비스 활성화 + 공유폴더 NFS 권한 설정 필요 (제어판 → 파일 서비스 → NFS)
 - 헤놀로지 쪽 NFS 규칙에서 LXC IP 또는 서브넷 허용 등록

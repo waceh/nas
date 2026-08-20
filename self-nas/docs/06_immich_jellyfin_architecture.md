@@ -42,8 +42,8 @@ flowchart TB
         %% VM 101: 헤놀로지
         subgraph VM101["📦 VM 101: 헤놀로지 (Pure Storage Core / 192.168.1.132)"]
             DSM_NFS["NFS & Samba 파일 서비스 데몬"]:::vm
-            VOL_PHOTOS["📁 /volume2/photo<br/>(사진/동영상 통합 원본 저장소)"]:::storage
-            VOL_MEDIA["📁 /volume2/video<br/>(영화/드라마/음악 통합 미디어 저장소)"]:::storage
+            VOL_PHOTOS["📁 /volume1/photo<br/>(사진/동영상 통합 원본 저장소)"]:::storage
+            VOL_MEDIA["📁 /volume1/video<br/>(영화/드라마/음악 통합 미디어 저장소)"]:::storage
         end
 
         %% LXC 103: Immich Photo Server
@@ -71,8 +71,8 @@ flowchart TB
     CPU_GPU -.->|"iGPU Passthrough (/dev/dri/renderD128)"| JELLYFIN_TRANSCODE
 
     %% NFS Storage Mounts (Single Source of Truth)
-    VOL_PHOTOS -.->|"NFS Export (/volume2/photo)"| IMMICH_MNT
-    VOL_MEDIA -.->|"NFS Export (/volume2/video)"| JELLYFIN_MNT
+    VOL_PHOTOS -.->|"NFS Export (/volume1/photo)"| IMMICH_MNT
+    VOL_MEDIA -.->|"NFS Export (/volume1/video)"| JELLYFIN_MNT
 
     %% Internal App bindings
     IMMICH_CORE --- IMMICH_ML
@@ -102,8 +102,8 @@ flowchart TB
 
 | 원본 데이터 경로 (WD Gold 4TB) | 주력 오픈소스 서비스 (Proxmox LXC) | 서브 시놀로지 공식 앱 (DSM 5001) | 장점 및 특징 |
 | :--- | :--- | :--- | :--- |
-| **`/volume2/photo`** | **`Immich`** (AI 얼굴/사물 검색, 초고속 백업) | **`Synology Photos`** (시놀로지 앨범/공유) | 원본 중복 저장 0%, 모바일은 Immich로 올리고 필요시 Synology Photos로 동시 열람 |
-| **`/volume2/video`** | **`Jellyfin`** (iGPU 4K 트랜스코딩, 화려한 UI) | **`DS video`** (시놀로지 기본 플레이어) | 영화/드라마 1벌 저장으로 양쪽 플레이어에서 완벽 동시 재생 |
+| **`/volume1/photo`** | **`Immich`** (AI 얼굴/사물 검색, 초고속 백업) | **`Synology Photos`** (시놀로지 앨범/공유) | 원본 중복 저장 0%, 모바일은 Immich로 올리고 필요시 Synology Photos로 동시 열람 |
+| **`/volume1/video`** | **`Jellyfin`** (iGPU 4K 트랜스코딩, 화려한 UI) | **`DS video`** (시놀로지 기본 플레이어) | 영화/드라마 1벌 저장으로 양쪽 플레이어에서 완벽 동시 재생 |
 
 ---
 
@@ -176,7 +176,7 @@ apt update && apt install -y nfs-common curl docker.io docker-compose-v2
 
 # 3. 4TB Gold photo 폴더 영구 마운트
 mkdir -p /mnt/photo
-echo "192.168.1.132:/volume2/photo /mnt/photo nfs defaults,_netdev 0 0" >> /etc/fstab
+echo "192.168.1.132:/volume1/photo /mnt/photo nfs defaults,_netdev 0 0" >> /etc/fstab
 mount -a
 df -h /mnt/photo
 
@@ -224,7 +224,7 @@ pct enter 105
 apt update && apt install -y nfs-common curl gnupg
 
 mkdir -p /mnt/video
-echo "192.168.1.132:/volume2/video /mnt/video nfs defaults,_netdev 0 0" >> /etc/fstab
+echo "192.168.1.132:/volume1/video /mnt/video nfs defaults,_netdev 0 0" >> /etc/fstab
 mount -a
 df -h /mnt/video
 

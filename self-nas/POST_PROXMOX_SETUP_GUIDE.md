@@ -181,7 +181,7 @@ curl -s -S -L https://raw.githubusercontent.com/AdguardTeam/AdGuardHome/master/s
 ```
 
 ### 5-2. Immich AI 사진 백업 LXC (ID: 103)
-- **특징**: 고속 PostgreSQL 및 벡터 검색 DB는 Intel 530 SSD에서 초고속 처리, 원본 사진/동영상은 4TB Gold NFS(`/volume2/photo`)로 저장 (Synology Photos와 원본 100% 동시 공유).
+- **특징**: 고속 PostgreSQL 및 벡터 검색 DB는 Intel 530 SSD에서 초고속 처리, 원본 사진/동영상은 4TB Gold NFS(`/volume1/photo`)로 저장 (Synology Photos와 원본 100% 동시 공유).
 ```bash
 # 1. LXC 생성
 pct create 103 local:vztmpl/debian-12-standard_12.x_amd64.tar.zst \
@@ -195,12 +195,12 @@ pct start 103
 pct enter 103
 apt update && apt install -y nfs-common docker.io docker-compose-v2
 mkdir -p /mnt/photo
-echo "192.168.1.132:/volume2/photo /mnt/photo nfs defaults,_netdev 0 0" >> /etc/fstab
+echo "192.168.1.132:/volume1/photo /mnt/photo nfs defaults,_netdev 0 0" >> /etc/fstab
 mount -a
 ```
 
 ### 5-3. Jellyfin 미디어 서버 LXC (ID: 105 - iGPU 하드웨어 가속)
-- **특징**: Intel UHD 630 iGPU QuickSync 하드웨어 트랜스코딩 가속, 미디어 원본은 4TB Gold NFS(`/volume2/video`)로 저장 (DS video와 원본 100% 동시 공유).
+- **특징**: Intel UHD 630 iGPU QuickSync 하드웨어 트랜스코딩 가속, 미디어 원본은 4TB Gold NFS(`/volume1/video`)로 저장 (DS video와 원본 100% 동시 공유).
 ```bash
 # 1. LXC 생성
 pct create 105 local:vztmpl/debian-12-standard_12.x_amd64.tar.zst \
@@ -221,7 +221,7 @@ pct start 105
 pct enter 105
 apt update && apt install -y nfs-common curl gnupg
 mkdir -p /mnt/video
-echo "192.168.1.132:/volume2/video /mnt/video nfs defaults,_netdev 0 0" >> /etc/fstab
+echo "192.168.1.132:/volume1/video /mnt/video nfs defaults,_netdev 0 0" >> /etc/fstab
 mount -a
 curl https://repo.jellyfin.org/install-debuntu.sh | bash
 ```
