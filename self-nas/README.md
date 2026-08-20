@@ -96,3 +96,4 @@ LG U+ 공유기와 ASUS 공유기 사이 **이중 NAT** 상태. 포트포워딩/
   - [ ] 9-4. `LXC 105 (Jellyfin Media Server)` 구축 (18TB 영상 라이브러리 연동 & iGPU 가속) → [`lxc/jellyfin/README.md`](lxc/jellyfin/README.md)
   - [ ] 9-5. `LXC 106 (Dev Web Server)` Spring Boot / Node.js 개발 서버 구축
 - [ ] 10. (선택 확장) Windows VM 필요 시 Intel 530 SSD or WD Gold에 On-Demand 생성
+- [ ] 11. (참고/검토) 향후 확장 서비스 후보군 및 대시보드 검토 → [`docs/98_candidate_services_and_architecture_review.md`](docs/98_candidate_services_and_architecture_review.md)
