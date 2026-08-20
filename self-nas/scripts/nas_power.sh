@@ -35,8 +35,49 @@ LXC_SERVICES=(102 103 104 105 106)
 LXC_SHUTDOWN_ORDER=(105 104 103 106 102) # Jellyfin -> Gonic -> Immich -> Dev -> AdGuard
 
 # ------------------------------------------------------------------------------
-# 1. 상태 조회 (Status)
+# 1. 상태 및 통합 디스크 현황 조회 (Status & Storage Monitor)
 # ------------------------------------------------------------------------------
+show_disk_status() {
+    echo -e "${BLUE}====================================================${NC}"
+    echo -e "${BLUE}       💾 MTK Studio 5대 디스크 통합 사용 현황       ${NC}"
+    echo -e "${BLUE}====================================================${NC}"
+    
+    # 1. Intel 710 SSD (Host OS)
+    ROOT_INFO=$(df -h / | awk 'NR==2 {printf "%s / %s (%s)", $3, $2, $5}')
+    echo -e " [Tier 0] ${GREEN}Intel 710 SSD (100GB)${NC} Host OS  : ${ROOT_INFO} (Proxmox VE)"
+
+    # 2. Intel 530 SSD (LXC Apps & DB)
+    if pvesm status | grep -q "local-530"; then
+        L530_USED=$(pvesm status | awk '$1=="local-530" {printf "%.1fG / %.1fG (%s)", $4/1024/1024, $3/1024/1024, $6}')
+        echo -e " [Tier 1] ${GREEN}Intel 530 SSD (120GB)${NC} 고속 앱/DB: ${L530_USED} (Immich/Gonic/Jellyfin)"
+    fi
+
+    # 3. WD Gold 4TB (NFS 공유 & 백업 금고)
+    if pvesm status | grep -q "nas-backups"; then
+        BAK_USED=$(pvesm status | awk '$1=="nas-backups" {printf "%.1fG / %.1fG (%s)", $4/1024/1024, $3/1024/1024, $6}')
+        echo -e " [Tier 2] ${YELLOW}WD Gold 4TB (백업금고)${NC} 500G Quota : ${BAK_USED} (vzdump 자동 백업)"
+    fi
+    if pct status 104 &>/dev/null && [ "$(pct status 104 | awk '{print $2}')" == "running" ]; then
+        GOLD_INFO=$(pct exec 104 -- df -h /mnt/music 2>/dev/null | awk 'NR==2 {printf "%s / %s (%s)", $3, $2, $5}' || true)
+        if [ -n "$GOLD_INFO" ]; then
+            echo -e " [Tier 2] ${YELLOW}WD Gold 4TB (라이프허브)${NC} 볼륨 1 전체: ${GOLD_INFO} (사진/음악/영상)"
+        fi
+    fi
+
+    # 4. WD White 18TB & 8TB (PDS1 / PDS2)
+    if pct status 105 &>/dev/null && [ "$(pct status 105 | awk '{print $2}')" == "running" ]; then
+        PDS1_INFO=$(pct exec 105 -- df -h /mnt/pds1 2>/dev/null | awk 'NR==2 {printf "%s / %s (%s)", $3, $2, $5}' || true)
+        PDS2_INFO=$(pct exec 105 -- df -h /mnt/pds2 2>/dev/null | awk 'NR==2 {printf "%s / %s (%s)", $3, $2, $5}' || true)
+        if [ -n "$PDS1_INFO" ]; then
+            echo -e " [Tier 3] ${BLUE}WD White 18TB (PDS1)${NC} 엔터테인먼트: ${PDS1_INFO} (영화/드라마/예능)"
+        fi
+        if [ -n "$PDS2_INFO" ]; then
+            echo -e " [Tier 3] ${BLUE}WD White  8TB (PDS2)${NC} 콜드보관함  : ${PDS2_INFO} (아카이브 미디어)"
+        fi
+    fi
+    echo -e "${BLUE}====================================================${NC}"
+}
+
 show_status() {
     echo -e "${GREEN}====================================================${NC}"
     echo -e "${GREEN}       ⚡ Proxmox VM & LXC 서비스 상태 모니터        ${NC}"
@@ -67,6 +108,8 @@ show_status() {
         fi
     done
     echo -e "${GREEN}====================================================${NC}"
+    echo ""
+    show_disk_status
 }
 
 # ------------------------------------------------------------------------------
@@ -185,6 +228,9 @@ case "$1" in
     status)
         show_status
         ;;
+    disk|storage|df)
+        show_disk_status
+        ;;
     up|start)
         power_up
         ;;
@@ -207,7 +253,7 @@ case "$1" in
         init_pve_order
         ;;
     *)
-        echo "사용법: $0 {status|up|down|shutdown-host|reboot-host|init-order}"
+        echo "사용법: $0 {status|disk|up|down|shutdown-host|reboot-host|init-order}"
         exit 1
         ;;
 esac
