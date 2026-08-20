@@ -89,15 +89,10 @@ bash /root/nas_power.sh shutdown-host
   - Intel QuickSync (QSV) 및 RAM 캐시(`/dev/shm/jellyfin-transcodes`) 연동 완료
   - 미디어 라이브러리 `/mnt/video` (4TB Gold) 마운트 완료
   - 공유기 포트포워딩: 외부 포트 `8096` ➔ 내부 `192.168.1.105:8096` (TCP)
-- [ ] **Step 2. Graceful 순차 전원 제어 스크립트 등록 & 테스트**:
-  ```bash
-  # Proxmox 호스트에 스크립트 등록 및 부팅 순서 일괄 적용
-  curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/nas_power.sh -o /root/nas_power.sh
-  chmod +x /root/nas_power.sh
-  bash /root/nas_power.sh init-order
-  ```
-  - 테스트: 상태 조회(`bash /root/nas_power.sh status`) ➔ 호스트 종료(`bash /root/nas_power.sh shutdown-host`)
-  - 스마트폰 ASUS Router 앱에서 WOL 켜기 ➔ 정상 자동 순차 기동(`order=1 ➔ order=2`) 확인
+- [x] **Step 2. Graceful 순차 전원 제어 스크립트 등록 & 테스트**:
+  - `/root/nas_power.sh` 등록 완료
+  - `init-order` 실행 완료 (VM 101 `order=1`, LXC `order=2`)
+  - 전체 상태 모니터링(`bash /root/nas_power.sh status`) 정상 동작 확인
 - [ ] **Step 3. Proxmox 자동 백업 스토리지 등록 (`vzdump`)**:
   ```bash
   # Proxmox 호스트 셸에서 헤놀로지 4TB Gold 백업 폴더를 PVE 스토리지로 원클릭 등록

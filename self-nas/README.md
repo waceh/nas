@@ -97,5 +97,5 @@ LG U+ 공유기와 ASUS 공유기 사이 **이중 NAT** 상태. 포트포워딩/
   - [x] 9-4. `LXC 105 (Jellyfin Media Server)` 구축 (18TB/4TB 영상 라이브러리 연동 & iGPU 가속) → [`docs/10_graceful_power_management_and_jellyfin_guide.md`](docs/10_graceful_power_management_and_jellyfin_guide.md)
   - [ ] 9-5. `LXC 106 (Dev Web Server)` Spring Boot / Node.js 개발 서버 구축
 - [ ] 10. (선택 확장) Windows VM 필요 시 Intel 530 SSD or WD Gold에 On-Demand 생성
-- [ ] 11. (상시 전원 관리) NAS Graceful 순차 기동·종료 자동화 (`nas_power.sh`) → [`docs/10_graceful_power_management_and_jellyfin_guide.md`](docs/10_graceful_power_management_and_jellyfin_guide.md)
+- [x] 11. (상시 전원 관리) NAS Graceful 순차 기동·종료 자동화 (`nas_power.sh`) → [`docs/10_graceful_power_management_and_jellyfin_guide.md`](docs/10_graceful_power_management_and_jellyfin_guide.md)
 - [ ] 12. (참고/검토) 향후 확장 서비스 후보군 및 대시보드 검토 → [`docs/98_candidate_services_and_architecture_review.md`](docs/98_candidate_services_and_architecture_review.md)
