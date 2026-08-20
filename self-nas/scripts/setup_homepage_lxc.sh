@@ -71,6 +71,7 @@ pct create "$CTID" "$TEMPLATE" \
   --net0 name=eth0,bridge="${BRIDGE}",ip="${IP_ADDR}",gw="${GATEWAY}" \
   --unprivileged 0 \
   --features nesting=1,keyctl=1 \
+  --tags "dashboard,web" \
   --onboot 1
 
 pct start "$CTID"
