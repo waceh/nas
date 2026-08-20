@@ -54,3 +54,30 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
 ```bash
 curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/install_xpenology.sh | bash
 ```
+
+---
+
+## ⚡ 5. NAS 통합 Graceful 순차 전원 제어 (`nas_power.sh`)
+
+NAS를 상시 켜두지 않고 작업할 때만 켜고 끌 때, **스토리지(NFS/Btrfs)와 미디어 서비스 컨테이너 간의 데이터 손상 없는 완벽한 순차 기동/종료**를 원클릭으로 수행합니다.
+
+```bash
+# 1. 스크립트 다운로드 및 실행 권한 부여
+curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/nas_power.sh -o /root/nas_power.sh
+chmod +x /root/nas_power.sh
+
+# 2. 전체 상태 모니터링
+bash /root/nas_power.sh status
+
+# 3. 안전 순차 기동 (헤놀로지 101 먼저 ➔ Immich/Gonic/Jellyfin 순차 기동)
+bash /root/nas_power.sh up
+
+# 4. 안전 순차 종료 (Jellyfin/Gonic/Immich DB 플러시 ➔ 헤놀로지 101 종료)
+bash /root/nas_power.sh down
+
+# 5. 전체 안전 순차 종료 후 Proxmox 호스트 전원 끄기
+bash /root/nas_power.sh shutdown-host
+
+# 6. Proxmox 부팅/종료 순서(order/up/down) 일괄 등록
+bash /root/nas_power.sh init-order
+```

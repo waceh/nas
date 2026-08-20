@@ -139,8 +139,8 @@ SVC
   systemctl enable --now gonic
 "
 
-# 6. 호스트 부팅 시 순차 기동 순서 설정 (헤놀로지 101 다음 기동)
-pct set "$CTID" --startup "order=2,up=10"
+# 6. 호스트 부팅 및 종료 순서 설정 (헤놀로지 101 다음 기동, 종료 시 10초 대기)
+pct set "$CTID" --startup "order=2,up=10,down=10"
 
 echo ""
 echo -e "${GREEN}====================================================${NC}"

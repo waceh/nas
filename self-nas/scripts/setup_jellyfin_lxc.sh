@@ -73,7 +73,7 @@ pct create "$CTID" "$TEMPLATE" \
   --rootfs "${STORAGE}:${DISK_SIZE}" \
   --net0 name=eth0,bridge="${BRIDGE}",ip="${IP_ADDR}",gw="${GATEWAY}" \
   --unprivileged 0 \
-  --features nesting=1 \
+  --features nesting=1,keyctl=1 \
   --onboot 1
 
 # 4. Intel iGPU (/dev/dri) 패스스루 설정 주입
@@ -100,10 +100,14 @@ pct exec "$CTID" -- bash -c "
   apt-get update -qq
   apt-get install -y -qq nfs-common curl ca-certificates gnupg
 
-  # 4TB Gold video NFS 마운트
+  # RAM 디스크(/dev/shm) 트랜스코딩 캐시 디렉터리 생성
+  mkdir -p /dev/shm/jellyfin-transcodes
+  chmod 777 /dev/shm/jellyfin-transcodes
+
+  # 4TB Gold video NFS 마운트 (nolock으로 안전 마운트)
   mkdir -p /mnt/video
   if ! grep -q '${NAS_IP}:${NFS_SHARE}' /etc/fstab; then
-    echo '${NAS_IP}:${NFS_SHARE} /mnt/video nfs defaults,_netdev 0 0' >> /etc/fstab
+    echo '${NAS_IP}:${NFS_SHARE} /mnt/video nfs defaults,_netdev,nolock 0 0' >> /etc/fstab
   fi
   mount -a || true
 
@@ -111,8 +115,8 @@ pct exec "$CTID" -- bash -c "
   curl -fsSL https://repo.jellyfin.org/install-debuntu.sh | bash
 "
 
-# 7. 호스트 부팅 시 순차 기동 순서 설정 (헤놀로지 101 다음 기동)
-pct set "$CTID" --startup "order=2,up=10"
+# 7. 호스트 부팅 및 종료 순서 설정 (헤놀로지 101 다음 기동, 종료 시 15초 Graceful Shutdown 대기)
+pct set "$CTID" --startup "order=2,up=10,down=15"
 
 echo ""
 echo -e "${GREEN}====================================================${NC}"

@@ -113,8 +113,8 @@ pct exec "$CTID" -- bash -c "
   docker compose up -d
 "
 
-# 6. 호스트 부팅 시 순차 기동 순서 설정 (헤놀로지 101 다음 기동)
-pct set "$CTID" --startup "order=2,up=10"
+# 6. 호스트 부팅 및 종료 순서 설정 (헤놀로지 101 다음 기동, 종료 시 15초 DB 플러시 대기)
+pct set "$CTID" --startup "order=2,up=10,down=15"
 
 echo ""
 echo -e "${GREEN}====================================================${NC}"
