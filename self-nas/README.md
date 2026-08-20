@@ -94,7 +94,7 @@ LG U+ 공유기와 ASUS 공유기 사이 **이중 NAT** 상태. 포트포워딩/
   - [ ] 9-1. `LXC 102 (AdGuard Home)` DNS 캐시 구축
   - [x] 9-2. `LXC 103 (Immich Photo Server)` 구축 (4TB Gold 실시간 백업 + 10GB+ 사진 인덱싱) → [`09_immich_caddy_https_and_storage_setup.md`](docs/09_immich_caddy_https_and_storage_setup.md)
   - [x] 9-3. `LXC 104 (Gonic Music Server)` 구축 (4TB 음악 라이브러리 연동 & 폴더 기반 브라우징 / 완전 무료 앱 / CarPlay / Android Auto)
-  - [ ] 9-4. `LXC 105 (Jellyfin Media Server)` 구축 (18TB 영상 라이브러리 연동 & iGPU 가속) → [`docs/10_graceful_power_management_and_jellyfin_guide.md`](docs/10_graceful_power_management_and_jellyfin_guide.md)
+  - [x] 9-4. `LXC 105 (Jellyfin Media Server)` 구축 (18TB/4TB 영상 라이브러리 연동 & iGPU 가속) → [`docs/10_graceful_power_management_and_jellyfin_guide.md`](docs/10_graceful_power_management_and_jellyfin_guide.md)
   - [ ] 9-5. `LXC 106 (Dev Web Server)` Spring Boot / Node.js 개발 서버 구축
 - [ ] 10. (선택 확장) Windows VM 필요 시 Intel 530 SSD or WD Gold에 On-Demand 생성
 - [ ] 11. (상시 전원 관리) NAS Graceful 순차 기동·종료 자동화 (`nas_power.sh`) → [`docs/10_graceful_power_management_and_jellyfin_guide.md`](docs/10_graceful_power_management_and_jellyfin_guide.md)

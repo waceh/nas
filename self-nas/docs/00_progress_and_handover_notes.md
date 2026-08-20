@@ -38,7 +38,7 @@
 | **VM 101** | **Xpenology (Storage Core)** | 2C / 4GB | HDD 3대 Raw Passthrough (Gold 4T, White 26T) | **✅ 구축 완료** | [`04_xpenology_install.md`](04_xpenology_install.md) |
 | **LXC 103** | **Immich Photo Server** | 2C / 4GB | Intel 530 SSD + WD Gold (`/volume1/photo` NFS) | **✅ 구축 완료**<br/>*(10GB+ 색인 완료)* | [`09_immich_caddy_https_and_storage_setup.md`](09_immich_caddy_https_and_storage_setup.md)<br>[`setup_immich_lxc.sh`](../scripts/setup_immich_lxc.sh) |
 | **LXC 104** | **Gonic Music Server** | 1C / 512MB | Intel 530 SSD + WD Gold (`/volume1/music` NFS) | **✅ 구축 완료**<br/>*(폴더 기반 스트리밍)* | [`09_immich_caddy_https_and_storage_setup.md`](09_immich_caddy_https_and_storage_setup.md)<br>[`setup_gonic_lxc.sh`](../scripts/setup_gonic_lxc.sh) |
-| **LXC 105** | **Jellyfin Media Server** | 2C / 2GB | Intel 530 SSD + iGPU QuickSync + WD Gold/White | **⏳ 스크립트 준비 완료**<br/>*(실행 대기)* | [`10_graceful_power_management_and_jellyfin_guide.md`](10_graceful_power_management_and_jellyfin_guide.md)<br>[`setup_jellyfin_lxc.sh`](../scripts/setup_jellyfin_lxc.sh) |
+| **LXC 105** | **Jellyfin Media Server** | 2C / 2GB | Intel 530 SSD + iGPU QuickSync + WD Gold/White | **✅ 구축 완료**<br/>*(iGPU QSV + RAM 캐시)* | [`10_graceful_power_management_and_jellyfin_guide.md`](10_graceful_power_management_and_jellyfin_guide.md)<br>[`setup_jellyfin_lxc.sh`](../scripts/setup_jellyfin_lxc.sh) |
 | **LXC 102** | **AdGuard Home** | 1C / 512MB | Intel 530 SSD (`local-530`) | **⚪ 대기 (선택)** | [`07_media_services_master_guide.md`](07_media_services_master_guide.md) |
 | **LXC 106** | **Dev Web Server** | 2C / 2GB | Intel 530 SSD (`local-530`) | **⚪ 대기 (선택)** | Spring Boot / Node 개발용 |
 | **Script** | **통합 전원 제어 (`nas_power.sh`)** | - | Proxmox Host `/root/nas_power.sh` | **✅ 스크립트 제작 완료** | [`nas_power.sh`](../scripts/nas_power.sh) |
@@ -84,17 +84,10 @@ bash /root/nas_power.sh shutdown-host
 
 ## 🚀 6. 다음 세션에서 이어서 바로 진행할 작업 (Next To-Do Checklist)
 
-다음 세션으로 돌아왔을 때 **아래 1번 항목부터 순서대로 진행**하시면 됩니다:
-
-- [ ] **Step 1. Jellyfin Media Server (LXC 105) 실제 배포**:
-  ```bash
-  # Proxmox 호스트 셸에서 실행
-  curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/setup_jellyfin_lxc.sh | bash
-  ```
-  - 배포 후 로컬 `http://192.168.1.105:8096` 접속하여 초기 계정 설정
-  - 대시보드 ➔ 재생 ➔ 트랜스코딩에서 **Intel QuickSync (QSV)** 활성화
-  - 트랜스코딩 임시 경로를 `/dev/shm/jellyfin-transcodes` (RAM 디스크)로 지정
-  - 미디어 라이브러리로 `/mnt/video` (4TB Gold) 지정
+- [x] **Step 1. Jellyfin Media Server (LXC 105) 실제 배포**:
+  - 배포 완료 (`http://192.168.1.105:8096`)
+  - Intel QuickSync (QSV) 및 RAM 캐시(`/dev/shm/jellyfin-transcodes`) 연동 완료
+  - 미디어 라이브러리 `/mnt/video` (4TB Gold) 마운트 완료
   - 공유기 포트포워딩: 외부 포트 `8096` ➔ 내부 `192.168.1.105:8096` (TCP)
 - [ ] **Step 2. Graceful 순차 전원 제어 스크립트 등록 & 테스트**:
   ```bash
