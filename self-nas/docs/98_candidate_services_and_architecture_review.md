@@ -125,7 +125,89 @@ flowchart TB
 
 ---
 
-## 🚀 5. 단계별 검토 및 도입 로드맵 (권장 순서)
+## 🤖 5. Java-Spring 백엔드 & AI 기술 접목 후보군 (고급 아키텍처)
+
+현역 15년 차 Java-Spring 백엔드 시니어 관점에서, **Spring Boot 3.x / Spring AI**, **NAS의 방대한 개인 미디어 데이터**, 그리고 **Oracle Cloud(24GB RAM Ampere) + Self-NAS 하이브리드 인프라**를 접목한 고수준 AI 아키텍처 후보군입니다.
+
+---
+
+### ① Spring AI 기반 'NAS 통합 멀티모달 자비스' (RAG + Function Calling ⭐⭐⭐)
+Spring Boot 3.x의 공식 **Spring AI** 프레임워크를 활용하여, 자연어 명령으로 홈서버의 모든 서비스(Immich, Gonic, Jellyfin, Proxmox)를 제어하고 질의하는 개인 AI 에이전트.
+
+```mermaid
+flowchart TB
+    User["📱 사용자 (자연어 명령 / 텔레그램 / 음성)"] -->|"Spring REST / WebSocket"| SpringAI["⚡ Spring Boot 3.x 백엔드 (Spring AI)<br/>• Function Calling (도구 호출)<br/>• RAG 파이프라인 & 프롬프트 엔지니어링"]
+
+    subgraph LLM_Layer["🧠 LLM & Embedding Layer"]
+        OCI_Ollama["☁️ Oracle Cloud (24GB RAM)<br/>Ollama (Llama 3.1 / Gemma 2)"]
+        GeminiCloud["🌐 Google Gemini 1.5 Pro API<br/>(대용량 멀티모달 / 저렴한 토큰)"]
+    end
+
+    subgraph Vector_DB["🔍 Vector Database"]
+        PgVector["🐘 Immich PostgreSQL (Pgvector)<br/>사진/가사/메타데이터 임베딩"]
+    end
+
+    subgraph NAS_Services["💾 NAS Services (Function Calling 대상)"]
+        ImmichAPI["📸 Immich REST API"]
+        GonicAPI["🎵 Gonic Subsonic API"]
+        JellyfinAPI["🎬 Jellyfin API"]
+        PVE_API["⚡ Proxmox VE API"]
+    end
+
+    SpringAI <--> LLM_Layer
+    SpringAI <--> Vector_DB
+    SpringAI -->|"Tool Execution (@Tool)"| NAS_Services
+```
+
+- **실제 활용 시나리오**:
+  - *"작년 가을에 가족들이랑 바닷가 가서 찍은 사진들 골라서 보여줘"* ➔ **Immich Vector API 호출** 후 사진 URL 목록 반환
+  - *"비 오는 날 듣기 좋은 재즈 플레이리스트 짜서 Gonic 재생 큐에 넣어줘"* ➔ LLM이 선곡 후 **Gonic Subsonic API**로 재생 목록 자동 생성
+  - *"지금 서버 CPU/RAM 상태 어때? 헤놀로지 켜져 있어?"* ➔ **Proxmox API** 호출 후 자연어로 현황 브리핑
+- **기술적 핵심 포인트**:
+  - **Spring AI `@Tool` (Function Calling)**: Spring Service 빈을 LLM의 호출 도구로 등록하여 자율 에이전트화
+  - **Pgvector (PostgreSQL)**: RAG 파이프라인을 위한 임베딩 벡터 저장소 구축
+
+---
+
+### ② Spring Boot 기반 '홈서버 MCP (Model Context Protocol) Server' 구현 ⭐⭐⭐
+Anthropic, Google, OpenAI가 주도하는 최신 AI 표준 프로토콜인 **MCP Server**를 Spring Boot로 직접 구축.
+
+- **개념**: Cursor, Claude Desktop, Antigravity 등의 AI 도구가 내 NAS의 파일, DB, 미디어, 서버 제어권을 표준화된 JSON-RPC/SSE 프로토콜로 안전하게 호출할 수 있는 백엔드 게이트웨이 제작.
+- **주요 Tools 정의**:
+  - `search_photo_library(keywords, date_range)`: Immich 사진 검색
+  - `control_music_playback(action, track_id)`: Gonic 음악 제어
+  - `manage_proxmox_vm(vmid, action)`: PVE VM/LXC 전원 제어
+
+---
+
+### ③ AI 기반 '무드 & 시맨틱 음악 추천 엔진' (Music Semantic Vector Engine ⭐⭐)
+4TB WD Gold 하드에 저장된 수만 곡의 무손실 음원(FLAC/MP3)을 AI로 분석하여 멜론/스포티파이 수준의 개인화 추천 백엔드를 구축.
+
+```mermaid
+flowchart LR
+    File["🎵 NAS 음원 파일 (.flac / .mp3)"] --> AudioAI["🧠 Audio Embedding Worker<br/>(Oracle Cloud 24GB RAM)<br/>CLAP / Whisper 가사 추출"]
+    AudioAI --> Vector["🐘 Pgvector DB<br/>(음악 분위기/장르/가사 벡터)"]
+    Vector --> SpringBoot["⚡ Spring Boot Recommender<br/>• 코사인 유사도 검색<br/>• 시맨틱 플레이리스트 생성"]
+    SpringBoot --> Gonic["🎵 Gonic / 사용자 앱"]
+```
+
+- **구현 방식**:
+  - **배치 파이프라인**: 새 음원 업로드 시 Oracle Cloud에서 **Whisper**(가사 텍스트 추출) 및 **CLAP**(오디오 벡터 임베딩) 모델 구동.
+  - **Spring 백엔드**: "새벽 드라이브에 어울리는 몽환적인 R&B", "90년대 신나는 댄스곡" 등 자연어 질의를 벡터 유사도 검색하여 Gonic에 맞춤 큐 전달.
+
+---
+
+### ④ Hybrid Cloud (Oracle Cloud Always Free + Self-NAS) 비동기 파이프라인 ⭐⭐
+- **인프라 분담**:
+  - **Self-NAS (홈)**: 대용량 데이터 보관(WD Gold/White), 로컬 빠른 미디어 스트리밍 (i5-9500T)
+  - **Oracle Cloud (OCI 24GB RAM Ampere A1)**: 24/7 공인 IP 게이트웨이, 고사양 AI 연산 Worker (Ollama, Whisper, Spring Boot 메인 API)
+- **백엔드 통신**:
+  - 홈서버와 OCI 간 **gRPC** 또는 **Kafka / RabbitMQ** 기반 이벤트 드리븐 비동기 메시징 구축
+  - 홈비디오 업로드 시 ➔ OCI Worker가 수신하여 자동 요약, AI 자막(.srt) 생성 후 홈서버로 콜백
+
+---
+
+## 🚀 6. 단계별 검토 및 도입 로드맵 (권장 순서)
 
 1. **1단계 (기본 확정 스택 완성)**:
    - `Xpenology(On-Demand)` + `Immich` + `Gonic` + `Jellyfin` 셋업 완료 및 안정성 확인
@@ -135,3 +217,5 @@ flowchart TB
    - `Ghost` / `Quartz`(개인 블로그/지식위키) + `Vaultwarden`(비밀번호 관리)
 4. **4단계 (미디어 자동 수집 검토)**:
    - `Jellyseerr` + `*Arr` + `qBittorrent-nox` 자동화 구성
+5. **5단계 (Spring AI & Hybrid Cloud 접목 검토)**:
+   - `Spring Boot 3.x (Spring AI)` 기반 홈서버 Function Calling 에이전트 및 OCI 하이브리드 파이프라인 구축
