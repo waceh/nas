@@ -96,6 +96,7 @@ bash /root/nas_power.sh shutdown-host
 - [x] **Step 3. Proxmox 자동 백업 스토리지 등록 (`vzdump`)**:
   - `nas-backups` NFS 스토리지 등록 완료 (`192.168.1.132:/volume1/backups`, 500GB Quota)
   - `pvesm status` 정상 (`active`) 확인 완료
+  - Proxmox Datacenter 백업 스케줄 등록 완료 (`mon 01:00`, ZSTD, Snapshot, Keep Last: 3)
 - [ ] **Step 4. (선택 검토) 확장 서비스 후보군 검토**:
   - `Organizr + Homepage` 통합 탭/대시보드, `Uptime Kuma` 장애 알림, `Tailscale`, `Spring AI` 에이전트 연동 검토 → [`98_candidate_services_and_architecture_review.md`](98_candidate_services_and_architecture_review.md)
 
