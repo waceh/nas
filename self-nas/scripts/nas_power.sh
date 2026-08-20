@@ -31,8 +31,8 @@ fi
 
 NAS_VM_ID="101"
 NAS_IP="192.168.1.132"
-LXC_SERVICES=(102 103 104 105 106)
-LXC_SHUTDOWN_ORDER=(105 104 103 106 102) # Jellyfin -> Gonic -> Immich -> Dev -> AdGuard
+LXC_SERVICES=(102 103 104 105 106 107)
+LXC_SHUTDOWN_ORDER=(107 105 104 103 106 102) # Dashboard -> Jellyfin -> Gonic -> Immich -> Dev -> AdGuard
 
 # ------------------------------------------------------------------------------
 # 1. 상태 및 통합 디스크 현황 조회 (Status & Storage Monitor)
@@ -217,6 +217,7 @@ init_pve_order() {
     pct set 104 --onboot 1 --startup "order=2,up=5,down=10" 2>/dev/null || true  # Gonic
     pct set 105 --onboot 1 --startup "order=2,up=10,down=15" 2>/dev/null || true # Jellyfin
     pct set 106 --onboot 1 --startup "order=2,up=5,down=10" 2>/dev/null || true  # Dev Web
+    pct set 107 --onboot 1 --startup "order=2,up=5,down=10" 2>/dev/null || true  # Homepage Dashboard
 
     log_ok "Proxmox 호스트 기동/종료 순서 등록 완료!"
 }
