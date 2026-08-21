@@ -4,7 +4,8 @@
 # ==============================================================================
 # - LXC 107 생성 (Debian 12, 1 Core, 512MB RAM, 4GB SSD Root on local-530)
 # - Docker 및 Homepage 공식 최신 이미지 자동 배포
-# - Proxmox(710/530), 헤놀로지(Gold/White), Immich, Gonic, Jellyfin 통합 대시보드 자동 사전구성
+# - 4-Tier 5대 디스크(Intel 530 SSD, WD Gold 4T, WD White 18T/8T) 실시간 용량 모니터링
+# - Immich, Gonic, Jellyfin, Proxmox, 헤놀로지 통합 대시보드 자동 사전구성
 # ==============================================================================
 
 set -e
@@ -34,6 +35,7 @@ STORAGE="${STORAGE:-local-530}"
 BRIDGE="${BRIDGE:-vmbr0}"
 IP_ADDR="${IP_ADDR:-192.168.1.107/24}"
 GATEWAY="${GATEWAY:-192.168.1.1}"
+NAS_IP="${NAS_IP:-192.168.1.132}"
 
 echo -e "${GREEN}====================================================${NC}"
 echo -e "${GREEN}      Homepage Dashboard LXC 자동 설치기            ${NC}"
@@ -80,21 +82,30 @@ log_ok "LXC ${CTID} 생성 및 시작 완료!"
 # 4. 네트워크 대기
 sleep 5
 
-# 5. Docker 설치 및 Homepage 사전 구성 (LXC 내부)
+# 5. 패키지 설치, NFS 용량 마운트 및 Homepage 구성 (LXC 내부)
 log_info "LXC 내부 Docker 설치 및 Homepage 대시보드 사전 설정 중..."
-pct exec "$CTID" -- bash -c '
+pct exec "$CTID" -- bash -c "
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-apt-get install -y -qq curl ca-certificates gnupg
+apt-get install -y -qq curl ca-certificates gnupg nfs-common
 
 if ! command -v docker &>/dev/null; then
   curl -fsSL https://get.docker.com | sh
 fi
 
-mkdir -p /opt/homepage/config
+mkdir -p /opt/homepage/config /mnt/gold /mnt/pds1 /mnt/pds2
 
-# 1. settings.yaml (사이트 제목 & 테마)
-cat << "SETTINGS_EOF" > /opt/homepage/config/settings.yaml
+# 1. NFS 락-프리 마운트 (용량 조회용)
+cat << 'FSTAB_EOF' > /etc/fstab
+${NAS_IP}:/volume1/video /mnt/gold nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr,rsize=1048576,wsize=1048576 0 0
+${NAS_IP}:/volume2/PDS1  /mnt/pds1 nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr,rsize=1048576,wsize=1048576 0 0
+${NAS_IP}:/volume3/PDS2  /mnt/pds2 nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr,rsize=1048576,wsize=1048576 0 0
+FSTAB_EOF
+
+mount -a || true
+
+# 2. settings.yaml (사이트 제목 & 테마)
+cat << 'SETTINGS_EOF' > /opt/homepage/config/settings.yaml
 title: Waceh NAS Dashboard
 favicon: https://cdn-icons-png.flaticon.com/512/3208/3208726.png
 theme: dark
@@ -105,22 +116,34 @@ useEqualHeights: true
 hideVersion: true
 SETTINGS_EOF
 
-# 2. widgets.yaml (상단 위젯 및 문구)
-cat << "WIDGETS_EOF" > /opt/homepage/config/widgets.yaml
+# 3. widgets.yaml (CPU/RAM + 4단 디스크 실시간 사용량 게이지)
+cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
 - greeting:
     text_size: xl
-    text: "Waceh NAS & Media Hub"
+    text: \"Waceh NAS & Media Hub\"
 - search:
     provider: google
     target: _blank
 - resources:
+    label: \"시스템 자원\"
     cpu: true
     memory: true
+- resources:
+    label: \"Intel 530 SSD (컨테이너/DB)\"
     disk: /
+- resources:
+    label: \"WD Gold 4TB (사진·영상·음악)\"
+    disk: /mnt/gold
+- resources:
+    label: \"WD White 18TB (PDS1 콜드 미디어)\"
+    disk: /mnt/pds1
+- resources:
+    label: \"WD White 8TB (PDS2 콜드 미디어)\"
+    disk: /mnt/pds2
 WIDGETS_EOF
 
-# 3. services.yaml (서비스 목록 및 내부 상태 체크)
-cat << "SERVICES_EOF" > /opt/homepage/config/services.yaml
+# 4. services.yaml (전체 외부 DDNS 링크 + 내부 초고속 상태 점검)
+cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
 - 미디어 서비스 (Media Core):
     - Immich Photo:
         icon: immich.png
@@ -151,8 +174,8 @@ cat << "SERVICES_EOF" > /opt/homepage/config/services.yaml
         ping: http://192.168.1.132:5000
 SERVICES_EOF
 
-# 4. docker-compose.yml 생성
-cat << "COMPOSE_EOF" > /opt/homepage/docker-compose.yml
+# 5. docker-compose.yml 생성
+cat << 'COMPOSE_EOF' > /opt/homepage/docker-compose.yml
 services:
   homepage:
     image: ghcr.io/gethomepage/homepage:latest
@@ -163,6 +186,9 @@ services:
     volumes:
       - /opt/homepage/config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /mnt/gold:/mnt/gold:ro
+      - /mnt/pds1:/mnt/pds1:ro
+      - /mnt/pds2:/mnt/pds2:ro
     environment:
       - PUID=0
       - PGID=0
@@ -171,7 +197,7 @@ COMPOSE_EOF
 
 cd /opt/homepage
 docker compose up -d --force-recreate
-'
+"
 
 # 6. 호스트 부팅 및 종료 순서 설정
 pct set "$CTID" --startup "order=2,up=5,down=10"
@@ -181,6 +207,6 @@ echo -e "${GREEN}====================================================${NC}"
 echo -e "${GREEN}     Homepage Dashboard (${CTID}) 설치 완료!         ${NC}"
 echo -e "${GREEN}====================================================${NC}"
 echo -e " 1. 접속 URL: ${BLUE}http://${IP_ADDR%/*}:3000${NC} 또는 ${BLUE}http://waceh.asuscomm.com:3000${NC}"
-echo -e " 2. 메인 대시보드: Immich(2283) / Gonic(4747) / Jellyfin(8096) 직통 연결"
+echo -e " 2. 디스크 모니터링: Intel 530 SSD, WD Gold 4TB, WD White 18TB/8TB"
 echo -e " 3. 설정 파일 위치: LXC ${CTID} 내부 ${GREEN}/opt/homepage/config/${NC}"
 echo -e "${GREEN}====================================================${NC}"
