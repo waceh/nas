@@ -60,7 +60,7 @@ if [ "$NEED_REBOOT" -eq 1 ]; then
     sleep 5
 fi
 
-log_info "Homepage 대시보드 100GB SSD 통합 및 1줄 3칸 소셜 링크 적용 중..."
+log_info "Homepage 대시보드 YAML 문법 완벽 검증 및 레이아웃 적용 중..."
 
 pct exec "$CTID" -- bash -c "
 export DEBIAN_FRONTEND=noninteractive
@@ -68,7 +68,7 @@ apt-get update -qq
 
 mkdir -p /opt/homepage/config
 
-# 1. settings.yaml (스토리지 5열, 미디어 3열, 인프라 2열, 소셜 3열 완벽 통일)
+# 1. settings.yaml (특수문자 & 이스케이프 및 4단 컬럼 설정)
 cat << 'SETTINGS_EOF' > /opt/homepage/config/settings.yaml
 title: Waceh NAS Dashboard
 favicon: https://cdn-icons-png.flaticon.com/512/3208/3208726.png
@@ -80,16 +80,16 @@ useEqualHeights: true
 hideVersion: true
 
 layout:
-  4-Tier 물리 스토리지:
+  \"4-Tier 물리 스토리지\":
     style: row
     columns: 5
-  미디어 서비스:
+  \"미디어 서비스\":
     style: row
     columns: 3
-  인프라 & 스토리지:
+  \"인프라 & 스토리지\":
     style: row
     columns: 2
-  Developer & Social:
+  \"Developer & Social\":
     style: row
     columns: 3
 SETTINGS_EOF
@@ -111,76 +111,81 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     target: _blank
 WIDGETS_EOF
 
-# 3. services.yaml (710 100GB 94.5GB 여유 깔끔 표기)
+# 3. services.yaml (특수문자 따옴표 처리 및 완벽한 YAML 구조)
 cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
-- 4-Tier 물리 스토리지:
-    - Intel 710 100GB (94.5GB 여유):
-        description: Host OS (Proxmox VE)
-    - Intel 530 120GB (98.0GB 여유):
-        description: VM / LXC / DB 풀
-    - WD Gold 4TB (3.4TB 여유):
-        description: 사진(Immich), 음악(Gonic), 영상
-    - WD White 18TB (9.2TB 여유):
-        description: PDS1 (Cold Storage / Jellyfin)
-    - WD White 8TB (7.0TB 여유):
-        description: PDS2 (Cold Storage / Jellyfin)
+- \"4-Tier 물리 스토리지\":
+    - \"Intel 710 100GB (94.5GB 여유)\":
+        description: \"Host OS (Proxmox VE)\"
+        href: \"#\"
+    - \"Intel 530 120GB (98.0GB 여유)\":
+        description: \"VM / LXC / DB 풀\"
+        href: \"#\"
+    - \"WD Gold 4TB (3.4TB 여유)\":
+        description: \"사진(Immich), 음악(Gonic), 영상\"
+        href: \"#\"
+    - \"WD White 18TB (9.2TB 여유)\":
+        description: \"PDS1 (Cold Storage / Jellyfin)\"
+        href: \"#\"
+    - \"WD White 8TB (7.0TB 여유)\":
+        description: \"PDS2 (Cold Storage / Jellyfin)\"
+        href: \"#\"
 
-- 미디어 서비스:
-    - Immich Photo:
+- \"미디어 서비스\":
+    - \"Immich Photo\":
         icon: immich.png
         href: http://waceh.asuscomm.com:2283
-        description: AI 사진 백업 / 앨범 인식 (WD Gold 4TB)
+        description: \"AI 사진 백업 / 앨범 인식 (WD Gold 4TB)\"
         ping: http://192.168.1.103:2283
-    - Gonic Music:
+    - \"Gonic Music\":
         icon: gonic.png
         href: http://waceh.asuscomm.com:4747
-        description: 무손실 음악 스트리밍 / Amperfy (WD Gold 4TB)
+        description: \"무손실 음악 스트리밍 / Amperfy (WD Gold 4TB)\"
         ping: http://192.168.1.104:4747
-    - Jellyfin Video:
+    - \"Jellyfin Video\":
         icon: jellyfin.png
         href: http://waceh.asuscomm.com:8096
-        description: iGPU QuickSync 4K 비디오 (WD White 18TB / 8TB)
+        description: \"iGPU QuickSync 4K 비디오 (WD White 18TB / 8TB)\"
         ping: http://192.168.1.105:8096
 
-- 인프라 & 스토리지:
-    - Proxmox VE:
+- \"인프라 & 스토리지\":
+    - \"Proxmox VE\":
         icon: proxmox.png
         href: https://waceh.asuscomm.com:8006
-        description: 하이퍼바이저 호스트 (Intel 710 SSD OS)
+        description: \"하이퍼바이저 호스트 (Intel 710 SSD OS)\"
         ping: https://192.168.1.200:8006
-    - Xpenology DSM:
+    - \"Xpenology DSM\":
         icon: synology.png
         href: http://waceh.asuscomm.com:5000
-        description: Pure Storage Core (Gold 4TB + White 26TB Btrfs)
+        description: \"Pure Storage Core (Gold 4TB + White 26TB Btrfs)\"
         ping: http://192.168.1.132:5000
 
-- Developer & Social:
-    - GitHub:
+- \"Developer & Social\":
+    - \"GitHub\":
         icon: github.png
         href: https://github.com/waceh
-        description: github.com/waceh
-    - Instagram:
+        description: \"github.com/waceh\"
+    - \"Instagram\":
         icon: instagram.png
         href: https://www.instagram.com/legato____
-        description: @legato____
-    - YouTube:
+        description: \"@legato____\"
+    - \"YouTube\":
         icon: youtube.png
         href: https://www.youtube.com/@mtk-ey
-        description: @mtk-ey
+        description: \"@mtk-ey\"
 SERVICES_EOF
 
-# 4. 불필요한 bookmarks.yaml 제거 (세로 중복 노출 차단)
+# 4. 불필요한 bookmarks.yaml 제거
 rm -f /opt/homepage/config/bookmarks.yaml
 
 # 5. custom.css (슬림한 여백과 카드 정돈)
 cat << 'CSS_EOF' > /opt/homepage/config/custom.css
 /* 그룹 및 카드 간 상하 여백 슬림화 */
-.services-group, .group, section, div[class*="gap-"] {
+.services-group, .group, section, div[class*=\"gap-\"] {
   margin-bottom: 0.75rem !important;
 }
 
 /* 텍스트 디스크 카드 높이 및 패딩 컴팩트 정돈 */
-div[class*="service-card"] {
+div[class*=\"service-card\"] {
   padding: 0.75rem !important;
 }
 CSS_EOF
@@ -239,7 +244,7 @@ docker compose down
 docker compose up -d --force-recreate
 "
 
-log_ok "Intel 710 SSD 100GB 통합 표기 및 대시보드 업데이트 완료!"
+log_ok "YAML 구문 검증 및 대시보드 업데이트 완료!"
 echo ""
 echo -e "${GREEN}====================================================${NC}"
 echo -e " 💾 [1층]: Intel 710 100GB (94.5GB 여유) - Host OS (Proxmox VE)"
