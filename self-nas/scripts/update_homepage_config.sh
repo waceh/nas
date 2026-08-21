@@ -3,8 +3,7 @@
 # Homepage Dashboard Configuration Updater (self-nas)
 # ==============================================================================
 # - Waceh NAS 대시보드 문구 및 테마 적용
-# - custom.js 주입: 내부망(192.168.1.x) / 외부망(waceh.asuscomm.com) 접속 위치에 따라
-#   서비스 링크(Immich, Gonic, Jellyfin 등)를 동적으로 자동 리라이트
+# - custom.js 주입: 클릭 이벤트 캡처 방식으로 내부망/외부망 접속 자동 감지 & URL 전환
 # ==============================================================================
 
 set -e
@@ -93,31 +92,59 @@ cat << "SERVICES_EOF" > /opt/homepage/config/services.yaml
         ping: http://192.168.1.132:5000
 SERVICES_EOF
 
-# 4. custom.js (내부/외부망 접속 자동 감지 & 동적 URL 리라이트)
+# 4. custom.js (강력한 클릭 가로채기 & DOM 자동 치환 엔진)
 cat << "JS_EOF" > /opt/homepage/config/custom.js
-document.addEventListener("DOMContentLoaded", () => {
-  const updateLinks = () => {
-    const currentHost = window.location.hostname;
-    // 외부 도메인(waceh.asuscomm.com 등)으로 접속한 경우
-    if (currentHost && currentHost !== "localhost" && !currentHost.startsWith("192.168.") && !currentHost.startsWith("127.")) {
-      const links = document.querySelectorAll("a[href*=\"192.168.1.\"]");
-      links.forEach((link) => {
-        try {
-          const url = new URL(link.href);
-          // 미디어 서비스 포트(2283, 4747, 8096, 3000)를 현재 접속한 외부 도메인으로 동적 교체
-          if (["2283", "4747", "8096", "3000"].includes(url.port)) {
-            url.hostname = currentHost;
-            link.href = url.toString();
-          }
-        } catch (e) {}
-      });
-    }
-  };
+(() => {
+  const currentHost = window.location.hostname;
+  // 외부 도메인(waceh.asuscomm.com 등)으로 접속한 경우에만 동작
+  if (!currentHost || currentHost === "localhost" || currentHost.startsWith("192.168.") || currentHost.startsWith("127.")) {
+    return;
+  }
 
-  updateLinks();
-  const observer = new MutationObserver(updateLinks);
-  observer.observe(document.body, { childList: true, subtree: true });
-});
+  function rewriteUrl(originalUrl) {
+    try {
+      const url = new URL(originalUrl);
+      if (url.hostname.startsWith("192.168.1.") && ["2283", "4747", "8096", "3000"].includes(url.port)) {
+        url.hostname = currentHost;
+        return url.toString();
+      }
+    } catch (e) {}
+    return originalUrl;
+  }
+
+  function rewriteLinks() {
+    const links = document.querySelectorAll("a[href*=\"192.168.1.\"]");
+    links.forEach((a) => {
+      a.href = rewriteUrl(a.href);
+    });
+  }
+
+  // Next.js 가상 DOM 이벤트를 완벽하게 가로채는 전역 클릭 캡처 리스너
+  document.addEventListener("click", (e) => {
+    const anchor = e.target.closest("a");
+    if (anchor && anchor.href && anchor.href.includes("192.168.1.")) {
+      const newUrl = rewriteUrl(anchor.href);
+      if (newUrl !== anchor.href) {
+        e.preventDefault();
+        e.stopPropagation();
+        const target = anchor.getAttribute("target") || "_blank";
+        if (target === "_self") {
+          window.location.href = newUrl;
+        } else {
+          window.open(newUrl, target);
+        }
+      }
+    }
+  }, true);
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", rewriteLinks);
+  } else {
+    rewriteLinks();
+  }
+  const observer = new MutationObserver(rewriteLinks);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+})();
 JS_EOF
 
 # 5. docker compose restart
@@ -129,4 +156,5 @@ echo ""
 echo -e "${GREEN}====================================================${NC}"
 echo -e " 1. 로컬 접속: ${BLUE}http://192.168.1.107:3000${NC} (클릭 시 내부망 이동)"
 echo -e " 2. 외부 접속: ${BLUE}http://waceh.asuscomm.com:3000${NC} (클릭 시 외부망 이동)"
+echo -e " 💡 적용 후 브라우저에서 ${BLUE}Ctrl+F5 (또는 Cmd+Shift+R 강력 새로고침)${NC}을 한 번 해주세요!"
 echo -e "${GREEN}====================================================${NC}"
