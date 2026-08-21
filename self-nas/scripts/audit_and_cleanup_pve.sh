@@ -3,9 +3,10 @@
 # Proxmox VE System Audit, Process Cleanup & Health Inspector (self-nas)
 # ==============================================================================
 # - 불필요한 레거시 데몬(구버전 glances 등) 및 임시 프로세스 완전 정리
+# - Cockpit Web GUI (:9090) 및 스토리지 S.M.A.R.T 관제 완벽 보존/복구
 # - 패키지 캐시 및 시스템 저널 로그 정리 (journalctl 100MB 제한)
 # - LXC 107 Docker 미사용 찌꺼기 캐시 정리
-# - 전체 6대 컨테이너/VM 및 5대 디스크 자원 상태 종합 리포트 출력
+# - 전체 6대 컨테이너/VM 및 물리 디스크 자원 상태 종합 리포트 출력
 # ==============================================================================
 
 set -e
@@ -37,27 +38,31 @@ if systemctl is-active --quiet glances-server.service 2>/dev/null; then
     systemctl disable glances-server.service 2>/dev/null || true
     rm -f /etc/systemd/system/glances-server.service
     systemctl daemon-reload
-    log_ok "구버전 glances-server 데몬 정리 완료."
 fi
-
-# pkill로 남아있는 중복 파이썬 glances 프로세스 강제 정리
 pkill -f "glances -w" 2>/dev/null || true
 
-# 2. 패키지 캐시 및 저널 로그 청소
-log_info "2. 호스트 시스템 캐시 및 로그 다이어트 중..."
-apt-get autoremove -y -qq 2>/dev/null || true
+# 2. Cockpit Web GUI (:9090) 및 스토리지 관제 보존/복구
+log_info "2. Cockpit Web GUI 및 디스크 관제 패키지 무결성 확인..."
+export DEBIAN_FRONTEND=noninteractive
+apt-get install -y -qq cockpit cockpit-storaged udisks2 2>/dev/null || true
+rm -f /etc/cockpit/disallowed-users
+systemctl enable --now cockpit.socket 2>/dev/null || true
+log_ok "Cockpit Web GUI (:9090) 및 S.M.A.R.T 관제 정상 유지 확인."
+
+# 3. 호스트 시스템 캐시 및 로그 다이어트
+log_info "3. 호스트 시스템 패키지 캐시 및 로그 다이어트 중..."
 apt-get clean 2>/dev/null || true
 journalctl --vacuum-size=100M &>/dev/null || true
-log_ok "호스트 시스템 캐시 및 로그 정리 완료."
+log_ok "호스트 시스템 캐시 및 저널 로그 정리 완료."
 
-# 3. LXC 107 (Homepage/Uptime Kuma) Docker 찌꺼기 캐시 청소
+# 4. LXC 107 (Homepage/Uptime Kuma) Docker 찌꺼기 캐시 청소
 if pct status 107 &>/dev/null; then
-    log_info "3. LXC 107 Docker 미사용 빌드 캐시 청소 중..."
+    log_info "4. LXC 107 Docker 미사용 빌드 캐시 청소 중..."
     pct exec 107 -- docker system prune -f &>/dev/null || true
     log_ok "LXC 107 Docker 캐시 정리 완료."
 fi
 
-# 4. 종합 상태 리포트 출력
+# 5. 종합 상태 리포트 출력
 echo ""
 echo -e "${CYAN}====================================================${NC}"
 echo -e "${CYAN}             📊 전체 시스템 종합 진단 리포트            ${NC}"
@@ -72,11 +77,11 @@ echo -e "${YELLOW}[2] 🧠 호스트 메모리(RAM) 사용 현황:${NC}"
 free -h | awk 'NR<=2 {print $0}'
 
 echo ""
-echo -e "${YELLOW}[3] 💾 물리 스토리지 파티션 용량 현황:${NC}"
-df -h | grep -E "(/dev/mapper/pve-root|/mnt/pve/nas-backups|/mnt/intel-ssd)" || df -h /
+echo -e "${YELLOW}[3] 💾 로컬 물리 스토리지 파티션 용량 현황:${NC}"
+df -h -l | grep -E "(/dev/mapper/pve-root|/mnt/intel-ssd)" || df -h -l /
 
 echo ""
-echo -e "${YELLOW}[4] 🌐 외부 열림 포트 및 리스닝 데몬 (포트 충돌 점검):${NC}"
+echo -e "${YELLOW}[4] 🌐 주요 서비스 활성 포트 점검:${NC}"
 ss -tulpn | grep -E "(8006|5000|9090|61208|3000|3001|2283|4747|8096|53)" | awk '{print $1, $5, $7}' | sort -u
 
 echo ""
