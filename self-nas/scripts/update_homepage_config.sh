@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Homepage Dashboard Hardware Full-Resource & Multi-Disk Updater (self-nas)
+# Homepage Dashboard 5-Disk Storage Tiering & Full Hardware Updater (self-nas)
 # ==============================================================================
-# - 호스트 하드웨어 전체 리소스 (Intel i5-9500T 6C / 전체 16GB RAM) 패스스루
-# - 호스트 실제 물리 SSD 전체 (Intel 710 100GB OS) 바인드 마운트
-# - 4-Tier 4대 실제 물리 디스크 (Intel SSD, Gold 4T, White 18T/8T) 줄바꿈 레이아웃
+# - 5대 물리 스토리지 (Intel 710 OS, Intel 530 LXC, WD Gold 4T, WD White 18T/8T) 완벽 분리
+# - 호스트 하드웨어 전체 리소스 (Intel i5-9500T 6C / DDR4 16GB RAM) 패스스루
 # ==============================================================================
 
 set -e
@@ -33,7 +32,7 @@ if ! pct status "$CTID" &>/dev/null; then
     exit 1
 fi
 
-log_info "Proxmox 호스트 전체 하드웨어 리소스(6코어 / 16GB RAM / SSD 전체) 주입 중..."
+log_info "Proxmox 호스트 하드웨어 자원 및 5대 디스크 설정 주입 중..."
 
 NEED_REBOOT=0
 
@@ -60,7 +59,7 @@ if [ "$NEED_REBOOT" -eq 1 ]; then
     sleep 5
 fi
 
-log_info "Homepage 대시보드 줄바꿈 레이아웃 및 4-Tier 디스크 설정 적용 중..."
+log_info "Homepage 대시보드 5-Disk 레이아웃 적용 중..."
 
 pct exec "$CTID" -- bash -c "
 export DEBIAN_FRONTEND=noninteractive
@@ -90,7 +89,7 @@ useEqualHeights: true
 hideVersion: true
 SETTINGS_EOF
 
-# 3. widgets.yaml (하드웨어 전체 자원 6C/16GB + 디스크별 줄바꿈 배치)
+# 3. widgets.yaml (하드웨어 전체 6C/16GB + 5대 물리 디스크 티어링 분리)
 cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
 - greeting:
     text_size: xl
@@ -101,25 +100,29 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     target: _blank
 
 - resources:
-    label: \"🖥️ 서버 하드웨어 전체 자원 (i5-9500T 6C / 16GB RAM)\"
+    label: \"🖥️ 서버 하드웨어 전체 자원 (Intel i5-9500T 6C / DDR4 16GB)\"
     cpu: true
     memory: true
     uptime: true
 
 - resources:
-    label: \"💾 1. Intel SSD (Proxmox 호스트 OS 100GB)\"
+    label: \"💾 1. Host OS SSD (Intel 710 100G MLC)\"
     disk: /mnt/intel-ssd
 
 - resources:
-    label: \"📀 2. WD Gold 4TB (사진·영상·음악 허브)\"
+    label: \"⚡ 2. 고속 컨테이너 풀 (Intel 530 120G MLC)\"
+    disk: /
+
+- resources:
+    label: \"📀 3. 라이프 & 미디어 허브 (WD Gold 4TB Enterprise)\"
     disk: /mnt/gold
 
 - resources:
-    label: \"📦 3. WD White 18TB (PDS1 콜드 미디어)\"
+    label: \"📦 4. PDS1 대용량 미디어 (WD White 18TB CMR)\"
     disk: /mnt/pds1
 
 - resources:
-    label: \"📦 4. WD White 8TB (PDS2 콜드 미디어)\"
+    label: \"📦 5. PDS2 보조 엔터테인먼트 (WD White 8TB CMR)\"
     disk: /mnt/pds2
 WIDGETS_EOF
 
@@ -216,13 +219,14 @@ cd /opt/homepage
 docker compose up -d --force-recreate
 "
 
-log_ok "전체 하드웨어 자원(6C/16GB) 및 4단 물리 디스크 줄바꿈 적용 완료!"
+log_ok "5대 물리 디스크 티어링 설정 완료!"
 echo ""
 echo -e "${GREEN}====================================================${NC}"
-echo -e " 🖥️ 서버 전체 하드웨어: Intel i5-9500T 6C / 전체 16GB RAM"
-echo -e " 💾 스토리지 1: Intel SSD 호스트 OS 전체 (약 100GB)"
-echo -e " 📀 스토리지 2: WD Gold 4TB (사진·영상·음악)"
-echo -e " 📦 스토리지 3: WD White 18TB (PDS1)"
-echo -e " 📦 스토리지 4: WD White 8TB (PDS2)"
+echo -e " 🖥️ 서버 전체 하드웨어: Intel i5-9500T 6C / DDR4 16GB RAM"
+echo -e " 💾 1. Intel 710 SSD OS (Proxmox 호스트)"
+echo -e " ⚡ 2. Intel 530 SSD Fast (LXC 컨테이너 풀)"
+echo -e " 📀 3. WD Gold 4TB (사진·영상·음악)"
+echo -e " 📦 4. WD White 18TB (PDS1 콜드 미디어)"
+echo -e " 📦 5. WD White 8TB (PDS2 콜드 미디어)"
 echo -e " 🌐 접속 주소: ${BLUE}http://waceh.asuscomm.com:3000${NC}"
 echo -e "${GREEN}====================================================${NC}"

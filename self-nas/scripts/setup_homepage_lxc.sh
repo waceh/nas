@@ -4,8 +4,7 @@
 # ==============================================================================
 # - LXC 107 생성 (Debian 12, 1 Core, 512MB RAM, 4GB SSD Root on local-530)
 # - Docker 및 Homepage 공식 최신 이미지 자동 배포
-# - 호스트 하드웨어 전체 리소스 (Intel i5-9500T 6C / 전체 16GB RAM) 패스스루
-# - 4-Tier 4대 실제 물리 디스크 (Intel SSD 100G, Gold 4T, White 18T/8T) 줄바꿈 모니터링
+# - 5대 물리 스토리지 (Intel 710, Intel 530, WD Gold 4T, WD White 18T/8T) 티어링
 # - Immich, Gonic, Jellyfin, Proxmox, 헤놀로지 통합 대시보드 자동 사전구성
 # ==============================================================================
 
@@ -125,7 +124,7 @@ useEqualHeights: true
 hideVersion: true
 SETTINGS_EOF
 
-# 3. widgets.yaml (하드웨어 전체 자원 6C/16GB + 디스크별 줄바꿈 배치)
+# 3. widgets.yaml (하드웨어 전체 6C/16GB + 5대 물리 디스크 티어링 분리)
 cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
 - greeting:
     text_size: xl
@@ -136,25 +135,29 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     target: _blank
 
 - resources:
-    label: \"🖥️ 서버 하드웨어 전체 자원 (i5-9500T 6C / 16GB RAM)\"
+    label: \"🖥️ 서버 하드웨어 전체 자원 (Intel i5-9500T 6C / DDR4 16GB)\"
     cpu: true
     memory: true
     uptime: true
 
 - resources:
-    label: \"💾 1. Intel SSD (Proxmox 호스트 OS 100GB)\"
+    label: \"💾 1. Host OS SSD (Intel 710 100G MLC)\"
     disk: /mnt/intel-ssd
 
 - resources:
-    label: \"📀 2. WD Gold 4TB (사진·영상·음악 허브)\"
+    label: \"⚡ 2. 고속 컨테이너 풀 (Intel 530 120G MLC)\"
+    disk: /
+
+- resources:
+    label: \"📀 3. 라이프 & 미디어 허브 (WD Gold 4TB Enterprise)\"
     disk: /mnt/gold
 
 - resources:
-    label: \"📦 3. WD White 18TB (PDS1 콜드 미디어)\"
+    label: \"📦 4. PDS1 대용량 미디어 (WD White 18TB CMR)\"
     disk: /mnt/pds1
 
 - resources:
-    label: \"📦 4. WD White 8TB (PDS2 콜드 미디어)\"
+    label: \"📦 5. PDS2 보조 엔터테인먼트 (WD White 8TB CMR)\"
     disk: /mnt/pds2
 WIDGETS_EOF
 
@@ -224,7 +227,6 @@ echo -e "${GREEN}====================================================${NC}"
 echo -e "${GREEN}     Homepage Dashboard (${CTID}) 설치 완료!         ${NC}"
 echo -e "${GREEN}====================================================${NC}"
 echo -e " 1. 접속 URL: ${BLUE}http://${IP_ADDR%/*}:3000${NC} 또는 ${BLUE}http://waceh.asuscomm.com:3000${NC}"
-echo -e " 2. 서버 전체 하드웨어: Intel i5-9500T 6C / 전체 16GB RAM"
-echo -e " 3. 4단 물리 디스크: Intel SSD(100GB), WD Gold 4TB, WD White 18TB/8TB"
-echo -e " 4. 설정 파일 위치: LXC ${CTID} 내부 ${GREEN}/opt/homepage/config/${NC}"
+echo -e " 2. 5대 물리 스토리지: Intel 710, Intel 530, WD Gold 4T, WD White 18T/8T"
+echo -e " 3. 설정 파일 위치: LXC ${CTID} 내부 ${GREEN}/opt/homepage/config/${NC}"
 echo -e "${GREEN}====================================================${NC}"
