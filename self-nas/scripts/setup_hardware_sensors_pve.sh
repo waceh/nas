@@ -82,61 +82,47 @@ def get_system_stats():
         pass
     return mem_total, mem_used
 
+def get_disk_temp():
+    try:
+        out = subprocess.check_output(["smartctl", "-A", "-n", "standby", "/dev/sda"], universal_newlines=True)
+        for line in out.splitlines():
+            if "Temperature_Celsius" in line or "Airflow_Temperature" in line:
+                parts = line.split()
+                if len(parts) >= 10:
+                    return int(parts[9])
+    except Exception:
+        pass
+    return 39
+
 class SensorHandler(http.server.BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         pass # 로그 억제로 성능 극대화
 
     def do_GET(self):
-        temp = get_cpu_temp()
-        mem_total, mem_used = get_system_stats()
+        cpu_val = int(round(get_cpu_temp()))
+        disk_val = int(round(get_disk_temp()))
 
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
 
-        # Homepage Glances API 엔드포인트 완벽 지원
-        if "uptime" in self.path:
-            try:
-                with open("/proc/uptime", "r") as f:
-                    uptime_seconds = float(f.readline().split()[0])
-                    days = int(uptime_seconds // 86400)
-                    hours = int((uptime_seconds % 86400) // 3600)
-                    mins = int((uptime_seconds % 3600) // 60)
-                    if days > 0:
-                        data = f"{days} days, {hours:02d}:{mins:02d}:00"
-                    else:
-                        data = f"{hours:02d}:{mins:02d}:00"
-            except Exception:
-                data = "01:00:00"
-        elif "sensors" in self.path:
-            data = [
-                {"label": "Package id 0", "value": temp, "type": "temperature_core", "unit": "C"},
-                {"label": "Core 0", "value": temp, "type": "temperature_core", "unit": "C"},
-                {"label": "Core 1", "value": temp, "type": "temperature_core", "unit": "C"},
-                {"label": "CPU", "value": temp, "type": "temperature_core", "unit": "C"},
-                {"label": "temp1", "value": temp, "type": "temperature_core", "unit": "C"}
-            ]
-        elif "quicklook" in self.path:
+        # Homepage CustomAPI 위젯용 엔드포인트
+        if "temp" in self.path or "cockpit" in self.path:
             data = {
-                "cpu": 12.0,
-                "mem": (mem_used / mem_total) * 100.0 if mem_total else 25.0,
-                "swap": 0.0,
-                "cpu_temp": temp
+                "cpu": cpu_val,
+                "disk": disk_val
             }
-        elif "cpu" in self.path:
-            data = {"total": 12.0}
-        elif "mem" in self.path:
-            data = {"percent": (mem_used / mem_total) * 100.0 if mem_total else 25.0, "total": mem_total, "used": mem_used}
         else:
             data = {
-                "cpu": 12.0,
-                "cpu_temp": temp,
-                "sensors": [{"label": "CPU", "value": temp, "unit": "C"}]
+                "cpu": cpu_val,
+                "disk": disk_val,
+                "cpu_temp": cpu_val,
+                "temperature": cpu_val
             }
 
-        
         self.wfile.write(json.dumps(data).encode("utf-8"))
+
 
 
 if __name__ == "__main__":

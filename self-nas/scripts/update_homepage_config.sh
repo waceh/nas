@@ -100,38 +100,8 @@ layout:
 SETTINGS_EOF
 '
 
-# 2. widgets.yaml (상단 헤더: 인사말 + CPU/RAM/TIME/온도 + 검색바)
-
-GLANCES_ACTIVE=0
-if systemctl is-active --quiet nas-sensors.service || systemctl is-active --quiet glances-server.service || ss -tulpn | grep -q "61208" || curl -s --connect-timeout 2 http://192.168.1.200:61208 &>/dev/null; then
-    GLANCES_ACTIVE=1
-fi
-
-
-TMP_WIDGETS=$(mktemp)
-if [ "$GLANCES_ACTIVE" -eq 1 ]; then
-cat << 'WIDGETS_EOF' > "$TMP_WIDGETS"
-- greeting:
-    text_size: xl
-    text: "Waceh NAS & Media Hub"
-
-- glances:
-    label: "🖥️ 서버 하드웨어 전체 자원 & 실시간 온도 (i5-9500T 6C / 16GB RAM)"
-    url: http://192.168.1.200:61208
-    version: 3
-    cpu: true
-    cputemp: true
-    memory: true
-    uptime: false
-
-
-- search:
-    provider: google
-    target: _blank
-WIDGETS_EOF
-
-else
-cat << 'WIDGETS_EOF' > "$TMP_WIDGETS"
+# 2. widgets.yaml (상단 헤더: 깔끔한 기본 리소스 위젯)
+pct exec "$CTID" -- bash -c 'cat << "WIDGETS_EOF" > /opt/homepage/config/widgets.yaml
 - greeting:
     text_size: xl
     text: "Waceh NAS & Media Hub"
@@ -146,13 +116,9 @@ cat << 'WIDGETS_EOF' > "$TMP_WIDGETS"
     provider: google
     target: _blank
 WIDGETS_EOF
-fi
+'
 
-pct push "$CTID" "$TMP_WIDGETS" /opt/homepage/config/widgets.yaml
-rm -f "$TMP_WIDGETS"
-
-# 3. services.yaml 생성 (AdGuard 위젯 지원)
-
+# 3. services.yaml 생성 (AdGuard 및 Cockpit 실시간 온도 위젯 지원)
 TMP_SERVICES=$(mktemp)
 cat << 'SERVICES_BASE' > "$TMP_SERVICES"
 - "4-Tier 물리 스토리지":
@@ -204,8 +170,19 @@ cat << 'SERVICES_BASE' > "$TMP_SERVICES"
         icon: cockpit.png
         href: https://waceh.asuscomm.com:9090
         description: "디스크 S.M.A.R.T/온도"
-        ping: https://192.168.1.200:9090
+        widget:
+          type: customapi
+          url: http://192.168.1.200:61208/api/temp
+          refreshInterval: 10000
+          mappings:
+            - field: cpu
+              label: CPU
+              suffix: "°C"
+            - field: disk
+              label: 디스크
+              suffix: "°C"
 SERVICES_BASE
+
 
 if [ -n "$ADGUARD_USER" ] && [ -n "$ADGUARD_PASS" ]; then
 cat << ADGUARD_WIDGET_EOF >> "$TMP_SERVICES"
