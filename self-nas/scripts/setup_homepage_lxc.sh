@@ -261,7 +261,9 @@ services:
 COMPOSE_EOF
 
 cd /opt/homepage
-docker compose up -d --force-recreate
+docker compose down --remove-orphans || true
+docker rm -f auth-proxy homepage uptime-kuma || true
+docker compose up -d --remove-orphans --force-recreate
 "
 
 # 7. 호스트 부팅 및 종료 순서 설정

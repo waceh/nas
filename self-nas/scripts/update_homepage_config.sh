@@ -6,7 +6,7 @@
 # - 2층: 🎬 미디어 서비스 (1줄 3칸: Immich, Gonic, Jellyfin)
 # - 3층: 🛠️ 인프라 & 관제 (1줄 3칸: Proxmox VE, Xpenology DSM, Uptime Kuma)
 # - 4층: 🌐 Developer & Social (GitHub, Instagram, YouTube 1줄 3칸)
-# - Uptime Kuma (포트 3001) 초경량(RAM 40MB) 24시간 장애 모니터링 데몬 탑재
+# - 고아 컨테이너(auth-proxy 등) 완벽 정리 및 포트 충돌 방지
 # ==============================================================================
 
 set -e
@@ -197,7 +197,7 @@ div[class*=\"service-card\"] {
 }
 CSS_EOF
 
-# 6. docker-compose.yml 업데이트 (Homepage + Uptime Kuma 통합)
+# 6. docker-compose.yml 업데이트 (Homepage + Uptime Kuma)
 cat << 'COMPOSE_EOF' > /opt/homepage/docker-compose.yml
 services:
   homepage:
@@ -225,8 +225,12 @@ services:
 COMPOSE_EOF
 
 cd /opt/homepage
-docker compose down
-docker compose up -d --force-recreate
+# 기존 고아 컨테이너(auth-proxy 등) 및 잔여 컨테이너 강제 정리
+docker compose down --remove-orphans || true
+docker rm -f auth-proxy homepage uptime-kuma || true
+
+# 깨끗하게 재시작
+docker compose up -d --remove-orphans --force-recreate
 "
 
 log_ok "Homepage 대시보드 & Uptime Kuma 통합 배포 완료!"
