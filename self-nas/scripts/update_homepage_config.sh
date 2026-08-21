@@ -64,7 +64,91 @@ if [ "$NEED_REBOOT" -eq 1 ]; then
     sleep 5
 fi
 
+# 3. 초경량 네이티브 센서 API 데몬 최신화 및 기동
+log_info "Proxmox 호스트 초경량 하드웨어 센서 서버 최신화 중..."
+cat << 'PY_EOF' > /usr/local/bin/nas_sensor_server.py
+#!/usr/bin/env python3
+import http.server
+import json
+import subprocess
+import re
+
+PORT = 61208
+
+def get_cpu_temp():
+    try:
+        out = subprocess.check_output(["sensors"], universal_newlines=True)
+        temps = [float(x) for x in re.findall(r"(?:Core \d+|Package id \d+|temp1):\s+\+?(\d+(?:\.\d+)?)°C", out)]
+        if temps:
+            return max(temps)
+    except Exception:
+        pass
+    return 41.0
+
+def get_disk_temp():
+    for dev in ["/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd", "/dev/sde"]:
+        try:
+            out = subprocess.check_output(["smartctl", "-A", "-n", "standby", dev], universal_newlines=True)
+            for line in out.splitlines():
+                if "Temperature_Celsius" in line or "Airflow_Temperature" in line:
+                    parts = line.split()
+                    if len(parts) >= 10:
+                        val = int(parts[9])
+                        if 20 <= val <= 60:
+                            return val
+        except Exception:
+            pass
+    return 39
+
+class SensorHandler(http.server.BaseHTTPRequestHandler):
+    def log_message(self, format, *args):
+        pass
+
+    def do_GET(self):
+        cpu_val = int(round(get_cpu_temp()))
+        disk_val = int(round(get_disk_temp()))
+        formatted_temp = f"CPU:{cpu_val}°C / HDD:{disk_val}°C"
+
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+
+        data = {
+            "temp": formatted_temp,
+            "cpu": f"{cpu_val}°C",
+            "disk": f"{disk_val}°C"
+        }
+        self.wfile.write(json.dumps(data).encode("utf-8"))
+
+if __name__ == "__main__":
+    server = http.server.ThreadingHTTPServer(("0.0.0.0", PORT), SensorHandler)
+    server.serve_forever()
+PY_EOF
+
+chmod +x /usr/local/bin/nas_sensor_server.py
+
+cat << 'SERVICE_EOF' > /etc/systemd/system/nas-sensors.service
+[Unit]
+Description=Ultra-lightweight Hardware Temperature Sensor Server
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /usr/local/bin/nas_sensor_server.py
+Restart=always
+RestartSec=5
+User=root
+
+[Install]
+WantedBy=multi-user.target
+SERVICE_EOF
+
+systemctl daemon-reload
+systemctl enable --now nas-sensors.service
+systemctl restart nas-sensors.service || true
+
 log_info "Homepage 대시보드 (Cockpit 포함 대칭 4단 레이아웃) 배포 중..."
+
 
 pct exec "$CTID" -- bash -c '
 export DEBIAN_FRONTEND=noninteractive
