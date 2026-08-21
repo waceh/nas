@@ -2,7 +2,8 @@
 # ==============================================================================
 # Homepage Dashboard 5-Disk Storage Tiering & Full Hardware Updater (self-nas)
 # ==============================================================================
-# - 5대 물리 스토리지 (Intel 710 OS, Intel 530 LXC, WD Gold 4T, WD White 18T/8T) 완벽 분리
+# - 5대 물리 스토리지 (Intel 710, Intel 530, WD Gold 4T, WD White 18T/8T) 100% 노출 보장
+# - Docker Overlay 생략 방지를 위한 /mnt/intel530 명시적 볼륨 바인딩
 # - 호스트 하드웨어 전체 리소스 (Intel i5-9500T 6C / DDR4 16GB RAM) 패스스루
 # ==============================================================================
 
@@ -107,11 +108,11 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
 
 - resources:
     label: \"💾 1. Host OS SSD (Intel 710 100G MLC)\"
-    disk: /mnt/intel-ssd
+    disk: /mnt/intel710
 
 - resources:
     label: \"⚡ 2. 고속 컨테이너 풀 (Intel 530 120G MLC)\"
-    disk: /
+    disk: /mnt/intel530
 
 - resources:
     label: \"📀 3. 라이프 & 미디어 허브 (WD Gold 4TB Enterprise)\"
@@ -158,7 +159,7 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         ping: http://192.168.1.132:5000
 SERVICES_EOF
 
-# 5. docker-compose.yml 업데이트 (하드웨어 전체 볼륨 매핑)
+# 5. docker-compose.yml 업데이트 (명시적 5개 디스크 마운트)
 if [ -f /opt/homepage/.htpasswd ] && [ -f /opt/homepage/nginx.conf ]; then
 cat << 'COMPOSE_EOF' > /opt/homepage/docker-compose.yml
 services:
@@ -171,7 +172,8 @@ services:
     volumes:
       - /opt/homepage/config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /mnt/intel-ssd:/mnt/intel-ssd:ro
+      - /:/mnt/intel530:ro
+      - /mnt/intel-ssd:/mnt/intel710:ro
       - /mnt/gold:/mnt/gold:ro
       - /mnt/pds1:/mnt/pds1:ro
       - /mnt/pds2:/mnt/pds2:ro
@@ -204,7 +206,8 @@ services:
     volumes:
       - /opt/homepage/config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /mnt/intel-ssd:/mnt/intel-ssd:ro
+      - /:/mnt/intel530:ro
+      - /mnt/intel-ssd:/mnt/intel710:ro
       - /mnt/gold:/mnt/gold:ro
       - /mnt/pds1:/mnt/pds1:ro
       - /mnt/pds2:/mnt/pds2:ro

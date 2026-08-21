@@ -4,7 +4,7 @@
 # ==============================================================================
 # - LXC 107 생성 (Debian 12, 1 Core, 512MB RAM, 4GB SSD Root on local-530)
 # - Docker 및 Homepage 공식 최신 이미지 자동 배포
-# - 5대 물리 스토리지 (Intel 710, Intel 530, WD Gold 4T, WD White 18T/8T) 티어링
+# - 5대 물리 스토리지 (Intel 710, Intel 530, WD Gold 4T, WD White 18T/8T) 100% 매핑
 # - Immich, Gonic, Jellyfin, Proxmox, 헤놀로지 통합 대시보드 자동 사전구성
 # ==============================================================================
 
@@ -142,11 +142,11 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
 
 - resources:
     label: \"💾 1. Host OS SSD (Intel 710 100G MLC)\"
-    disk: /mnt/intel-ssd
+    disk: /mnt/intel710
 
 - resources:
     label: \"⚡ 2. 고속 컨테이너 풀 (Intel 530 120G MLC)\"
-    disk: /
+    disk: /mnt/intel530
 
 - resources:
     label: \"📀 3. 라이프 & 미디어 허브 (WD Gold 4TB Enterprise)\"
@@ -193,7 +193,7 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         ping: http://192.168.1.132:5000
 SERVICES_EOF
 
-# 5. docker-compose.yml 생성
+# 5. docker-compose.yml 생성 (명시적 5개 디스크 마운트)
 cat << 'COMPOSE_EOF' > /opt/homepage/docker-compose.yml
 services:
   homepage:
@@ -205,7 +205,8 @@ services:
     volumes:
       - /opt/homepage/config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /mnt/intel-ssd:/mnt/intel-ssd:ro
+      - /:/mnt/intel530:ro
+      - /mnt/intel-ssd:/mnt/intel710:ro
       - /mnt/gold:/mnt/gold:ro
       - /mnt/pds1:/mnt/pds1:ro
       - /mnt/pds2:/mnt/pds2:ro
