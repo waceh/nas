@@ -5,7 +5,6 @@
 # - LXC 107 생성 (Debian 12, 1 Core, 512MB RAM, 4GB SSD Root on local-530)
 # - Docker 및 Homepage 공식 최신 이미지 자동 배포
 # - Proxmox(710/530), 헤놀로지(Gold/White), Immich, Gonic, Jellyfin 통합 대시보드 자동 사전구성
-# - custom.js: 내부망/외부망 접속 자동 감지 & 동적 URL 리라이트
 # ==============================================================================
 
 set -e
@@ -125,17 +124,17 @@ cat << "SERVICES_EOF" > /opt/homepage/config/services.yaml
 - 미디어 서비스 (Media Core):
     - Immich Photo:
         icon: immich.png
-        href: http://192.168.1.103:2283
+        href: http://waceh.asuscomm.com:2283
         description: AI 사진 백업 / 앨범 인식 (WD Gold 4TB)
         ping: http://192.168.1.103:2283
     - Gonic Music:
         icon: gonic.png
-        href: http://192.168.1.104:4747
+        href: http://waceh.asuscomm.com:4747
         description: 무손실 음악 스트리밍 / Amperfy (WD Gold 4TB)
         ping: http://192.168.1.104:4747
     - Jellyfin Video:
         icon: jellyfin.png
-        href: http://192.168.1.105:8096
+        href: http://waceh.asuscomm.com:8096
         description: iGPU QuickSync 4K 비디오 (WD White 18TB / 8TB)
         ping: http://192.168.1.105:8096
 
@@ -152,62 +151,7 @@ cat << "SERVICES_EOF" > /opt/homepage/config/services.yaml
         ping: http://192.168.1.132:5000
 SERVICES_EOF
 
-# 4. custom.js (강력한 클릭 가로채기 & DOM 자동 치환 엔진)
-cat << "JS_EOF" > /opt/homepage/config/custom.js
-(() => {
-  const currentHost = window.location.hostname;
-  // 외부 도메인(waceh.asuscomm.com 등)으로 접속한 경우에만 동작
-  if (!currentHost || currentHost === "localhost" || currentHost.startsWith("192.168.") || currentHost.startsWith("127.")) {
-    return;
-  }
-
-  function rewriteUrl(originalUrl) {
-    try {
-      const url = new URL(originalUrl);
-      if (url.hostname.startsWith("192.168.1.") && ["2283", "4747", "8096", "3000"].includes(url.port)) {
-        url.hostname = currentHost;
-        return url.toString();
-      }
-    } catch (e) {}
-    return originalUrl;
-  }
-
-  function rewriteLinks() {
-    const links = document.querySelectorAll("a[href*=\"192.168.1.\"]");
-    links.forEach((a) => {
-      a.href = rewriteUrl(a.href);
-    });
-  }
-
-  // Next.js 가상 DOM 이벤트를 완벽하게 가로채는 전역 클릭 캡처 리스너
-  document.addEventListener("click", (e) => {
-    const anchor = e.target.closest("a");
-    if (anchor && anchor.href && anchor.href.includes("192.168.1.")) {
-      const newUrl = rewriteUrl(anchor.href);
-      if (newUrl !== anchor.href) {
-        e.preventDefault();
-        e.stopPropagation();
-        const target = anchor.getAttribute("target") || "_blank";
-        if (target === "_self") {
-          window.location.href = newUrl;
-        } else {
-          window.open(newUrl, target);
-        }
-      }
-    }
-  }, true);
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", rewriteLinks);
-  } else {
-    rewriteLinks();
-  }
-  const observer = new MutationObserver(rewriteLinks);
-  observer.observe(document.documentElement, { childList: true, subtree: true });
-})();
-JS_EOF
-
-# 5. docker-compose.yml 생성
+# 4. docker-compose.yml 생성
 cat << "COMPOSE_EOF" > /opt/homepage/docker-compose.yml
 services:
   homepage:
@@ -236,7 +180,7 @@ echo ""
 echo -e "${GREEN}====================================================${NC}"
 echo -e "${GREEN}     Homepage Dashboard (${CTID}) 설치 완료!         ${NC}"
 echo -e "${GREEN}====================================================${NC}"
-echo -e " 1. 로컬 접속 URL: ${BLUE}http://${IP_ADDR%/*}:3000${NC} (클릭 시 내부망 이동)"
-echo -e " 2. 외부 접속 URL: ${BLUE}http://waceh.asuscomm.com:3000${NC} (클릭 시 외부망 이동)"
+echo -e " 1. 접속 URL: ${BLUE}http://${IP_ADDR%/*}:3000${NC} 또는 ${BLUE}http://waceh.asuscomm.com:3000${NC}"
+echo -e " 2. 메인 대시보드: Immich(2283) / Gonic(4747) / Jellyfin(8096) 직통 연결"
 echo -e " 3. 설정 파일 위치: LXC ${CTID} 내부 ${GREEN}/opt/homepage/config/${NC}"
 echo -e "${GREEN}====================================================${NC}"

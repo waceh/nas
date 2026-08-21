@@ -3,7 +3,8 @@
 # Homepage Dashboard Configuration Updater (self-nas)
 # ==============================================================================
 # - Waceh NAS 대시보드 문구 및 테마 적용
-# - custom.js 주입: 클릭 이벤트 캡처 방식으로 내부망/외부망 접속 자동 감지 & URL 전환
+# - 외부 DDNS (waceh.asuscomm.com:포트) 직통 연결 (공유기 NAT Loopback 활용)
+# - 내부 상태 점검 (ping)은 LXC 내부 IP로 100% 정상 온라인 유지
 # ==============================================================================
 
 set -e
@@ -60,22 +61,22 @@ cat << "WIDGETS_EOF" > /opt/homepage/config/widgets.yaml
     disk: /
 WIDGETS_EOF
 
-# 3. services.yaml (서비스 목록 및 내부 상태 체크)
+# 3. services.yaml (외부 DDNS 링크 + 내부 초고속 상태 점검)
 cat << "SERVICES_EOF" > /opt/homepage/config/services.yaml
 - 미디어 서비스 (Media Core):
     - Immich Photo:
         icon: immich.png
-        href: http://192.168.1.103:2283
+        href: http://waceh.asuscomm.com:2283
         description: AI 사진 백업 / 앨범 인식 (WD Gold 4TB)
         ping: http://192.168.1.103:2283
     - Gonic Music:
         icon: gonic.png
-        href: http://192.168.1.104:4747
+        href: http://waceh.asuscomm.com:4747
         description: 무손실 음악 스트리밍 / Amperfy (WD Gold 4TB)
         ping: http://192.168.1.104:4747
     - Jellyfin Video:
         icon: jellyfin.png
-        href: http://192.168.1.105:8096
+        href: http://waceh.asuscomm.com:8096
         description: iGPU QuickSync 4K 비디오 (WD White 18TB / 8TB)
         ping: http://192.168.1.105:8096
 
@@ -92,69 +93,16 @@ cat << "SERVICES_EOF" > /opt/homepage/config/services.yaml
         ping: http://192.168.1.132:5000
 SERVICES_EOF
 
-# 4. custom.js (강력한 클릭 가로채기 & DOM 자동 치환 엔진)
-cat << "JS_EOF" > /opt/homepage/config/custom.js
-(() => {
-  const currentHost = window.location.hostname;
-  // 외부 도메인(waceh.asuscomm.com 등)으로 접속한 경우에만 동작
-  if (!currentHost || currentHost === "localhost" || currentHost.startsWith("192.168.") || currentHost.startsWith("127.")) {
-    return;
-  }
+# 불필요한 custom.js 정리
+rm -f /opt/homepage/config/custom.js
 
-  function rewriteUrl(originalUrl) {
-    try {
-      const url = new URL(originalUrl);
-      if (url.hostname.startsWith("192.168.1.") && ["2283", "4747", "8096", "3000"].includes(url.port)) {
-        url.hostname = currentHost;
-        return url.toString();
-      }
-    } catch (e) {}
-    return originalUrl;
-  }
-
-  function rewriteLinks() {
-    const links = document.querySelectorAll("a[href*=\"192.168.1.\"]");
-    links.forEach((a) => {
-      a.href = rewriteUrl(a.href);
-    });
-  }
-
-  // Next.js 가상 DOM 이벤트를 완벽하게 가로채는 전역 클릭 캡처 리스너
-  document.addEventListener("click", (e) => {
-    const anchor = e.target.closest("a");
-    if (anchor && anchor.href && anchor.href.includes("192.168.1.")) {
-      const newUrl = rewriteUrl(anchor.href);
-      if (newUrl !== anchor.href) {
-        e.preventDefault();
-        e.stopPropagation();
-        const target = anchor.getAttribute("target") || "_blank";
-        if (target === "_self") {
-          window.location.href = newUrl;
-        } else {
-          window.open(newUrl, target);
-        }
-      }
-    }
-  }, true);
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", rewriteLinks);
-  } else {
-    rewriteLinks();
-  }
-  const observer = new MutationObserver(rewriteLinks);
-  observer.observe(document.documentElement, { childList: true, subtree: true });
-})();
-JS_EOF
-
-# 5. docker compose restart
+# 4. docker compose restart
 cd /opt/homepage && docker compose restart
 '
 
-log_ok "Homepage 대시보드 설정 업데이트 및 재시작 완료!"
+log_ok "Homepage 대시보드 설정 업데이트 완료!"
 echo ""
 echo -e "${GREEN}====================================================${NC}"
-echo -e " 1. 로컬 접속: ${BLUE}http://192.168.1.107:3000${NC} (클릭 시 내부망 이동)"
-echo -e " 2. 외부 접속: ${BLUE}http://waceh.asuscomm.com:3000${NC} (클릭 시 외부망 이동)"
-echo -e " 💡 적용 후 브라우저에서 ${BLUE}Ctrl+F5 (또는 Cmd+Shift+R 강력 새로고침)${NC}을 한 번 해주세요!"
+echo -e " 1. 접속 URL: ${BLUE}http://waceh.asuscomm.com:3000${NC}"
+echo -e " 2. 클릭 시 이동: Immich(2283), Gonic(4747), Jellyfin(8096) 직통 연결"
 echo -e "${GREEN}====================================================${NC}"
