@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Waceh NAS Dashboard - Complete Unified Layout Preview</title>
+  <title>Waceh NAS Dashboard - Clean Layout Preview</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -89,7 +89,7 @@
 
 
     <!-- ================================================================= -->
-    <!-- [1층] 💾 4-Tier 물리 스토리지 (GB/TB 단위 통일 & 710 LVM 명시)     -->
+    <!-- [1층] 💾 4-Tier 물리 스토리지 (100GB 통합 깔끔 명시)                -->
     <!-- ================================================================= -->
     <section class="space-y-1.5">
       <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider px-1">
@@ -98,13 +98,13 @@
       
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
         
-        <!-- [1] Intel 710 SSD OS -->
+        <!-- [1] Intel 710 SSD OS (100GB 통합) -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-0.5 hover:border-purple-500/40 transition">
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-slate-200">Intel 710 100GB</span>
-            <span class="text-[10px] text-purple-400 font-mono font-semibold">24.5GB 여유</span>
+            <span class="text-[10px] text-purple-400 font-mono font-semibold">94.5GB 여유</span>
           </div>
-          <p class="text-[11px] text-slate-400 leading-tight">Host OS (Proxmox / LVM 70GB 예약)</p>
+          <p class="text-[11px] text-slate-400 leading-tight">Host OS (Proxmox VE)</p>
         </div>
 
         <!-- [2] Intel 530 SSD Fast Pool -->

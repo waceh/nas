@@ -111,7 +111,7 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     target: _blank
 WIDGETS_EOF
 
-# 3. services.yaml (710 100GB 94.5GB 여유 통합 표기)
+# 3. services.yaml (710 100GB 94.5GB 여유 깔끔 표기)
 cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
 - 4-Tier 물리 스토리지:
     - Intel 710 100GB (94.5GB 여유):

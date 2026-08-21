@@ -149,7 +149,7 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     target: _blank
 WIDGETS_EOF
 
-# 3. services.yaml (710 100GB 94.5GB 여유 통합 표기)
+# 3. services.yaml (710 100GB 94.5GB 여유 깔끔 표기)
 cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
 - 4-Tier 물리 스토리지:
     - Intel 710 100GB (94.5GB 여유):
@@ -207,7 +207,7 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         description: @mtk-ey
 SERVICES_EOF
 
-# 4. custom.css (여백 최적화)
+# 4. custom.css (슬림한 여백과 카드 정돈)
 cat << 'CSS_EOF' > /opt/homepage/config/custom.css
 /* 그룹 및 카드 간 상하 여백 슬림화 */
 .services-group, .group, section, div[class*="gap-"] {
