@@ -111,8 +111,11 @@ class SensorHandler(http.server.BaseHTTPRequestHandler):
                 data = "01:00:00"
         elif "sensors" in self.path:
             data = [
-                {"label": "CPU Package", "value": temp, "type": "temperature_core", "unit": "C"},
-                {"label": "Core 0", "value": temp, "type": "temperature_core", "unit": "C"}
+                {"label": "Package id 0", "value": temp, "type": "temperature_core", "unit": "C"},
+                {"label": "Core 0", "value": temp, "type": "temperature_core", "unit": "C"},
+                {"label": "Core 1", "value": temp, "type": "temperature_core", "unit": "C"},
+                {"label": "CPU", "value": temp, "type": "temperature_core", "unit": "C"},
+                {"label": "temp1", "value": temp, "type": "temperature_core", "unit": "C"}
             ]
         elif "quicklook" in self.path:
             data = {
@@ -127,10 +130,11 @@ class SensorHandler(http.server.BaseHTTPRequestHandler):
             data = {"percent": (mem_used / mem_total) * 100.0 if mem_total else 25.0, "total": mem_total, "used": mem_used}
         else:
             data = {
+                "cpu": 12.0,
                 "cpu_temp": temp,
-                "temperature": temp,
                 "sensors": [{"label": "CPU", "value": temp, "unit": "C"}]
             }
+
         
         self.wfile.write(json.dumps(data).encode("utf-8"))
 

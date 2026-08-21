@@ -122,7 +122,8 @@ cat << 'WIDGETS_EOF' > "$TMP_WIDGETS"
     cpu: true
     cputemp: true
     memory: true
-    uptime: true
+    uptime: false
+
 
 - search:
     provider: google
