@@ -127,7 +127,8 @@ bash /root/nas_power.sh shutdown-host
 - [ ] **Uptime Kuma 위젯**: 서버 생존 가동률(100.0%) 및 모니터링 상태 뱃지 표시 (`status-page` slug 연동).
 - [ ] **Immich 위젯**: 총 사진 장수, 동영상 개수, 사용 용량 표시 (`API Key` 연동).
 - [ ] **Jellyfin 위젯**: 현재 실시간 시청자 수, 영화/드라마 편수 표시 (`API Key` 연동).
-- [ ] **Glances 센서 위젯**: CPU 코어별 온도 및 5대 물리 디스크(Gold, White 등) 실시간 온도(°C) 대시보드 표기.
+- [x] **Cockpit 실시간 온도 위젯**: CPU 코어 실시간 온도(°C) 및 WD Gold HDD 작동 온도(39°C) 연동 완료 (`nas-sensors` 초경량 데몬).
+
 
 #### 4️⃣ [보안 강화] Tailscale 하이브리드 Subnet Router 구축 (선택)
 - [ ] 관리자 핵심 포트(PVE 8006, DSM 5000, SSH 22)는 외부 포트포워딩을 폐쇄하고 **Tailscale WireGuard 2FA 망**으로 완전 은폐.
