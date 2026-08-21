@@ -7,7 +7,7 @@
 # - 1층: 💾 4-Tier 물리 스토리지 (이미지/위젯 에러 없는 순수 텍스트 5열 카드)
 # - 2층: 🎬 미디어 서비스 (1줄 3칸)
 # - 3층: 🛠️ 인프라 & 스토리지 (1줄 2칸)
-# - 4층: 🌐 Developer (GitHub) & Social (Instagram, YouTube) 북마크
+# - 4층: 🌐 Developer | Social | YouTube (1줄 3칸 나란히 배치)
 # - 공백 최적화: 2층-3층 간 과도한 여백 슬림화
 # - Immich, Gonic, Jellyfin, Proxmox, 헤놀로지 통합 대시보드 자동 사전구성
 # ==============================================================================
@@ -107,7 +107,7 @@ fi
 
 mkdir -p /opt/homepage/config
 
-# 1. settings.yaml (스토리지 5열, 미디어 3열, 인프라 2열, 북마크 레이아웃)
+# 1. settings.yaml (스토리지 5열, 미디어 3열, 인프라 2열, 북마크 1줄 3열)
 cat << 'SETTINGS_EOF' > /opt/homepage/config/settings.yaml
 title: Waceh NAS Dashboard
 favicon: https://cdn-icons-png.flaticon.com/512/3208/3208726.png
@@ -133,7 +133,10 @@ layout:
     columns: 1
   Social:
     style: row
-    columns: 2
+    columns: 1
+  YouTube:
+    style: row
+    columns: 1
 SETTINGS_EOF
 
 # 2. widgets.yaml (상단 헤더: 인사말 + CPU/RAM/TIME + 검색바)
@@ -197,7 +200,7 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         ping: http://192.168.1.132:5000
 SERVICES_EOF
 
-# 4. bookmarks.yaml (Developer: GitHub | Social: Instagram, YouTube)
+# 4. bookmarks.yaml (1줄 3칸: Developer | Social | YouTube)
 cat << 'BOOKMARKS_EOF' > /opt/homepage/config/bookmarks.yaml
 - Developer:
     - GitHub:
@@ -210,13 +213,15 @@ cat << 'BOOKMARKS_EOF' > /opt/homepage/config/bookmarks.yaml
         - abbr: IG
           icon: instagram.png
           href: https://www.instagram.com/legato____
+
+- YouTube:
     - YouTube:
         - abbr: YT
           icon: youtube.png
           href: https://www.youtube.com/@mtk-ey
 BOOKMARKS_EOF
 
-# 5. custom.css (2층과 3층 사이의 과도한 공백 제거 및 컴팩트 스타일링)
+# 5. custom.css (2층-3층-4층 사이의 과도한 공백 제거 및 컴팩트 스타일링)
 cat << 'CSS_EOF' > /opt/homepage/config/custom.css
 /* 그룹 및 카드 간 상하 여백 슬림화 */
 .services-group, .group, section, div[class*="gap-"] {
@@ -262,6 +267,6 @@ echo -e " 1. 접속 URL: ${BLUE}http://${IP_ADDR%/*}:3000${NC} 또는 ${BLUE}htt
 echo -e " 2. 💾 [1층]: 4-Tier 물리 스토리지 (깔끔한 텍스트 1줄 5칸)"
 echo -e " 3. 🎬 [2층]: 미디어 서비스 (1줄 3칸)"
 echo -e " 4. 🛠️ [3층]: 인프라 & 스토리지 (1줄 2칸)"
-echo -e " 5. 🌐 [4층]: Developer (GitHub) & Social (Instagram, YouTube)"
+echo -e " 5. 🌐 [4층]: Developer | Social | YouTube (1줄 3칸 나란히)"
 echo -e " 6. 설정 파일 위치: LXC ${CTID} 내부 ${GREEN}/opt/homepage/config/${NC}"
 echo -e "${GREEN}====================================================${NC}"

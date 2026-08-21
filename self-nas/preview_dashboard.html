@@ -254,54 +254,65 @@
     </section>
 
     <!-- ================================================================= -->
-    <!-- [4층] 🌐 Developer & Social 북마크 섹션                           -->
+    <!-- [4층] 🌐 Developer | Social | YouTube (1줄 3칸 나란히 배치)       -->
     <!-- ================================================================= -->
-    <section class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
       
-      <!-- Developer -->
-      <div class="space-y-2">
-        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider px-1 flex items-center gap-1.5">
-          <i class="fa-solid fa-code text-blue-400"></i> Developer
+      <!-- [1] Developer -->
+      <div class="space-y-1.5">
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">
+          Developer
         </h2>
-        <div class="grid grid-cols-1 gap-2">
-          <a href="https://github.com/waceh" target="_blank" class="group bg-slate-900/70 border border-slate-800/80 hover:border-slate-600 rounded-lg p-2.5 transition flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-              <i class="fa-brands fa-github text-slate-300 text-base group-hover:text-white transition"></i>
-              <span class="text-xs font-medium text-slate-200 group-hover:text-white transition">GitHub</span>
+        <a href="https://github.com/waceh" target="_blank" class="group bg-slate-900/80 border border-slate-800 hover:border-slate-600 rounded-xl p-3 transition flex items-center justify-between card-glow">
+          <div class="flex items-center gap-2.5">
+            <img src="https://api.iconify.design/simple-icons:github.svg?color=%23ffffff" alt="GitHub" class="w-6 h-6">
+            <div>
+              <h3 class="font-bold text-xs text-slate-200 group-hover:text-white transition">GitHub</h3>
+              <p class="text-[10px] text-slate-400">github.com/waceh</p>
             </div>
-            <span class="text-[11px] text-slate-500 font-mono">github.com/waceh</span>
-          </a>
-        </div>
+          </div>
+          <span class="text-xs text-slate-500 group-hover:text-white transition"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+        </a>
       </div>
 
-      <!-- Social -->
-      <div class="space-y-2">
-        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider px-1 flex items-center gap-1.5">
-          <i class="fa-solid fa-share-nodes text-pink-400"></i> Social & Media
+      <!-- [2] Social -->
+      <div class="space-y-1.5">
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">
+          Social
         </h2>
-        <div class="grid grid-cols-2 gap-2">
-          <a href="https://www.instagram.com/legato____" target="_blank" class="group bg-slate-900/70 border border-slate-800/80 hover:border-pink-500/50 rounded-lg p-2.5 transition flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <i class="fa-brands fa-instagram text-pink-400 text-sm"></i>
-              <span class="text-xs font-medium text-slate-200 group-hover:text-pink-400 transition truncate">Instagram</span>
+        <a href="https://www.instagram.com/legato____" target="_blank" class="group bg-slate-900/80 border border-slate-800 hover:border-pink-500/50 rounded-xl p-3 transition flex items-center justify-between card-glow">
+          <div class="flex items-center gap-2.5">
+            <img src="https://api.iconify.design/simple-icons:instagram.svg?color=%23E4405F" alt="Instagram" class="w-6 h-6">
+            <div>
+              <h3 class="font-bold text-xs text-slate-200 group-hover:text-pink-400 transition">Instagram</h3>
+              <p class="text-[10px] text-slate-400">@legato____</p>
             </div>
-            <span class="text-[10px] text-slate-500 font-mono truncate">@legato____</span>
-          </a>
+          </div>
+          <span class="text-xs text-slate-500 group-hover:text-pink-400 transition"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+        </a>
+      </div>
 
-          <a href="https://www.youtube.com/@mtk-ey" target="_blank" class="group bg-slate-900/70 border border-slate-800/80 hover:border-red-500/50 rounded-lg p-2.5 transition flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <i class="fa-brands fa-youtube text-red-500 text-sm"></i>
-              <span class="text-xs font-medium text-slate-200 group-hover:text-red-400 transition truncate">YouTube</span>
+      <!-- [3] YouTube -->
+      <div class="space-y-1.5">
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">
+          YouTube
+        </h2>
+        <a href="https://www.youtube.com/@mtk-ey" target="_blank" class="group bg-slate-900/80 border border-slate-800 hover:border-red-500/50 rounded-xl p-3 transition flex items-center justify-between card-glow">
+          <div class="flex items-center gap-2.5">
+            <img src="https://api.iconify.design/simple-icons:youtube.svg?color=%23FF0000" alt="YouTube" class="w-6 h-6">
+            <div>
+              <h3 class="font-bold text-xs text-slate-200 group-hover:text-red-400 transition">YouTube</h3>
+              <p class="text-[10px] text-slate-400">@mtk-ey</p>
             </div>
-            <span class="text-[10px] text-slate-500 font-mono truncate">@mtk-ey</span>
-          </a>
-        </div>
+          </div>
+          <span class="text-xs text-slate-500 group-hover:text-red-400 transition"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+        </a>
       </div>
 
     </section>
 
     <!-- Footer -->
-    <footer class="pt-4 border-t border-slate-900 text-center text-[11px] text-slate-500">
+    <footer class="pt-3 border-t border-slate-900 text-center text-[10px] text-slate-500">
       Self-NAS Architecture by MTK Studio & Waceh • Pure Storage Core + Native LXC Isolations
     </footer>
 
