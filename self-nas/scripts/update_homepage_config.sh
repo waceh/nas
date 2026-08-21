@@ -176,7 +176,10 @@ cat << 'SERVICES_BASE' > "$TMP_SERVICES"
           refreshInterval: 10000
           mappings:
             - field: temp
+              label: 온도
+              format: text
 SERVICES_BASE
+
 
 
 
