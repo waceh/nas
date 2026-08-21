@@ -4,7 +4,8 @@
 # ==============================================================================
 # - LXC 107 생성 (Debian 12, 1 Core, 512MB RAM, 4GB SSD Root on local-530)
 # - Docker 및 Homepage 공식 최신 이미지 자동 배포
-# - 5대 물리 스토리지 (Intel 710, Intel 530, WD Gold 4T, WD White 18T/8T) 100% 매핑
+# - 1층: CPU / RAM / UPTIME 시스템 자원
+# - 2층: 5대 물리 스토리지 (Intel 710, Intel 530, WD Gold 4T, WD White 18T/8T) 분리
 # - Immich, Gonic, Jellyfin, Proxmox, 헤놀로지 통합 대시보드 자동 사전구성
 # ==============================================================================
 
@@ -124,7 +125,7 @@ useEqualHeights: true
 hideVersion: true
 SETTINGS_EOF
 
-# 3. widgets.yaml (하드웨어 전체 6C/16GB + 5대 물리 디스크 티어링 분리)
+# 3. widgets.yaml (1층: CPU/RAM/TIME + 2층: 5대 디스크 리스트 분리)
 cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
 - greeting:
     text_size: xl
@@ -135,30 +136,19 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     target: _blank
 
 - resources:
-    label: \"🖥️ 서버 하드웨어 전체 자원 (Intel i5-9500T 6C / DDR4 16GB)\"
+    label: \"🖥️ 서버 하드웨어 전체 자원 (i5-9500T 6C / 16GB RAM)\"
     cpu: true
     memory: true
     uptime: true
 
 - resources:
-    label: \"💾 1. Host OS SSD (Intel 710 100G MLC)\"
-    disk: /mnt/intel710
-
-- resources:
-    label: \"⚡ 2. 고속 컨테이너 풀 (Intel 530 120G MLC)\"
-    disk: /mnt/intel530
-
-- resources:
-    label: \"📀 3. 라이프 & 미디어 허브 (WD Gold 4TB Enterprise)\"
-    disk: /mnt/gold
-
-- resources:
-    label: \"📦 4. PDS1 대용량 미디어 (WD White 18TB CMR)\"
-    disk: /mnt/pds1
-
-- resources:
-    label: \"📦 5. PDS2 보조 엔터테인먼트 (WD White 8TB CMR)\"
-    disk: /mnt/pds2
+    label: \"💾 5-Tier 물리 스토리지 풀 (SSD + HDD)\"
+    disk:
+      - /mnt/intel710
+      - /mnt/intel530
+      - /mnt/gold
+      - /mnt/pds1
+      - /mnt/pds2
 WIDGETS_EOF
 
 # 4. services.yaml (전체 외부 DDNS 링크 + 내부 초고속 상태 점검)
@@ -193,7 +183,7 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         ping: http://192.168.1.132:5000
 SERVICES_EOF
 
-# 5. docker-compose.yml 생성 (명시적 5개 디스크 마운트)
+# 5. docker-compose.yml 생성 (5개 디스크 마운트)
 cat << 'COMPOSE_EOF' > /opt/homepage/docker-compose.yml
 services:
   homepage:
@@ -228,6 +218,7 @@ echo -e "${GREEN}====================================================${NC}"
 echo -e "${GREEN}     Homepage Dashboard (${CTID}) 설치 완료!         ${NC}"
 echo -e "${GREEN}====================================================${NC}"
 echo -e " 1. 접속 URL: ${BLUE}http://${IP_ADDR%/*}:3000${NC} 또는 ${BLUE}http://waceh.asuscomm.com:3000${NC}"
-echo -e " 2. 5대 물리 스토리지: Intel 710, Intel 530, WD Gold 4T, WD White 18T/8T"
-echo -e " 3. 설정 파일 위치: LXC ${CTID} 내부 ${GREEN}/opt/homepage/config/${NC}"
+echo -e " 2. 1층: CPU / RAM / UPTIME 핵심 자원 카드"
+echo -e " 3. 2층: 5대 물리 스토리지 풀 (Intel 710, 530, WD Gold, White 18T/8T)"
+echo -e " 4. 설정 파일 위치: LXC ${CTID} 내부 ${GREEN}/opt/homepage/config/${NC}"
 echo -e "${GREEN}====================================================${NC}"
