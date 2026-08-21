@@ -88,6 +88,59 @@ flowchart TB
 
 ---
 
+#### 🛡️ [심층 분석] Tailscale 기반 '하이브리드 외부 접속 보안' 아키텍처
+
+> **"가족의 일상 미디어 편의성은 100% 유지하면서, 관리자 핵심 인프라는 전 세계 해커로부터 완전히 숨긴다."**
+
+```mermaid
+flowchart TB
+    subgraph External["🌐 외부 인터넷 망 (LTE / 5G / 카페 Wi-Fi)"]
+        FamilyUser["👨‍👩‍👧 가족 스마트폰 (iOS / Android)<br/>• 별도 VPN 앱 설치 불필요<br/>• 일반 URL / 모바일 앱 직통 접속"]
+        AdminUser["💻 관리자 맥북 & 스마트폰<br/>• Tailscale WireGuard 암호화 터널<br/>• Google / Apple 2단계 OTP 인증"]
+    end
+
+    subgraph Router["🛡️ ASUS 공유기 방화벽 (NAT)"]
+        OpenPorts["🔓 허용된 미디어 포트만 통과<br/>• Immich (2283)<br/>• Gonic (4747)<br/>• Jellyfin (8096)"]
+        BlockedPorts["🔒 관리자 핵심 포트 완전 폐쇄 (은폐)<br/>• Proxmox VE (8006) ❌<br/>• Xpenology DSM (5000) ❌<br/>• SSH (22) ❌<br/>• 대시보드 / Kuma (3000/3001) ❌"]
+    end
+
+    subgraph Internal["🏠 홈 내부망 (192.168.1.0/24)"]
+        subgraph MediaTier["🎬 1. 가족 일상 미디어 계층 (Port Forwarded)"]
+            ImmichSrv["📸 Immich (192.168.1.103:2283)"]
+            GonicSrv["🎵 Gonic (192.168.1.104:4747)"]
+            JellyfinSrv["🎬 Jellyfin (192.168.1.105:8096)"]
+        end
+
+        subgraph AdminTier["🛠️ 2. 관리자 인프라 금고 계층 (Tailscale Only)"]
+            PVESrv["⚡ Proxmox VE (192.168.1.200:8006)"]
+            DSMSrv["📦 Xpenology (192.168.1.132:5000)"]
+            DashSrv["🏠 Homepage & Kuma (192.168.1.107:3000/3001)"]
+            SSHSrv["💻 Host Shell (Port 22)"]
+        end
+    end
+
+    FamilyUser -->|"공유기 DDNS 직통"| OpenPorts --> MediaTier
+    AdminUser -->|"WireGuard 암호화 터널 (Subnet Router)"| Internal
+```
+
+##### 1. 왜 '하이브리드(2-Tier)' 방식이 가장 이상적인가?
+1. **가족 사용성 100% 보장 (No Friction)**:
+   - 부모님이나 배우자의 스마트폰에 복잡한 VPN 앱을 켜게 할 필요 없이, **Immich(사진 백업), Amperfy(음악), Swiftfin(영상)** 앱이 집 밖에서도 자동으로 원활하게 통신합니다.
+2. **치명적인 관리자 침투 경로 100% 차단 (Zero Attack Surface)**:
+   - 해커가 가장 탐내는 **Proxmox 하이퍼바이저 셸(22/8006)**과 **헤놀로지 관리자(5000)** 포트를 외부에서 아예 닫아버리므로, 전 세계 봇 스캐너에 우리 집 서버는 **단단한 콘크리트 벽**으로 인식됩니다.
+
+##### 2. 모바일 클라이언트 앱(iOS/Android) 실전 운영 팁
+- **관리자 기기 (Tailscale On-Demand VPN)**:
+  - iOS Tailscale 앱의 **[On-Demand VPN]**을 켜두면 셀룰러(LTE/5G)나 외부 Wi-Fi 연결 시 배터리 소모 없이 백그라운드에서 자동 활성화됩니다.
+  - 앱 서버 주소를 `http://192.168.1.xxx:포트`로 통일하여 **집안/집밖 구분 없이 단일 내부 IP로 완벽하게 이용**할 수 있습니다.
+- **Tailscale Subnet Router 1줄 활성화 (Proxmox 호스트 또는 LXC)**:
+  ```bash
+  # 192.168.1.0/24 대역 전체를 Tailscale 암호화 망으로 라우팅
+  tailscale up --advertise-routes=192.168.1.0/24 --accept-routes
+  ```
+
+---
+
 ### ② 🍿 미디어 자동 수집 & 정리 스택 (Jellyfin 연동 후보 ⭐⭐)
 | 서비스 | 권장 구동 환경 | 소모 RAM | 주요 특징 및 추천 이유 |
 | :--- | :---: | :---: | :--- |
