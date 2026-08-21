@@ -136,9 +136,11 @@ bash /root/nas_power.sh shutdown-host
 
 
 
-#### 4️⃣ [보안 강화] Tailscale 하이브리드 Subnet Router 구축 (선택)
-- [ ] 관리자 핵심 포트(PVE 8006, DSM 5000, SSH 22)는 외부 포트포워딩을 폐쇄하고 **Tailscale WireGuard 2FA 망**으로 완전 은폐.
-- [ ] 가족 미디어(Immich, Gonic, Jellyfin)는 포트포워딩 유지로 편리성 100% 보장.
+#### 5️⃣ [보안 강화] Tailscale 하이브리드 Subnet Router 구축 (완료 ✅)
+- [x] Proxmox 호스트에 Tailscale WireGuard 서브넷 라우터(`192.168.1.0/24`) 구축 완료 (`setup_tailscale_subnet_router.sh`).
+- [x] 관리자 핵심 포트(PVE 8006, DSM 5000, Cockpit 9090, SSH 22)를 Tailscale 암호화 터널로 완전 보호.
+- [x] 가족 미디어(Immich, Gonic, Jellyfin)는 포트포워딩 유지로 VPN 없이 24시간 원활한 접속 보장.
+
 
 #### 5️⃣ [미래 장기 목표] 헤놀로지 VM 101 완전 제거 및 Proxmox 네이티브 스토리지 전환
 - [ ] 하드디스크 3대를 Proxmox 호스트 네이티브(ZFS / ext4)로 마운트.
