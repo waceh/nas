@@ -4,7 +4,7 @@
 # ==============================================================================
 # - LXC 107 생성 (Debian 12, 1 Core, 512MB RAM, 4GB SSD Root on local-530)
 # - Docker 및 Homepage 공식 최신 이미지 자동 배포
-# - 4-Tier 5대 디스크(Intel 530 SSD, WD Gold 4T, WD White 18T/8T) 실시간 용량 모니터링
+# - 4-Tier 4대 실제 물리 디스크 (Intel SSD 100G, Gold 4T, White 18T/8T) 전체 용량 모니터링
 # - Immich, Gonic, Jellyfin, Proxmox, 헤놀로지 통합 대시보드 자동 사전구성
 # ==============================================================================
 
@@ -73,6 +73,7 @@ pct create "$CTID" "$TEMPLATE" \
   --net0 name=eth0,bridge="${BRIDGE}",ip="${IP_ADDR}",gw="${GATEWAY}" \
   --unprivileged 0 \
   --features nesting=1,keyctl=1 \
+  --mp0 /,mp=/mnt/intel-ssd,ro=1 \
   --tags "dashboard,web" \
   --onboot 1
 
@@ -93,7 +94,7 @@ if ! command -v docker &>/dev/null; then
   curl -fsSL https://get.docker.com | sh
 fi
 
-mkdir -p /opt/homepage/config /mnt/gold /mnt/pds1 /mnt/pds2
+mkdir -p /opt/homepage/config /mnt/intel-ssd /mnt/gold /mnt/pds1 /mnt/pds2
 
 # 1. NFS 락-프리 마운트 (용량 조회용)
 cat << 'FSTAB_EOF' > /etc/fstab
@@ -116,7 +117,7 @@ useEqualHeights: true
 hideVersion: true
 SETTINGS_EOF
 
-# 3. widgets.yaml (CPU/RAM + 4단 디스크 실시간 사용량 게이지)
+# 3. widgets.yaml (CPU/RAM + 실제 물리 디스크 전체 용량 게이지)
 cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
 - greeting:
     text_size: xl
@@ -129,8 +130,8 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     cpu: true
     memory: true
 - resources:
-    label: \"Intel 530 SSD (컨테이너/DB)\"
-    disk: /
+    label: \"Intel SSD (Proxmox 호스트 OS 100GB)\"
+    disk: /mnt/intel-ssd
 - resources:
     label: \"WD Gold 4TB (사진·영상·음악)\"
     disk: /mnt/gold
@@ -186,6 +187,7 @@ services:
     volumes:
       - /opt/homepage/config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /mnt/intel-ssd:/mnt/intel-ssd:ro
       - /mnt/gold:/mnt/gold:ro
       - /mnt/pds1:/mnt/pds1:ro
       - /mnt/pds2:/mnt/pds2:ro
@@ -207,6 +209,6 @@ echo -e "${GREEN}====================================================${NC}"
 echo -e "${GREEN}     Homepage Dashboard (${CTID}) 설치 완료!         ${NC}"
 echo -e "${GREEN}====================================================${NC}"
 echo -e " 1. 접속 URL: ${BLUE}http://${IP_ADDR%/*}:3000${NC} 또는 ${BLUE}http://waceh.asuscomm.com:3000${NC}"
-echo -e " 2. 디스크 모니터링: Intel 530 SSD, WD Gold 4TB, WD White 18TB/8TB"
+echo -e " 2. 물리 디스크 전체 모니터링: Intel SSD(100GB), WD Gold 4TB, WD White 18TB/8TB"
 echo -e " 3. 설정 파일 위치: LXC ${CTID} 내부 ${GREEN}/opt/homepage/config/${NC}"
 echo -e "${GREEN}====================================================${NC}"

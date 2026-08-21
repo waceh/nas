@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Homepage Dashboard Configuration & Multi-Disk Monitor Updater (self-nas)
+# Homepage Dashboard Configuration & Real Physical Disk Monitor (self-nas)
 # ==============================================================================
-# - 4-Tier 5대 디스크(Intel 530 SSD, WD Gold 4T, WD White 18T/8T) 실시간 용량 게이지 연동
-# - Waceh NAS 대시보드 테마 및 외부 DDNS 직통 링크 유지
+# - 호스트 물리 SSD (Intel 710 100GB OS) 전체 용량 바인드 마운트 연동
+# - 4-Tier 4대 실제 물리 디스크 (Intel SSD 100G, Gold 4T, White 18T/8T) 전체 용량 게이지
 # ==============================================================================
 
 set -e
@@ -30,16 +30,21 @@ if ! pct status "$CTID" &>/dev/null; then
     exit 1
 fi
 
-log_info "Homepage LXC (${CTID})에 4-Tier 디스크 모니터링 및 대시보드 업데이트 적용 중..."
+log_info "Proxmox 호스트 SSD 전체 루트를 LXC ${CTID}에 바인드 마운트 설정 중..."
+
+# 1. Proxmox 호스트 실제 SSD 전체 루트(/)를 LXC 107의 /mnt/intel-ssd 로 읽기 전용 바인드 마운트
+pct set "$CTID" -mp0 /,mp=/mnt/intel-ssd,ro=1
+
+log_info "Homepage 대시보드 설정 업데이트 중..."
 
 pct exec "$CTID" -- bash -c "
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get install -y -qq nfs-common
 
-mkdir -p /opt/homepage/config /mnt/gold /mnt/pds1 /mnt/pds2
+mkdir -p /opt/homepage/config /mnt/intel-ssd /mnt/gold /mnt/pds1 /mnt/pds2
 
-# 1. NFS 락-프리 마운트 (용량 조회용)
+# 2. NFS 락-프리 마운트 (용량 조회용)
 cat << 'FSTAB_EOF' > /etc/fstab
 ${NAS_IP}:/volume1/video /mnt/gold nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr,rsize=1048576,wsize=1048576 0 0
 ${NAS_IP}:/volume2/PDS1  /mnt/pds1 nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr,rsize=1048576,wsize=1048576 0 0
@@ -48,7 +53,7 @@ FSTAB_EOF
 
 mount -a || true
 
-# 2. settings.yaml (사이트 제목 & 테마)
+# 3. settings.yaml (사이트 제목 & 테마)
 cat << 'SETTINGS_EOF' > /opt/homepage/config/settings.yaml
 title: Waceh NAS Dashboard
 favicon: https://cdn-icons-png.flaticon.com/512/3208/3208726.png
@@ -60,7 +65,7 @@ useEqualHeights: true
 hideVersion: true
 SETTINGS_EOF
 
-# 3. widgets.yaml (CPU/RAM + 4단 디스크 실시간 사용량 게이지)
+# 4. widgets.yaml (CPU/RAM + 실제 물리 디스크 전체 용량 게이지)
 cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
 - greeting:
     text_size: xl
@@ -73,8 +78,8 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     cpu: true
     memory: true
 - resources:
-    label: \"Intel 530 SSD (컨테이너/DB)\"
-    disk: /
+    label: \"Intel SSD (Proxmox 호스트 OS 100GB)\"
+    disk: /mnt/intel-ssd
 - resources:
     label: \"WD Gold 4TB (사진·영상·음악)\"
     disk: /mnt/gold
@@ -86,7 +91,7 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     disk: /mnt/pds2
 WIDGETS_EOF
 
-# 4. services.yaml (전체 외부 DDNS 링크 + 내부 초고속 상태 점검)
+# 5. services.yaml (전체 외부 DDNS 링크 + 내부 초고속 상태 점검)
 cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
 - 미디어 서비스 (Media Core):
     - Immich Photo:
@@ -118,8 +123,7 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         ping: http://192.168.1.132:5000
 SERVICES_EOF
 
-# 5. docker-compose.yml에 디스크 볼륨 마운트 반영
-# (보안 프록시가 있으면 유지, 없으면 표준형)
+# 6. docker-compose.yml에 실제 물리 SSD 볼륨 매핑
 if [ -f /opt/homepage/.htpasswd ] && [ -f /opt/homepage/nginx.conf ]; then
 cat << 'COMPOSE_EOF' > /opt/homepage/docker-compose.yml
 services:
@@ -132,6 +136,7 @@ services:
     volumes:
       - /opt/homepage/config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /mnt/intel-ssd:/mnt/intel-ssd:ro
       - /mnt/gold:/mnt/gold:ro
       - /mnt/pds1:/mnt/pds1:ro
       - /mnt/pds2:/mnt/pds2:ro
@@ -164,6 +169,7 @@ services:
     volumes:
       - /opt/homepage/config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /mnt/intel-ssd:/mnt/intel-ssd:ro
       - /mnt/gold:/mnt/gold:ro
       - /mnt/pds1:/mnt/pds1:ro
       - /mnt/pds2:/mnt/pds2:ro
@@ -178,13 +184,13 @@ cd /opt/homepage
 docker compose up -d --force-recreate
 "
 
-log_ok "Homepage 디스크 모니터링 위젯 및 대시보드 업데이트 완료!"
+log_ok "물리 디스크 전체 용량 연동 및 대시보드 업데이트 완료!"
 echo ""
 echo -e "${GREEN}====================================================${NC}"
-echo -e " 📊 대시보드 모니터링 디스크 목록:"
-echo -e "   - Intel 530 SSD (/)"
-echo -e "   - WD Gold 4TB (/mnt/gold)"
-echo -e "   - WD White 18TB (/mnt/pds1)"
-echo -e "   - WD White 8TB (/mnt/pds2)"
+echo -e " 📊 대시보드 실제 물리 디스크 전체 용량 목록:"
+echo -e "   - Intel SSD 전체 (약 100GB 호스트 루트)"
+echo -e "   - WD Gold 4TB (사진·영상·음악)"
+echo -e "   - WD White 18TB (PDS1 콜드 미디어)"
+echo -e "   - WD White 8TB (PDS2 콜드 미디어)"
 echo -e " 🌐 접속 주소: ${BLUE}http://waceh.asuscomm.com:3000${NC}"
 echo -e "${GREEN}====================================================${NC}"
