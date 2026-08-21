@@ -170,18 +170,9 @@ cat << 'SERVICES_BASE' > "$TMP_SERVICES"
         icon: cockpit.png
         href: https://waceh.asuscomm.com:9090
         description: "디스크 S.M.A.R.T/온도"
-        widget:
-          type: customapi
-          url: http://192.168.1.200:61208/api/temp
-          refreshInterval: 10000
-          mappings:
-            - field: cpu
-              label: CPU
-              suffix: "°C"
-            - field: disk
-              label: 디스크
-              suffix: "°C"
+        ping: https://192.168.1.200:9090
 SERVICES_BASE
+
 
 
 if [ -n "$ADGUARD_USER" ] && [ -n "$ADGUARD_PASS" ]; then
