@@ -125,10 +125,15 @@ bash /root/nas_power.sh shutdown-host
 #### 3️⃣ [Homepage 대시보드] 실시간 Service Widget (API) 연동
 단순 링크를 넘어 카드 안에 **실시간 숫자와 게이지**가 살아 숨 쉬도록 위젯 연동:
 - [x] **AdGuard Home 위젯**: 차단된 광고 개수, 차단율(%), 오늘 DNS 쿼리 수 실시간 표시 완료 (`username`/`password` 연동).
-- [ ] **Uptime Kuma 위젯**: 서버 생존 가동률(100.0%) 및 모니터링 상태 뱃지 표시 (`status-page` slug 연동).
+- [x] **Uptime Kuma 위젯**: 서버 생존 가동률(100.0%) 및 모니터링 상태 뱃지 표시 완료 (`status-page` slug: `default` 연동).
 - [ ] **Immich 위젯**: 총 사진 장수, 동영상 개수, 사용 용량 표시 (`API Key` 연동).
 - [ ] **Jellyfin 위젯**: 현재 실시간 시청자 수, 영화/드라마 편수 표시 (`API Key` 연동).
 - [x] **Cockpit 실시간 온도 위젯**: CPU 코어 실시간 온도(°C) 및 WD Gold HDD 작동 온도(39°C) 연동 완료 (`nas-sensors` 초경량 데몬).
+
+#### 4️⃣ [자동 백업 스케줄러] 매일 새벽 04:00 자동 스냅샷 백업 (완료 ✅)
+- [x] 매일 새벽 04:00 전체 6대 게스트(101~107) 무중단 라이브 스냅샷 백업 스케줄 등록 (`setup_backup_schedule_pve.sh`).
+- [x] WD Gold 4TB 백업 금고(`nas-backups`)에 최신 3회분 롤링 보관(Keep Last: 3) 정책 적용.
+
 
 
 #### 4️⃣ [보안 강화] Tailscale 하이브리드 Subnet Router 구축 (선택)
