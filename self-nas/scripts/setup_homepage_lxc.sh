@@ -141,12 +141,12 @@ cat << "SERVICES_EOF" > /opt/homepage/config/services.yaml
 - 인프라 & 스토리지 (Infrastructure):
     - Proxmox VE:
         icon: proxmox.png
-        href: https://192.168.1.200:8006
+        href: https://waceh.asuscomm.com:8006
         description: 하이퍼바이저 호스트 (Intel 710 SSD OS)
         ping: https://192.168.1.200:8006
     - Xpenology DSM:
         icon: synology.png
-        href: http://192.168.1.132:5000
+        href: http://waceh.asuscomm.com:5000
         description: Pure Storage Core (Gold 4T + White 26T)
         ping: http://192.168.1.132:5000
 SERVICES_EOF

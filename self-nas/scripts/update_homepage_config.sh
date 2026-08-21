@@ -3,8 +3,7 @@
 # Homepage Dashboard Configuration Updater (self-nas)
 # ==============================================================================
 # - Waceh NAS 대시보드 문구 및 테마 적용
-# - 외부 DDNS (waceh.asuscomm.com:포트) 직통 연결 (공유기 NAT Loopback 활용)
-# - 내부 상태 점검 (ping)은 LXC 내부 IP로 100% 정상 온라인 유지
+# - 미디어 + 인프라(Proxmox 8006, 헤놀로지 5000) 전체 외부 DDNS 직통 연결
 # ==============================================================================
 
 set -e
@@ -61,7 +60,7 @@ cat << "WIDGETS_EOF" > /opt/homepage/config/widgets.yaml
     disk: /
 WIDGETS_EOF
 
-# 3. services.yaml (외부 DDNS 링크 + 내부 초고속 상태 점검)
+# 3. services.yaml (전체 외부 DDNS 링크 + 내부 초고속 상태 점검)
 cat << "SERVICES_EOF" > /opt/homepage/config/services.yaml
 - 미디어 서비스 (Media Core):
     - Immich Photo:
@@ -83,12 +82,12 @@ cat << "SERVICES_EOF" > /opt/homepage/config/services.yaml
 - 인프라 & 스토리지 (Infrastructure):
     - Proxmox VE:
         icon: proxmox.png
-        href: https://192.168.1.200:8006
+        href: https://waceh.asuscomm.com:8006
         description: 하이퍼바이저 호스트 (Intel 710 SSD OS)
         ping: https://192.168.1.200:8006
     - Xpenology DSM:
         icon: synology.png
-        href: http://192.168.1.132:5000
+        href: http://waceh.asuscomm.com:5000
         description: Pure Storage Core (Gold 4T + White 26T)
         ping: http://192.168.1.132:5000
 SERVICES_EOF
@@ -100,9 +99,10 @@ rm -f /opt/homepage/config/custom.js
 cd /opt/homepage && docker compose restart
 '
 
-log_ok "Homepage 대시보드 설정 업데이트 완료!"
+log_ok "Homepage 대시보드 인프라 포함 전체 업데이트 완료!"
 echo ""
 echo -e "${GREEN}====================================================${NC}"
 echo -e " 1. 접속 URL: ${BLUE}http://waceh.asuscomm.com:3000${NC}"
-echo -e " 2. 클릭 시 이동: Immich(2283), Gonic(4747), Jellyfin(8096) 직통 연결"
+echo -e " 2. 미디어 서비스: Immich(2283), Gonic(4747), Jellyfin(8096)"
+echo -e " 3. 인프라 서비스: Proxmox(8006), Xpenology DSM(5000)"
 echo -e "${GREEN}====================================================${NC}"
