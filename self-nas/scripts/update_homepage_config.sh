@@ -28,10 +28,6 @@ fi
 CTID="${CTID:-107}"
 CONF_FILE="/etc/pve/lxc/${CTID}.conf"
 
-ADGUARD_USER="${ADGUARD_USER:-}"
-ADGUARD_PASS="${ADGUARD_PASS:-}"
-ADGUARD_URL="${ADGUARD_URL:-http://192.168.1.102}"
-
 if ! pct status "$CTID" &>/dev/null; then
     log_err "LXC 컨테이너 ${CTID} 가 존재하지 않습니다."
     exit 1
@@ -66,9 +62,15 @@ fi
 
 log_info "Homepage 대시보드 (Cockpit 포함 대칭 4단 레이아웃) 배포 중..."
 
-pct exec "$CTID" -- bash -c "mkdir -p /opt/homepage/config /opt/uptime-kuma/data"
+pct exec "$CTID" -- bash -c '
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -qq
 
-pct exec "$CTID" -- bash -c 'cat << "SETTINGS_EOF" > /opt/homepage/config/settings.yaml
+mkdir -p /opt/homepage/config
+mkdir -p /opt/uptime-kuma/data
+
+# 1. settings.yaml (스토리지 5열, 미디어 3열, 인프라&관제 5열, 소셜 3열)
+cat << "SETTINGS_EOF" > /opt/homepage/config/settings.yaml
 title: Waceh NAS Dashboard
 favicon: https://cdn-icons-png.flaticon.com/512/3208/3208726.png
 theme: dark
@@ -91,9 +93,10 @@ layout:
   "Developer & Social":
     style: row
     columns: 3
-SETTINGS_EOF'
+SETTINGS_EOF
 
-pct exec "$CTID" -- bash -c 'cat << "WIDGETS_EOF" > /opt/homepage/config/widgets.yaml
+# 2. widgets.yaml (상단 헤더: 인사말 + CPU/RAM/TIME + 검색바)
+cat << "WIDGETS_EOF" > /opt/homepage/config/widgets.yaml
 - greeting:
     text_size: xl
     text: "Waceh NAS & Media Hub"
@@ -107,10 +110,10 @@ pct exec "$CTID" -- bash -c 'cat << "WIDGETS_EOF" > /opt/homepage/config/widgets
 - search:
     provider: google
     target: _blank
-WIDGETS_EOF'
+WIDGETS_EOF
 
-TMP_SERVICES=$(mktemp)
-cat << SERVICES_BASE > "$TMP_SERVICES"
+# 3. services.yaml (인프라 & 관제에 Cockpit 포함 1줄 5칸)
+cat << "SERVICES_EOF" > /opt/homepage/config/services.yaml
 - "4-Tier 물리 스토리지":
     - "Intel 710 100GB (94.5GB 여유)":
         description: "Host OS (Proxmox VE)"
@@ -163,22 +166,9 @@ cat << SERVICES_BASE > "$TMP_SERVICES"
         ping: https://192.168.1.200:9090
     - "AdGuard Home":
         icon: adguard-home.png
-        href: ${ADGUARD_URL}
+        href: http://192.168.1.102
         description: "광고차단 & 내부 DNS"
-        ping: ${ADGUARD_URL}
-SERVICES_BASE
-
-if [ -n "$ADGUARD_USER" ] && [ -n "$ADGUARD_PASS" ]; then
-cat << WIDGET_EOF >> "$TMP_SERVICES"
-        widget:
-          type: adguard
-          url: ${ADGUARD_URL}
-          username: ${ADGUARD_USER}
-          password: "${ADGUARD_PASS}"
-WIDGET_EOF
-fi
-
-cat << SERVICES_REST_EOF >> "$TMP_SERVICES"
+        ping: http://192.168.1.102
     - "Uptime Kuma":
         icon: uptime-kuma.png
         href: http://waceh.asuscomm.com:3001
@@ -198,15 +188,12 @@ cat << SERVICES_REST_EOF >> "$TMP_SERVICES"
         icon: youtube.png
         href: https://www.youtube.com/@mtk-ey
         description: "@mtk-ey"
-SERVICES_REST_EOF
+SERVICES_EOF
 
-pct push "$CTID" "$TMP_SERVICES" /opt/homepage/config/services.yaml
-rm -f "$TMP_SERVICES"
-
-
-pct exec "$CTID" -- bash -c '
+# 4. bookmarks.yaml 빈 배열로 초기화
 echo "[]" > /opt/homepage/config/bookmarks.yaml
 
+# 5. custom.css
 cat << "CSS_EOF" > /opt/homepage/config/custom.css
 /* 그룹 및 카드 간 상하 여백 슬림화 */
 .services-group, .group, section, div[class*="gap-"] {
@@ -219,6 +206,7 @@ div[class*="service-card"] {
 }
 CSS_EOF
 
+# 6. docker-compose.yml 업데이트 (Homepage + Uptime Kuma)
 cat << "COMPOSE_EOF" > /opt/homepage/docker-compose.yml
 services:
   homepage:
@@ -250,6 +238,7 @@ docker compose down --remove-orphans || true
 docker rm -f auth-proxy homepage uptime-kuma || true
 docker compose up -d --remove-orphans --force-recreate
 '
+
 
 log_ok "Cockpit 포함 완벽 대칭 4단 대시보드 업데이트 완료!"
 echo ""
