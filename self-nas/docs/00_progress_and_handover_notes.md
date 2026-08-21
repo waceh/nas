@@ -126,25 +126,22 @@ bash /root/nas_power.sh shutdown-host
 단순 링크를 넘어 카드 안에 **실시간 숫자와 게이지**가 살아 숨 쉬도록 위젯 연동:
 - [x] **AdGuard Home 위젯**: 차단된 광고 개수, 차단율(%), 오늘 DNS 쿼리 수 실시간 표시 완료 (`username`/`password` 연동).
 - [x] **Uptime Kuma 위젯**: 서버 생존 가동률(100.0%) 및 모니터링 상태 뱃지 표시 완료 (`status-page` slug: `default` 연동).
-- [ ] **Immich 위젯**: 총 사진 장수, 동영상 개수, 사용 용량 표시 (`API Key` 연동).
-- [ ] **Jellyfin 위젯**: 현재 실시간 시청자 수, 영화/드라마 편수 표시 (`API Key` 연동).
 - [x] **Cockpit 실시간 온도 위젯**: CPU 코어 실시간 온도(°C) 및 WD Gold HDD 작동 온도(39°C) 연동 완료 (`nas-sensors` 초경량 데몬).
+- [x] **미디어 카드(Immich, Gonic, Jellyfin)**: 0ms 실시간 생존 핑 및 심플 클린 레이아웃 유지.
 
 #### 4️⃣ [자동 백업 스케줄러] 매일 새벽 04:00 자동 스냅샷 백업 (완료 ✅)
 - [x] 매일 새벽 04:00 전체 6대 게스트(101~107) 무중단 라이브 스냅샷 백업 스케줄 등록 (`setup_backup_schedule_pve.sh`).
 - [x] WD Gold 4TB 백업 금고(`nas-backups`)에 최신 3회분 롤링 보관(Keep Last: 3) 정책 적용.
-
-
 
 #### 5️⃣ [보안 강화] Tailscale 하이브리드 Subnet Router 구축 (완료 ✅)
 - [x] Proxmox 호스트에 Tailscale WireGuard 서브넷 라우터(`192.168.1.0/24`) 구축 완료 (`setup_tailscale_subnet_router.sh`).
 - [x] 관리자 핵심 포트(PVE 8006, DSM 5000, Cockpit 9090, SSH 22)를 Tailscale 암호화 터널로 완전 보호.
 - [x] 가족 미디어(Immich, Gonic, Jellyfin)는 포트포워딩 유지로 VPN 없이 24시간 원활한 접속 보장.
 
-
-#### 5️⃣ [미래 장기 목표] 헤놀로지 VM 101 완전 제거 및 Proxmox 네이티브 스토리지 전환
+#### 6️⃣ [미래 장기 목표] 헤놀로지 VM 101 완전 제거 및 Proxmox 네이티브 스토리지 전환
 - [ ] 하드디스크 3대를 Proxmox 호스트 네이티브(ZFS / ext4)로 마운트.
 - [ ] LXC 컨테이너(103~105)에 초고속 바인드 마운트(`mp0`)로 직통 연결하여 VM 101 삭제 및 RAM 4GB 회수.
+
 
 ---
 
