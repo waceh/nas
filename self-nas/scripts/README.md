@@ -81,3 +81,32 @@ bash /root/nas_power.sh shutdown-host
 # 6. Proxmox 부팅/종료 순서(order/up/down) 일괄 등록
 bash /root/nas_power.sh init-order
 ```
+
+---
+
+## 📊 6. Homepage 올인원 대시보드 자동 구축 (ID: 107)
+
+가족과 사용자가 한 화면에서 홈 서버의 모든 서비스와 5대 물리 스토리지 상태를 확인할 수 있는 올인원 포털 대시보드를 배포합니다.
+
+```bash
+# 신규 배포
+curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/setup_homepage_lxc.sh | bash
+
+# 기존 대시보드 최신 레이아웃 및 스토리지 정보 갱신
+curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/update_homepage_config.sh | bash
+```
+
+- **컨테이너 ID**: `107` (Debian 12, 1 Core, 512MB RAM, 4GB SSD on `local-530`)
+- **접속 포트**: `http://192.168.1.107:3000` (외부: `http://your-domain.asuscomm.com:3000`)
+- **상세 가이드**: [`docs/12_homepage_dashboard_and_disk_architecture.md`](../docs/12_homepage_dashboard_and_disk_architecture.md)
+
+---
+
+## 💾 7. Proxmox VE 710 SSD OS 파티션 100GB 확장 (`merge_pve_root_storage.sh`)
+
+Intel 710 SSD의 미사용 LVM 풀(`pve-data` 70GB)을 안전하게 정리하고, OS 루트 파티션(`pve-root`)을 100GB 전체(94.5GB 여유)로 온라인 무중단 확장합니다.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/merge_pve_root_storage.sh | bash
+```
+

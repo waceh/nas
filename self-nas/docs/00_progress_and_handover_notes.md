@@ -104,11 +104,17 @@ bash /root/nas_power.sh shutdown-host
   - `nas-backups` NFS 스토리지 등록 완료 (`192.168.1.132:/volume1/backups`, 500GB Quota)
   - Proxmox Datacenter 주간 자동 백업 스케줄 등록 완료 (`mon 01:00`, ZSTD, Snapshot, Keep Last: 3)
   - 재해 복구 매뉴얼 [`11_proxmox_backup_and_disaster_recovery_guide.md`](11_proxmox_backup_and_disaster_recovery_guide.md) 작성 완료
-- [x] **Step 4. Homepage 올인원 대시보드 (LXC 107) 배포 & 동적 라우팅**:
+- [x] **Step 4. Homepage 올인원 대시보드 (LXC 107) 배포 & 4단 관제 레이아웃 구축 완료**:
   - 배포 완료 (`http://192.168.1.107:3000` / `http://waceh.asuscomm.com:3000`)
-  - 미디어 서비스(Immich, Gonic, Jellyfin) 및 인프라(Proxmox, 헤놀로지) 바로가기 & 실시간 상태 연동
-  - **`custom.js` 동적 URL 리라이트 탑재**: 내부망 접속 시 `192.168.1.x` 직통 연결, 외부망 접속 시 `waceh.asuscomm.com` 자동 전환
-  - [update_homepage_config.sh](../scripts/update_homepage_config.sh) 및 [setup_homepage_lxc.sh](../scripts/setup_homepage_lxc.sh) 제공
+  - **Proxmox 호스트 하드웨어(i5-9500T 6C, 16GB RAM, Uptime) 전체 패스스루** (`/proc` 바인드 마운트)
+  - **Intel 710 SSD OS 파티션 100GB 온라인 무중단 확장 완료** (`merge_pve_root_storage.sh`로 94.5GB 여유 확보)
+  - **4단 컴팩트 레이아웃 완성**:
+    - [1층] 💾 4-Tier 물리 스토리지 (710 OS, 530 LXC, Gold 4TB, White 18TB, White 8TB - 5칸)
+    - [2층] 🎬 미디어 서비스 (Immich, Gonic, Jellyfin - 3칸, 0ms 생존 확인 핑)
+    - [3층] 🛠️ 인프라 & 스토리지 (Proxmox VE, Xpenology DSM - 2칸)
+    - [4층] 🌐 Developer & Social (GitHub, Instagram, YouTube - 3칸)
+  - [`12_homepage_dashboard_and_disk_architecture.md`](12_homepage_dashboard_and_disk_architecture.md) 작성 완료
+  - 로컬 프리뷰어 [`preview_dashboard.html`](../preview_dashboard.html) 제공
 - [ ] **Step 5. (차기 목표) 헤놀로지 VM 101 완전 제거 및 Proxmox 네이티브 스토리지 전환**:
   - 하드디스크 3대를 Proxmox 호스트 네이티브(ZFS / ext4)로 마운트
   - LXC 컨테이너(103~105)에 초고속 바인드 마운트(`mp0`)로 직통 연결하여 VM 101 삭제 및 RAM 4GB 회수
@@ -132,5 +138,6 @@ bash /root/nas_power.sh shutdown-host
 - [09. Immich & Gonic 실전 운영 마스터 가이드](09_immich_caddy_https_and_storage_setup.md)
 - [10. NAS Graceful 순차 전원 & Jellyfin 구축 가이드](10_graceful_power_management_and_jellyfin_guide.md)
 - [11. Proxmox 백업 스토리지(물리 디스크 매핑) 및 재해 복구 가이드](11_proxmox_backup_and_disaster_recovery_guide.md)
+- [12. Homepage 대시보드 구축 및 5대 물리 디스크 관제 가이드](12_homepage_dashboard_and_disk_architecture.md)
 - [98. 향후 확장 서비스 후보군 및 Spring AI 검토](98_candidate_services_and_architecture_review.md)
 - [99. (번외편) KMP 모바일 음악 앱 아키텍처](99_kmp_gonic_mobile_app_architecture.md)
