@@ -97,6 +97,14 @@ bash /root/nas_power.sh shutdown-host
 - [x] **Step 3. Proxmox 자동 백업 스토리지 등록 (`vzdump`) & 재해 복구 매뉴얼** (`nas-backups`)
 - [x] **Step 4. Homepage 올인원 대시보드 + Uptime Kuma 통합 배포** (Intel 710 SSD 100GB OS 파티션 확장 포함)
 - [x] **Step 5. AdGuard Home (LXC 102) 및 Cockpit (PVE Host) 배포 완료** (가이드 13, 14 작성)
+- [x] **Step 6. NFSv3 락프리(No-Lock) 고속 마운트 전면 표준화 & Amperfy 트러블슈팅 완료**:
+  - `LXC 103 (Immich)` 및 `LXC 104 (Gonic)`의 fstab 마운트 옵션을 `vers=3,nolock,soft,timeo=30,intr,_netdev`로 교체 완료
+  - fstab 중복 옵션 정리로 `/mnt/music` 정상 마운트 및 Amperfy 모바일 스트리밍 100% 정상화
+  - 헤놀로지 HDD 대기 시간 1시간 최적화 (음악/사진 딜레이 0초 vs 영상 26TB 절전 모터 정지)
+- [x] **Step 7. Graceful 순차 기동·종료 순서(`order 1 ➔ order 2`) 전수 검증 완료**:
+  - `VM 101 (헤놀로지)`: `order=1,up=30,down=30` (스토리지 코어 최우선 기동 / 최후 종료)
+  - `LXC 102~107 (전체 컨테이너)`: `order=2` (DB 플러시 후 선 종료)
+  - 호스트 재기동/종료 시 데이터 무결성 100% 보장 확인 완료
 
 ---
 
