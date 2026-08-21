@@ -105,3 +105,33 @@ bash /root/nas_power.sh init-order
 ## 💡 5. 스마트폰 / 원격 전원 팁
 - **켜기 (WOL)**: 스마트폰 공유기 앱(ASUS Router)에서 **Wake-on-LAN (WOL)** 버튼 터치 ➔ NAS PC 전원 켜짐 ➔ Proxmox가 `order=1 ➔ order=2`로 자동 순차 부팅!
 - **끄기**: 스마트폰 SSH 앱(Termius 등)에서 단축어로 `bash /root/nas_power.sh shutdown-host` 실행 ➔ 1분 내로 모든 데이터 안전 저장 후 본체 전원 완전 Off!
+
+---
+
+## 🛠️ 6. Jellyfin 실전 최적화 및 트러블슈팅 레시피
+
+### ① 라이브러리 스캔 0% 멈춤(Hang) 방지
+- **원인**: 대용량 미디어(6.8TB+) 스캔 시 절전(스핀다운) HDD의 스핀업 지연(5~10초) 및 이전 NFSv4 세션 락 충돌.
+- **해결**:
+  - `NFSv3 (vers=3,nolock,soft,timeo=30,intr)` 마운트로 전환하여 무상태(Stateless) 락-프리 I/O 구현.
+  - Jellyfin 라이브러리 관리에서 **실시간 모니터링**, **트릭플레이(Trickplay)**, **챕터 이미지 추출** 비활성화(OFF).
+
+### ② RAM 트랜스코딩 캐시 영구 등록 (`tmpfs`)
+- `/dev/shm`은 RAM 디스크 특성상 재부팅 시 폴더가 초기화되므로 `systemd-tmpfiles`로 영구 자동 생성:
+  ```bash
+  echo 'd /dev/shm/jellyfin-transcodes 0777 jellyfin jellyfin -' > /etc/tmpfiles.d/jellyfin-transcodes.conf
+  systemd-tmpfiles --create /etc/tmpfiles.d/jellyfin-transcodes.conf
+  ```
+- Jellyfin 웹 [대시보드 ➔ 재생 ➔ 트랜스코딩]의 임시 경로에 `/dev/shm/jellyfin-transcodes` 지정 ➔ SSD TBW 소모 0바이트 달성.
+
+### ③ i5-9500T QuickSync (QSV) 가속 가이드
+- **하드웨어 가속**: `Intel QuickSync (QSV)` 선택
+- **디코딩 활성화**: H264, HEVC, VC1, VP8, VP9, MPEG2 체크 (*AV1은 9세대 iGPU 미지원으로 체크 해제*)
+- **VPP Tone Mapping**: 체크 활성화
+- **Low-Power Encoders**: 체크 해제 (i915 HuC 이슈 방지)
+
+### ④ 한글 자막 깨짐 방지
+- LXC 내부에 한글 폰트 패키지 설치:
+  ```bash
+  pct exec 105 -- apt-get install -y fonts-noto-cjk fonts-nanum
+  ```

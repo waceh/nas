@@ -38,7 +38,7 @@
 | **VM 101** | **Xpenology (Storage Core)** | 2C / 4GB | HDD 3대 Raw Passthrough (Gold 4T, White 26T) | **✅ 구축 완료** | [`04_xpenology_install.md`](04_xpenology_install.md) |
 | **LXC 103** | **Immich Photo Server** | 2C / 4GB | Intel 530 SSD + WD Gold (`/volume1/photo` NFS) | **✅ 구축 완료**<br/>*(10GB+ 색인 완료)* | [`09_immich_caddy_https_and_storage_setup.md`](09_immich_caddy_https_and_storage_setup.md)<br>[`setup_immich_lxc.sh`](../scripts/setup_immich_lxc.sh) |
 | **LXC 104** | **Gonic Music Server** | 1C / 512MB | Intel 530 SSD + WD Gold (`/volume1/music` NFS) | **✅ 구축 완료**<br/>*(폴더 기반 스트리밍)* | [`09_immich_caddy_https_and_storage_setup.md`](09_immich_caddy_https_and_storage_setup.md)<br>[`setup_gonic_lxc.sh`](../scripts/setup_gonic_lxc.sh) |
-| **LXC 105** | **Jellyfin Media Server** | 2C / 2GB | Intel 530 SSD + iGPU QuickSync + WD Gold/White | **✅ 구축 완료**<br/>*(iGPU QSV + RAM 캐시)* | [`10_graceful_power_management_and_jellyfin_guide.md`](10_graceful_power_management_and_jellyfin_guide.md)<br>[`setup_jellyfin_lxc.sh`](../scripts/setup_jellyfin_lxc.sh) |
+| **LXC 105** | **Jellyfin Media Server** | 2C / 2GB | Intel 530 SSD + iGPU QuickSync + 4단 NFS (`video`, `music`, `pds1`, `pds2`) | **✅ 구축 완료**<br/>*(iGPU QSV + RAM 캐시 + NFSv3 락프리)* | [`10_graceful_power_management_and_jellyfin_guide.md`](10_graceful_power_management_and_jellyfin_guide.md)<br>[`setup_jellyfin_lxc.sh`](../scripts/setup_jellyfin_lxc.sh) |
 | **LXC 107** | **Homepage Dashboard** | 1C / 512MB | Intel 530 SSD (`local-530`) | **✅ 구축 완료**<br/>*(포털 & 리소스 관제)* | [`setup_homepage_lxc.sh`](../scripts/setup_homepage_lxc.sh) |
 | **LXC 102** | **AdGuard Home** | 1C / 512MB | Intel 530 SSD (`local-530`) | **⚪ 대기 (선택)** | [`07_media_services_master_guide.md`](07_media_services_master_guide.md) |
 | **LXC 106** | **Dev Web Server** | 2C / 2GB | Intel 530 SSD (`local-530`) | **⚪ 대기 (선택)** | Spring Boot / Node 개발용 |
@@ -53,7 +53,7 @@
 - **헤놀로지 VM 101 IP**: `192.168.1.132` (`https://192.168.1.132:5001`)
 
 | 서비스 | 내부 IP 및 포트 | 외부 공유기 포트포워딩 | 클라이언트 앱 및 연동 |
-| :--- | :--- | :---: | :--- |
+| :--- | :--- | :--- | :---: |
 | **Homepage 대시보드** | `http://192.168.1.107:3000` | **`3000` (TCP)** | 올인원 시작페이지 포털 & 실시간 리소스 관제 |
 | **Immich Photo** | `http://192.168.1.103:2283` | **`2283` (TCP)** | Immich 공식 모바일 앱 (iOS/Android 백업) |
 | **Gonic Music** | `http://192.168.1.104:4747` | **`4747` (TCP)** | Amperfy (iOS), Ultrasonic/DSub (Android), CarPlay/Android Auto |
@@ -84,13 +84,19 @@ bash /root/nas_power.sh shutdown-host
 
 ---
 
-## 🚀 6. 다음 세션에서 이어서 바로 진행할 작업 (Next To-Do Checklist)
+## 🚀 6. 진행 완료 및 차기 작업 (Progress & Next To-Do)
 
-- [x] **Step 1. Jellyfin Media Server (LXC 105) 실제 배포**:
+- [x] **Step 1. Jellyfin Media Server (LXC 105) 배포 및 트러블슈팅 완료**:
   - 배포 완료 (`http://192.168.1.105:8096`)
-  - Intel QuickSync (QSV) 및 RAM 캐시(`/dev/shm/jellyfin-transcodes`) 연동 완료
-  - 3단 스토리지 마운트 완료 (`/mnt/pds1` 18TB, `/mnt/pds2` 8TB, `/mnt/music` 4TB)
-  - 저전력 인코딩(i915 HuC 이슈 방지) 및 VPP Tone Mapping 하드웨어 가속 설정 완료
+  - **4단 스토리지 NFSv3 락-프리 영구 마운트 완료**:
+    - `/mnt/video` (WD Gold 4TB, 100GB)
+    - `/mnt/music` (WD Gold 4TB, 100GB)
+    - `/mnt/pds1` (WD White 18TB, 6.8TB 미디어)
+    - `/mnt/pds2` (WD White 8TB, 7.0TB 여유)
+  - **NFS D-state 락 트러블슈팅**: 대용량 스캔 시 HDD 스핀업 지연으로 인한 NFSv4 세션 락 해결 ➔ `NFSv3 (vers=3,nolock,soft,timeo=30,intr)` 전격 전환
+  - **RAM 트랜스코딩 캐시 영구화**: `/etc/tmpfiles.d/jellyfin-transcodes.conf` 등록 (`/dev/shm/jellyfin-transcodes`, SSD TBW 100% 보호)
+  - **자막 폰트 패키지**: `fonts-noto-cjk`, `fonts-nanum` 설치 (한글 자막 깨짐 방지)
+  - **Intel QuickSync (QSV)** 및 VPP Tone Mapping 가속 설정 완료
 - [x] **Step 2. Graceful 순차 전원 제어 스크립트 등록 & 5대 디스크 모니터링**:
   - `/root/nas_power.sh` 등록 완료 (`init-order` 실행으로 VM 101 `order=1`, LXC 102~107 `order=2` 적용)
   - 5대 디스크(710, 530, Gold, White 18T/8T) 통합 용량 조회 (`bash nas_power.sh disk`) 기능 탑재
