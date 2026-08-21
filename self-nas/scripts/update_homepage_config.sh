@@ -227,14 +227,24 @@ echo "[]" > /opt/homepage/config/bookmarks.yaml
 cat << "CSS_EOF" > /opt/homepage/config/custom.css
 /* 그룹 및 카드 간 상하 여백 슬림화 */
 .services-group, .group, section, div[class*="gap-"] {
-  margin-bottom: 0.75rem !important;
+  margin-bottom: 0.5rem !important;
 }
 
-/* 텍스트 디스크 카드 높이 및 패딩 컴팩트 정돈 */
-div[class*="service-card"] {
-  padding: 0.75rem !important;
+/* 5열 강제 유지 및 컴팩트 카드 최적화 */
+div[class*="grid"] {
+  gap: 0.5rem !important;
+}
+
+div[class*="service-card"], div[class*="card"] {
+  padding: 0.5rem 0.75rem !important;
+}
+
+/* AdGuard 위젯 내부 텍스트 및 간격 슬림화 */
+div[class*="widget"] {
+  font-size: 0.8rem !important;
 }
 CSS_EOF
+
 
 # 6. docker-compose.yml 업데이트 (Homepage + Uptime Kuma)
 cat << "COMPOSE_EOF" > /opt/homepage/docker-compose.yml
