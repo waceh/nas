@@ -116,10 +116,11 @@ bash /root/nas_power.sh shutdown-host
 - [x] AdGuard [필터링 ➔ DNS 변경] 메뉴에서 `nas.home`, `photo.home`, `music.home`, `video.home`, `pve.home`, `dsm.home` 내부 도메인 매핑 완료.
 
 
-#### 2️⃣ [Uptime Kuma] 텔레그램 봇 실시간 장애/복구 알림 연동
-- [ ] 브라우저에서 `http://192.168.1.107:3001` 접속 ➔ 관리자 계정 생성.
-- [ ] 텔레그램 `@BotFather`에서 발급받은 **Bot Token**과 `@userinfobot`의 **Chat ID**를 Uptime Kuma 알림에 등록.
-- [ ] Immich, Jellyfin, PVE, DSM 모니터 추가 후 [테스트] 발송.
+#### 2️⃣ [Uptime Kuma] 텔레그램 봇 실시간 장애/복구 알림 연동 (완료 ✅)
+- [x] 브라우저에서 `http://192.168.1.107:3001` 접속 ➔ 관리자 계정 생성 완료.
+- [x] 텔레그램 봇 토큰 및 Chat ID 발급하여 Uptime Kuma 텔레그램 알림 등록 및 테스트 완료.
+- [x] 6대 핵심 서비스(Immich, Gonic, Jellyfin, AdGuard, PVE, DSM) 모니터 등록 완료 (24H 실시간 감시).
+
 
 #### 3️⃣ [Homepage 대시보드] 실시간 Service Widget (API) 연동
 단순 링크를 넘어 카드 안에 **실시간 숫자와 게이지**가 살아 숨 쉬도록 위젯 연동:
