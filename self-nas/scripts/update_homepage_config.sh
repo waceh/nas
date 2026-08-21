@@ -169,9 +169,15 @@ cat << 'SERVICES_BASE' > "$TMP_SERVICES"
     - "Cockpit GUI":
         icon: cockpit.png
         href: https://waceh.asuscomm.com:9090
-        description: "디스크 S.M.A.R.T/온도"
-        ping: https://192.168.1.200:9090
+        description: "디스크 S.M.A.R.T 관제"
+        widget:
+          type: customapi
+          url: http://192.168.1.200:61208/api/temp
+          refreshInterval: 10000
+          mappings:
+            - field: temp
 SERVICES_BASE
+
 
 
 

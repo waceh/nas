@@ -83,15 +83,18 @@ def get_system_stats():
     return mem_total, mem_used
 
 def get_disk_temp():
-    try:
-        out = subprocess.check_output(["smartctl", "-A", "-n", "standby", "/dev/sda"], universal_newlines=True)
-        for line in out.splitlines():
-            if "Temperature_Celsius" in line or "Airflow_Temperature" in line:
-                parts = line.split()
-                if len(parts) >= 10:
-                    return int(parts[9])
-    except Exception:
-        pass
+    for dev in ["/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd", "/dev/sde"]:
+        try:
+            out = subprocess.check_output(["smartctl", "-A", "-n", "standby", dev], universal_newlines=True)
+            for line in out.splitlines():
+                if "Temperature_Celsius" in line or "Airflow_Temperature" in line:
+                    parts = line.split()
+                    if len(parts) >= 10:
+                        val = int(parts[9])
+                        if 20 <= val <= 60:
+                            return val
+        except Exception:
+            pass
     return 39
 
 class SensorHandler(http.server.BaseHTTPRequestHandler):
@@ -101,27 +104,21 @@ class SensorHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         cpu_val = int(round(get_cpu_temp()))
         disk_val = int(round(get_disk_temp()))
+        formatted_temp = f"CPU:{cpu_val}°C / HDD:{disk_val}°C"
 
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
 
-        # Homepage CustomAPI 위젯용 엔드포인트
-        if "temp" in self.path or "cockpit" in self.path:
-            data = {
-                "cpu": cpu_val,
-                "disk": disk_val
-            }
-        else:
-            data = {
-                "cpu": cpu_val,
-                "disk": disk_val,
-                "cpu_temp": cpu_val,
-                "temperature": cpu_val
-            }
+        data = {
+            "temp": formatted_temp,
+            "cpu": f"{cpu_val}°C",
+            "disk": f"{disk_val}°C"
+        }
 
         self.wfile.write(json.dumps(data).encode("utf-8"))
+
 
 
 
