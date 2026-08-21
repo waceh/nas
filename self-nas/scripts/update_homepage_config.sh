@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Homepage Dashboard Configuration & Real Physical Disk Monitor (self-nas)
+# Homepage Dashboard Hardware Full-Resource & Multi-Disk Updater (self-nas)
 # ==============================================================================
-# - 호스트 물리 SSD (Intel 710 100GB OS) 전체 용량 바인드 마운트 연동
-# - 4-Tier 4대 실제 물리 디스크 (Intel SSD 100G, Gold 4T, White 18T/8T) 전체 용량 게이지
+# - 호스트 하드웨어 전체 리소스 (Intel i5-9500T 6C / 전체 16GB RAM) 패스스루
+# - 호스트 실제 물리 SSD 전체 (Intel 710 100GB OS) 바인드 마운트
+# - 4-Tier 4대 실제 물리 디스크 (Intel SSD, Gold 4T, White 18T/8T) 줄바꿈 레이아웃
 # ==============================================================================
 
 set -e
@@ -11,6 +12,7 @@ set -e
 GREEN='\033[1;32m'
 RED='\033[0;31m'
 BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
 NC='\033[0m'
 
 log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
@@ -24,18 +26,41 @@ fi
 
 CTID="${CTID:-107}"
 NAS_IP="${NAS_IP:-192.168.1.132}"
+CONF_FILE="/etc/pve/lxc/${CTID}.conf"
 
 if ! pct status "$CTID" &>/dev/null; then
-    log_err "LXC 컨테이너 ${CTID} 가 존재하지 않습니다. 먼저 setup_homepage_lxc.sh 로 설치하세요."
+    log_err "LXC 컨테이너 ${CTID} 가 존재하지 않습니다."
     exit 1
 fi
 
-log_info "Proxmox 호스트 SSD 전체 루트를 LXC ${CTID}에 바인드 마운트 설정 중..."
+log_info "Proxmox 호스트 전체 하드웨어 리소스(6코어 / 16GB RAM / SSD 전체) 주입 중..."
 
-# 1. Proxmox 호스트 실제 SSD 전체 루트(/)를 LXC 107의 /mnt/intel-ssd 로 읽기 전용 바인드 마운트
-pct set "$CTID" -mp0 /,mp=/mnt/intel-ssd,ro=1
+NEED_REBOOT=0
 
-log_info "Homepage 대시보드 설정 업데이트 중..."
+# 1. 호스트 물리 SSD 전체 루트(/) 바인드 마운트 주입
+if ! grep -q "mp0:" "$CONF_FILE"; then
+    echo "mp0: /,mp=/mnt/intel-ssd,ro=1" >> "$CONF_FILE"
+    NEED_REBOOT=1
+fi
+
+# 2. 호스트 실제 전체 CPU(6코어) 및 전체 16GB RAM 정보 주입
+if ! grep -q "proc/meminfo" "$CONF_FILE"; then
+cat << 'PVE_EOF' >> "$CONF_FILE"
+lxc.mount.entry: /proc/meminfo proc/meminfo none bind,ro,create=file 0 0
+lxc.mount.entry: /proc/stat proc/stat none bind,ro,create=file 0 0
+lxc.mount.entry: /proc/cpuinfo proc/cpuinfo none bind,ro,create=file 0 0
+PVE_EOF
+    NEED_REBOOT=1
+fi
+
+# 바인드 마운트 활성화를 위한 재부팅
+if [ "$NEED_REBOOT" -eq 1 ]; then
+    log_info "호스트 하드웨어 바인드 마운트 활성화를 위해 LXC ${CTID} 재부팅 중..."
+    pct reboot "$CTID"
+    sleep 5
+fi
+
+log_info "Homepage 대시보드 줄바꿈 레이아웃 및 4-Tier 디스크 설정 적용 중..."
 
 pct exec "$CTID" -- bash -c "
 export DEBIAN_FRONTEND=noninteractive
@@ -44,7 +69,7 @@ apt-get install -y -qq nfs-common
 
 mkdir -p /opt/homepage/config /mnt/intel-ssd /mnt/gold /mnt/pds1 /mnt/pds2
 
-# 2. NFS 락-프리 마운트 (용량 조회용)
+# 1. NFS 락-프리 마운트 (용량 조회용)
 cat << 'FSTAB_EOF' > /etc/fstab
 ${NAS_IP}:/volume1/video /mnt/gold nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr,rsize=1048576,wsize=1048576 0 0
 ${NAS_IP}:/volume2/PDS1  /mnt/pds1 nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr,rsize=1048576,wsize=1048576 0 0
@@ -53,7 +78,7 @@ FSTAB_EOF
 
 mount -a || true
 
-# 3. settings.yaml (사이트 제목 & 테마)
+# 2. settings.yaml (사이트 제목 & 테마)
 cat << 'SETTINGS_EOF' > /opt/homepage/config/settings.yaml
 title: Waceh NAS Dashboard
 favicon: https://cdn-icons-png.flaticon.com/512/3208/3208726.png
@@ -65,33 +90,40 @@ useEqualHeights: true
 hideVersion: true
 SETTINGS_EOF
 
-# 4. widgets.yaml (CPU/RAM + 실제 물리 디스크 전체 용량 게이지)
+# 3. widgets.yaml (하드웨어 전체 자원 6C/16GB + 디스크별 줄바꿈 배치)
 cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
 - greeting:
     text_size: xl
     text: \"Waceh NAS & Media Hub\"
+
 - search:
     provider: google
     target: _blank
+
 - resources:
-    label: \"시스템 자원\"
+    label: \"🖥️ 서버 하드웨어 전체 자원 (i5-9500T 6C / 16GB RAM)\"
     cpu: true
     memory: true
+    uptime: true
+
 - resources:
-    label: \"Intel SSD (Proxmox 호스트 OS 100GB)\"
+    label: \"💾 1. Intel SSD (Proxmox 호스트 OS 100GB)\"
     disk: /mnt/intel-ssd
+
 - resources:
-    label: \"WD Gold 4TB (사진·영상·음악)\"
+    label: \"📀 2. WD Gold 4TB (사진·영상·음악 허브)\"
     disk: /mnt/gold
+
 - resources:
-    label: \"WD White 18TB (PDS1 콜드 미디어)\"
+    label: \"📦 3. WD White 18TB (PDS1 콜드 미디어)\"
     disk: /mnt/pds1
+
 - resources:
-    label: \"WD White 8TB (PDS2 콜드 미디어)\"
+    label: \"📦 4. WD White 8TB (PDS2 콜드 미디어)\"
     disk: /mnt/pds2
 WIDGETS_EOF
 
-# 5. services.yaml (전체 외부 DDNS 링크 + 내부 초고속 상태 점검)
+# 4. services.yaml (전체 외부 DDNS 링크 + 내부 초고속 상태 점검)
 cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
 - 미디어 서비스 (Media Core):
     - Immich Photo:
@@ -123,7 +155,7 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         ping: http://192.168.1.132:5000
 SERVICES_EOF
 
-# 6. docker-compose.yml에 실제 물리 SSD 볼륨 매핑
+# 5. docker-compose.yml 업데이트 (하드웨어 전체 볼륨 매핑)
 if [ -f /opt/homepage/.htpasswd ] && [ -f /opt/homepage/nginx.conf ]; then
 cat << 'COMPOSE_EOF' > /opt/homepage/docker-compose.yml
 services:
@@ -184,13 +216,13 @@ cd /opt/homepage
 docker compose up -d --force-recreate
 "
 
-log_ok "물리 디스크 전체 용량 연동 및 대시보드 업데이트 완료!"
+log_ok "전체 하드웨어 자원(6C/16GB) 및 4단 물리 디스크 줄바꿈 적용 완료!"
 echo ""
 echo -e "${GREEN}====================================================${NC}"
-echo -e " 📊 대시보드 실제 물리 디스크 전체 용량 목록:"
-echo -e "   - Intel SSD 전체 (약 100GB 호스트 루트)"
-echo -e "   - WD Gold 4TB (사진·영상·음악)"
-echo -e "   - WD White 18TB (PDS1 콜드 미디어)"
-echo -e "   - WD White 8TB (PDS2 콜드 미디어)"
+echo -e " 🖥️ 서버 전체 하드웨어: Intel i5-9500T 6C / 전체 16GB RAM"
+echo -e " 💾 스토리지 1: Intel SSD 호스트 OS 전체 (약 100GB)"
+echo -e " 📀 스토리지 2: WD Gold 4TB (사진·영상·음악)"
+echo -e " 📦 스토리지 3: WD White 18TB (PDS1)"
+echo -e " 📦 스토리지 4: WD White 8TB (PDS2)"
 echo -e " 🌐 접속 주소: ${BLUE}http://waceh.asuscomm.com:3000${NC}"
 echo -e "${GREEN}====================================================${NC}"

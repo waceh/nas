@@ -4,7 +4,8 @@
 # ==============================================================================
 # - LXC 107 생성 (Debian 12, 1 Core, 512MB RAM, 4GB SSD Root on local-530)
 # - Docker 및 Homepage 공식 최신 이미지 자동 배포
-# - 4-Tier 4대 실제 물리 디스크 (Intel SSD 100G, Gold 4T, White 18T/8T) 전체 용량 모니터링
+# - 호스트 하드웨어 전체 리소스 (Intel i5-9500T 6C / 전체 16GB RAM) 패스스루
+# - 4-Tier 4대 실제 물리 디스크 (Intel SSD 100G, Gold 4T, White 18T/8T) 줄바꿈 모니터링
 # - Immich, Gonic, Jellyfin, Proxmox, 헤놀로지 통합 대시보드 자동 사전구성
 # ==============================================================================
 
@@ -77,6 +78,13 @@ pct create "$CTID" "$TEMPLATE" \
   --tags "dashboard,web" \
   --onboot 1
 
+# 호스트 전체 6코어 CPU 및 전체 16GB RAM 패스스루
+cat << 'PVE_EOF' >> "/etc/pve/lxc/${CTID}.conf"
+lxc.mount.entry: /proc/meminfo proc/meminfo none bind,ro,create=file 0 0
+lxc.mount.entry: /proc/stat proc/stat none bind,ro,create=file 0 0
+lxc.mount.entry: /proc/cpuinfo proc/cpuinfo none bind,ro,create=file 0 0
+PVE_EOF
+
 pct start "$CTID"
 log_ok "LXC ${CTID} 생성 및 시작 완료!"
 
@@ -117,29 +125,36 @@ useEqualHeights: true
 hideVersion: true
 SETTINGS_EOF
 
-# 3. widgets.yaml (CPU/RAM + 실제 물리 디스크 전체 용량 게이지)
+# 3. widgets.yaml (하드웨어 전체 자원 6C/16GB + 디스크별 줄바꿈 배치)
 cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
 - greeting:
     text_size: xl
     text: \"Waceh NAS & Media Hub\"
+
 - search:
     provider: google
     target: _blank
+
 - resources:
-    label: \"시스템 자원\"
+    label: \"🖥️ 서버 하드웨어 전체 자원 (i5-9500T 6C / 16GB RAM)\"
     cpu: true
     memory: true
+    uptime: true
+
 - resources:
-    label: \"Intel SSD (Proxmox 호스트 OS 100GB)\"
+    label: \"💾 1. Intel SSD (Proxmox 호스트 OS 100GB)\"
     disk: /mnt/intel-ssd
+
 - resources:
-    label: \"WD Gold 4TB (사진·영상·음악)\"
+    label: \"📀 2. WD Gold 4TB (사진·영상·음악 허브)\"
     disk: /mnt/gold
+
 - resources:
-    label: \"WD White 18TB (PDS1 콜드 미디어)\"
+    label: \"📦 3. WD White 18TB (PDS1 콜드 미디어)\"
     disk: /mnt/pds1
+
 - resources:
-    label: \"WD White 8TB (PDS2 콜드 미디어)\"
+    label: \"📦 4. WD White 8TB (PDS2 콜드 미디어)\"
     disk: /mnt/pds2
 WIDGETS_EOF
 
@@ -209,6 +224,7 @@ echo -e "${GREEN}====================================================${NC}"
 echo -e "${GREEN}     Homepage Dashboard (${CTID}) 설치 완료!         ${NC}"
 echo -e "${GREEN}====================================================${NC}"
 echo -e " 1. 접속 URL: ${BLUE}http://${IP_ADDR%/*}:3000${NC} 또는 ${BLUE}http://waceh.asuscomm.com:3000${NC}"
-echo -e " 2. 물리 디스크 전체 모니터링: Intel SSD(100GB), WD Gold 4TB, WD White 18TB/8TB"
-echo -e " 3. 설정 파일 위치: LXC ${CTID} 내부 ${GREEN}/opt/homepage/config/${NC}"
+echo -e " 2. 서버 전체 하드웨어: Intel i5-9500T 6C / 전체 16GB RAM"
+echo -e " 3. 4단 물리 디스크: Intel SSD(100GB), WD Gold 4TB, WD White 18TB/8TB"
+echo -e " 4. 설정 파일 위치: LXC ${CTID} 내부 ${GREEN}/opt/homepage/config/${NC}"
 echo -e "${GREEN}====================================================${NC}"
