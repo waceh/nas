@@ -4,11 +4,10 @@
 # ==============================================================================
 # - LXC 107 생성 (Debian 12, 1 Core, 512MB RAM, 4GB SSD Root on local-530)
 # - Docker 및 Homepage 공식 최신 이미지 자동 배포
-# - 1층: 💾 4-Tier 물리 스토리지 (이미지/위젯 에러 없는 순수 텍스트 5열 카드)
+# - 1층: 💾 4-Tier 물리 스토리지 (여유 용량 & 간단 사용처 명시 5열 카드)
 # - 2층: 🎬 미디어 서비스 (1줄 3칸)
 # - 3층: 🛠️ 인프라 & 스토리지 (1줄 2칸)
 # - 4층: 🌐 Developer | Social | YouTube (1줄 3칸 나란히 배치)
-# - 공백 최적화: 2층-3층 간 과도한 여백 슬림화
 # - Immich, Gonic, Jellyfin, Proxmox, 헤놀로지 통합 대시보드 자동 사전구성
 # ==============================================================================
 
@@ -156,19 +155,19 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     target: _blank
 WIDGETS_EOF
 
-# 3. services.yaml (1층: 텍스트 스토리지 5개 | 2층: 미디어 3개 | 3층: 인프라 2개)
+# 3. services.yaml (1층: 여유용량 & 사용처 명시 5개 디스크 | 2층: 미디어 | 3층: 인프라)
 cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
 - 4-Tier 물리 스토리지:
-    - Host OS SSD:
-        description: Intel 710 100G (OS 24.5G 여유)
-    - 고속 컨테이너 풀:
-        description: Intel 530 120G (LXC/DB 풀)
-    - 라이프 & 미디어 허브:
-        description: WD Gold 4TB (사진·음악 3.4T 여유)
-    - PDS1 대용량 미디어:
-        description: WD White 18TB (영화 6.8T 사용)
-    - PDS2 보조 엔터:
-        description: WD White 8TB (7.0T 여유)
+    - Intel 710 100G (24.5G 여유):
+        description: Host OS (Proxmox)
+    - Intel 530 120G (98G 여유):
+        description: VM / LXC / DB 풀
+    - WD Gold 4TB (3.4T 여유):
+        description: 사진(Immich), 음악(Gonic), 영상
+    - WD White 18TB (9.2T 여유):
+        description: PDS1 (Cold Storage / Jellyfin)
+    - WD White 8TB (7.0T 여유):
+        description: PDS2 (Cold Storage / Jellyfin)
 
 - 미디어 서비스:
     - Immich Photo:
@@ -221,7 +220,7 @@ cat << 'BOOKMARKS_EOF' > /opt/homepage/config/bookmarks.yaml
           href: https://www.youtube.com/@mtk-ey
 BOOKMARKS_EOF
 
-# 5. custom.css (2층-3층-4층 사이의 과도한 공백 제거 및 컴팩트 스타일링)
+# 5. custom.css (여백 최적화)
 cat << 'CSS_EOF' > /opt/homepage/config/custom.css
 /* 그룹 및 카드 간 상하 여백 슬림화 */
 .services-group, .group, section, div[class*="gap-"] {
@@ -264,7 +263,7 @@ echo -e "${GREEN}====================================================${NC}"
 echo -e "${GREEN}     Homepage Dashboard (${CTID}) 설치 완료!         ${NC}"
 echo -e "${GREEN}====================================================${NC}"
 echo -e " 1. 접속 URL: ${BLUE}http://${IP_ADDR%/*}:3000${NC} 또는 ${BLUE}http://waceh.asuscomm.com:3000${NC}"
-echo -e " 2. 💾 [1층]: 4-Tier 물리 스토리지 (깔끔한 텍스트 1줄 5칸)"
+echo -e " 2. 💾 [1층]: 4-Tier 물리 스토리지 (여유용량 & 사용처 명시 5칸)"
 echo -e " 3. 🎬 [2층]: 미디어 서비스 (1줄 3칸)"
 echo -e " 4. 🛠️ [3층]: 인프라 & 스토리지 (1줄 2칸)"
 echo -e " 5. 🌐 [4층]: Developer | Social | YouTube (1줄 3칸 나란히)"

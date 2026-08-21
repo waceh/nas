@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Waceh NAS Dashboard - Refined 3-Tier Layout Preview</title>
+  <title>Waceh NAS Dashboard - Refined Storage & Bookmarks Preview</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -89,7 +89,7 @@
 
 
     <!-- ================================================================= -->
-    <!-- [1층] 💾 4-Tier 물리 스토리지 (이미지 없는 깔끔한 텍스트 5열 카드) -->
+    <!-- [1층] 💾 4-Tier 물리 스토리지 (여유 용량 & 간단 사용처)             -->
     <!-- ================================================================= -->
     <section class="space-y-2">
       <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider px-1">
@@ -101,46 +101,46 @@
         <!-- [1] Intel 710 SSD OS -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-1 hover:border-purple-500/40 transition">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-slate-200">Host OS SSD</span>
+            <span class="text-xs font-bold text-slate-200">Intel 710 100G</span>
             <span class="text-[10px] text-purple-400 font-mono font-semibold">24.5G 여유</span>
           </div>
-          <p class="text-[11px] text-slate-400 leading-tight">Intel 710 100GB MLC (PVE OS)</p>
+          <p class="text-[11px] text-slate-400 leading-tight">Host OS (Proxmox)</p>
         </div>
 
         <!-- [2] Intel 530 SSD Fast Pool -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-1 hover:border-blue-500/40 transition">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-slate-200">고속 컨테이너 풀</span>
-            <span class="text-[10px] text-blue-400 font-mono font-semibold">120G 풀</span>
+            <span class="text-xs font-bold text-slate-200">Intel 530 120G</span>
+            <span class="text-[10px] text-blue-400 font-mono font-semibold">98G 여유</span>
           </div>
-          <p class="text-[11px] text-slate-400 leading-tight">Intel 530 120GB MLC (LXC/DB)</p>
+          <p class="text-[11px] text-slate-400 leading-tight">VM / LXC / DB 풀</p>
         </div>
 
         <!-- [3] WD Gold 4TB -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-1 hover:border-amber-500/40 transition">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-slate-200">라이프 & 미디어 허브</span>
+            <span class="text-xs font-bold text-slate-200">WD Gold 4TB</span>
             <span class="text-[10px] text-amber-400 font-mono font-semibold">3.4T 여유</span>
           </div>
-          <p class="text-[11px] text-slate-400 leading-tight">WD Gold 4TB (사진·음악·백업)</p>
+          <p class="text-[11px] text-slate-400 leading-tight">사진(Immich), 음악(Gonic), 영상</p>
         </div>
 
         <!-- [4] WD White 18TB -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-1 hover:border-emerald-500/40 transition">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-slate-200">PDS1 대용량 미디어</span>
-            <span class="text-[10px] text-emerald-400 font-mono font-semibold">6.8T 사용</span>
+            <span class="text-xs font-bold text-slate-200">WD White 18TB</span>
+            <span class="text-[10px] text-emerald-400 font-mono font-semibold">9.2T 여유</span>
           </div>
-          <p class="text-[11px] text-slate-400 leading-tight">WD White 18TB (영화·드라마)</p>
+          <p class="text-[11px] text-slate-400 leading-tight">PDS1 (Cold Storage / Jellyfin)</p>
         </div>
 
         <!-- [5] WD White 8TB -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-1 hover:border-cyan-500/40 transition">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-slate-200">PDS2 보조 엔터</span>
+            <span class="text-xs font-bold text-slate-200">WD White 8TB</span>
             <span class="text-[10px] text-cyan-400 font-mono font-semibold">7.0T 여유</span>
           </div>
-          <p class="text-[11px] text-slate-400 leading-tight">WD White 8TB (콜드 미디어)</p>
+          <p class="text-[11px] text-slate-400 leading-tight">PDS2 (Cold Storage / Jellyfin)</p>
         </div>
 
       </div>
