@@ -98,9 +98,42 @@ layout:
     style: row
     columns: 3
 SETTINGS_EOF
+'
 
-# 2. widgets.yaml (상단 헤더: 인사말 + CPU/RAM/TIME + 검색바)
-cat << "WIDGETS_EOF" > /opt/homepage/config/widgets.yaml
+# 2. widgets.yaml (상단 헤더: 인사말 + CPU/RAM/TIME/온도 + 검색바)
+
+GLANCES_ACTIVE=0
+GLANCES_VER=4
+if curl -s --connect-timeout 2 http://192.168.1.200:61208/api/4/status &>/dev/null; then
+    GLANCES_ACTIVE=1
+    GLANCES_VER=4
+elif curl -s --connect-timeout 2 http://192.168.1.200:61208/api/3/status &>/dev/null; then
+    GLANCES_ACTIVE=1
+    GLANCES_VER=3
+fi
+
+TMP_WIDGETS=$(mktemp)
+if [ "$GLANCES_ACTIVE" -eq 1 ]; then
+cat << WIDGETS_EOF > "$TMP_WIDGETS"
+- greeting:
+    text_size: xl
+    text: "Waceh NAS & Media Hub"
+
+- glances:
+    label: "🖥️ 서버 하드웨어 전체 자원 & 실시간 온도 (i5-9500T 6C / 16GB RAM)"
+    url: http://192.168.1.200:61208
+    version: ${GLANCES_VER}
+    cpu: true
+    cputemp: true
+    memory: true
+    uptime: true
+
+- search:
+    provider: google
+    target: _blank
+WIDGETS_EOF
+else
+cat << 'WIDGETS_EOF' > "$TMP_WIDGETS"
 - greeting:
     text_size: xl
     text: "Waceh NAS & Media Hub"
@@ -115,9 +148,13 @@ cat << "WIDGETS_EOF" > /opt/homepage/config/widgets.yaml
     provider: google
     target: _blank
 WIDGETS_EOF
-'
+fi
+
+pct push "$CTID" "$TMP_WIDGETS" /opt/homepage/config/widgets.yaml
+rm -f "$TMP_WIDGETS"
 
 # 3. services.yaml 생성 (AdGuard 위젯 지원)
+
 TMP_SERVICES=$(mktemp)
 cat << 'SERVICES_BASE' > "$TMP_SERVICES"
 - "4-Tier 물리 스토리지":

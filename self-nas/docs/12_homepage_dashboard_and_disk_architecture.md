@@ -71,6 +71,10 @@
 ### 3) 실시간 0ms 생존 확인(Health Check) 핑 연동
 * `services.yaml`의 각 서비스에 `ping: http://192.168.1.xxx:port`를 주입하여, 서비스 정상 작동 시 **초록색 0MS 뱃지(온라인)**가 표시되고 장애 시 즉시 빨간색 에러로 감지.
 
+### 4) 30초 저부하 하드웨어 센서 & CPU/디스크 실시간 온도 (`setup_hardware_sensors_pve.sh`)
+* **설계 철학**: 1초 단위의 과도한 폴링 대신 **30초 주기 저부하(Low-Overhead)**로 호스트 온도를 수집하여 **CPU 부하 0.1% 미만** 유지 및 **콜드 디스크(WD White 18T/8T) 스핀다운 절전 완벽 보호**.
+* **구현**: Proxmox 호스트에 `glances` 30초 주기 데몬(`:61208`) 구동 ➔ Homepage 상단 헤더에 **CPU 실시간 온도(°C)**와 리소스 사용량이 실시간 연동됨.
+
 ---
 
 ## 🛠️ 4. 주요 관리 및 업데이트 스크립트
@@ -78,7 +82,9 @@
 | 스크립트 파일 | 용도 및 기능 |
 | :--- | :--- |
 | [`setup_homepage_lxc.sh`](../scripts/setup_homepage_lxc.sh) | LXC 107 생성부터 Docker, Homepage, 4단 레이아웃 자동 일괄 설치 |
-| [`update_homepage_config.sh`](../scripts/update_homepage_config.sh) | 대시보드 레이아웃, 스토리지 정보, 소셜 링크 최신 설정 갱신 |
+| [`update_homepage_config.sh`](../scripts/update_homepage_config.sh) | 대시보드 레이아웃, 스토리지 정보, 소셜 링크, Glances 센서 최신 갱신 |
+| [`setup_hardware_sensors_pve.sh`](../scripts/setup_hardware_sensors_pve.sh) | 30초 주기 저부하 CPU/디스크 온도 센서 데몬 설치 (포트 61208) |
 | [`merge_pve_root_storage.sh`](../scripts/merge_pve_root_storage.sh) | Intel 710 SSD OS 루트 파티션을 100GB 전체로 무중단 확장 |
 | [`enable_homepage_auth.sh`](../scripts/enable_homepage_auth.sh) | 외부 접속 보안을 위한 Nginx HTTP Basic Auth 계정 암호화 적용 |
 | [`preview_dashboard.html`](../preview_dashboard.html) | 로컬 Mac 브라우저에서 서버 배포 전 즉시 화면을 확인하는 HTML 프리뷰어 |
+
