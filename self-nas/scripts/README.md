@@ -110,3 +110,19 @@ Intel 710 SSD의 미사용 LVM 풀(`pve-data` 70GB)을 안전하게 정리하고
 curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/merge_pve_root_storage.sh | bash
 ```
 
+---
+
+## 🛡️ 8. AdGuard Home LXC 자동 구축 (ID: 102)
+
+Intel 530 SSD(`local-530`) 위에 Debian 12 초경량 Native 바이너리로 AdGuard Home을 1분 만에 구축합니다.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/setup_adguard_lxc.sh | bash
+```
+
+- **컨테이너 ID**: `102` (Debian 12, 1 Core, 512MB RAM, 4GB SSD on `local-530`)
+- **초기 설정 포트**: `http://192.168.1.102:3000`
+- **DNS 서버 IP**: `192.168.1.102` (포트 53)
+- **상세 가이드**: [`docs/13_adguard_home_dns_setup.md`](../docs/13_adguard_home_dns_setup.md)
+
+

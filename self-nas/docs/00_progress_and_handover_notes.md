@@ -40,7 +40,7 @@
 | **LXC 104** | **Gonic Music Server** | 1C / 512MB | Intel 530 SSD + WD Gold (`/volume1/music` NFS) | **✅ 구축 완료**<br/>*(폴더 기반 스트리밍)* | [`09_immich_caddy_https_and_storage_setup.md`](09_immich_caddy_https_and_storage_setup.md)<br>[`setup_gonic_lxc.sh`](../scripts/setup_gonic_lxc.sh) |
 | **LXC 105** | **Jellyfin Media Server** | 2C / 2GB | Intel 530 SSD + iGPU QuickSync + 4단 NFS (`video`, `music`, `pds1`, `pds2`) | **✅ 구축 완료**<br/>*(iGPU QSV + RAM 캐시 + NFSv3 락프리)* | [`10_graceful_power_management_and_jellyfin_guide.md`](10_graceful_power_management_and_jellyfin_guide.md)<br>[`setup_jellyfin_lxc.sh`](../scripts/setup_jellyfin_lxc.sh) |
 | **LXC 107** | **Homepage Dashboard** | 1C / 512MB | Intel 530 SSD (`local-530`) | **✅ 구축 완료**<br/>*(포털 & 리소스 관제)* | [`setup_homepage_lxc.sh`](../scripts/setup_homepage_lxc.sh) |
-| **LXC 102** | **AdGuard Home** | 1C / 512MB | Intel 530 SSD (`local-530`) | **⚪ 대기 (선택)** | [`07_media_services_master_guide.md`](07_media_services_master_guide.md) |
+| **LXC 102** | **AdGuard Home** | 1C / 512MB | Intel 530 SSD (`local-530`) | **✅ 구축 완료**<br/>*(광고차단 & 로컬 DNS)* | [`13_adguard_home_dns_setup.md`](13_adguard_home_dns_setup.md)<br>[`setup_adguard_lxc.sh`](../scripts/setup_adguard_lxc.sh) |
 | **LXC 106** | **Dev Web Server** | 2C / 2GB | Intel 530 SSD (`local-530`) | **⚪ 대기 (선택)** | Spring Boot / Node 개발용 |
 | **Script** | **통합 전원 제어 (`nas_power.sh`)** | - | Proxmox Host `/root/nas_power.sh` | **✅ 스크립트 제작 완료** | [`nas_power.sh`](../scripts/nas_power.sh) |
 
