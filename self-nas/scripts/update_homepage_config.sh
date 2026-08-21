@@ -103,9 +103,10 @@ SETTINGS_EOF
 # 2. widgets.yaml (상단 헤더: 인사말 + CPU/RAM/TIME/온도 + 검색바)
 
 GLANCES_ACTIVE=0
-if systemctl is-active --quiet glances-server.service || ss -tulpn | grep -q "61208" || curl -s --connect-timeout 2 http://192.168.1.200:61208 &>/dev/null; then
+if systemctl is-active --quiet nas-sensors.service || systemctl is-active --quiet glances-server.service || ss -tulpn | grep -q "61208" || curl -s --connect-timeout 2 http://192.168.1.200:61208 &>/dev/null; then
     GLANCES_ACTIVE=1
 fi
+
 
 TMP_WIDGETS=$(mktemp)
 if [ "$GLANCES_ACTIVE" -eq 1 ]; then
