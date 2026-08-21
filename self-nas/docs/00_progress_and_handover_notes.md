@@ -104,9 +104,11 @@ bash /root/nas_power.sh shutdown-host
   - `nas-backups` NFS 스토리지 등록 완료 (`192.168.1.132:/volume1/backups`, 500GB Quota)
   - Proxmox Datacenter 주간 자동 백업 스케줄 등록 완료 (`mon 01:00`, ZSTD, Snapshot, Keep Last: 3)
   - 재해 복구 매뉴얼 [`11_proxmox_backup_and_disaster_recovery_guide.md`](11_proxmox_backup_and_disaster_recovery_guide.md) 작성 완료
-- [x] **Step 4. Homepage 올인원 대시보드 (LXC 107) 배포**:
-  - 배포 완료 (`http://192.168.1.107:3000`)
+- [x] **Step 4. Homepage 올인원 대시보드 (LXC 107) 배포 & 동적 라우팅**:
+  - 배포 완료 (`http://192.168.1.107:3000` / `http://waceh.asuscomm.com:3000`)
   - 미디어 서비스(Immich, Gonic, Jellyfin) 및 인프라(Proxmox, 헤놀로지) 바로가기 & 실시간 상태 연동
+  - **`custom.js` 동적 URL 리라이트 탑재**: 내부망 접속 시 `192.168.1.x` 직통 연결, 외부망 접속 시 `waceh.asuscomm.com` 자동 전환
+  - [update_homepage_config.sh](../scripts/update_homepage_config.sh) 및 [setup_homepage_lxc.sh](../scripts/setup_homepage_lxc.sh) 제공
 - [ ] **Step 5. (차기 목표) 헤놀로지 VM 101 완전 제거 및 Proxmox 네이티브 스토리지 전환**:
   - 하드디스크 3대를 Proxmox 호스트 네이티브(ZFS / ext4)로 마운트
   - LXC 컨테이너(103~105)에 초고속 바인드 마운트(`mp0`)로 직통 연결하여 VM 101 삭제 및 RAM 4GB 회수
