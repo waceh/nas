@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Homepage Dashboard Clean 3-Tier Layout & Compact Spacing Updater (self-nas)
+# Homepage Dashboard Layout & Custom Bookmarks Updater (self-nas)
 # ==============================================================================
 # - 1층: 💾 4-Tier 물리 스토리지 (이미지/위젯 에러 없는 순수 텍스트 5열 카드)
 # - 2층: 🎬 미디어 서비스 (1줄 3칸)
 # - 3층: 🛠️ 인프라 & 스토리지 (1줄 2칸)
+# - 4층: 🌐 Developer (GitHub) & Social (Instagram, YouTube) 북마크
 # - 공백 최적화: 2층-3층 간 과도한 여백 슬림화
 # ==============================================================================
 
@@ -60,7 +61,7 @@ if [ "$NEED_REBOOT" -eq 1 ]; then
     sleep 5
 fi
 
-log_info "Homepage 대시보드 컴팩트 3단(스토리지 5열 -> 미디어 3열 -> 인프라 2열) 설정 적용 중..."
+log_info "Homepage 대시보드 및 맞춤 북마크(GitHub, Instagram, YouTube) 적용 중..."
 
 pct exec "$CTID" -- bash -c "
 export DEBIAN_FRONTEND=noninteractive
@@ -68,7 +69,7 @@ apt-get update -qq
 
 mkdir -p /opt/homepage/config
 
-# 1. settings.yaml (1층 5열 / 2층 3열 / 3층 2열 설정)
+# 1. settings.yaml (스토리지 5열, 미디어 3열, 인프라 2열, 북마크 레이아웃)
 cat << 'SETTINGS_EOF' > /opt/homepage/config/settings.yaml
 title: Waceh NAS Dashboard
 favicon: https://cdn-icons-png.flaticon.com/512/3208/3208726.png
@@ -87,6 +88,12 @@ layout:
     style: row
     columns: 3
   인프라 & 스토리지:
+    style: row
+    columns: 2
+  Developer:
+    style: row
+    columns: 1
+  Social:
     style: row
     columns: 2
 SETTINGS_EOF
@@ -108,7 +115,7 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     target: _blank
 WIDGETS_EOF
 
-# 3. services.yaml (1층: 텍스트 스토리지 카드 5개 | 2층: 미디어 3개 | 3층: 인프라 2개)
+# 3. services.yaml (1층: 텍스트 스토리지 5개 | 2층: 미디어 3개 | 3층: 인프라 2개)
 cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
 - 4-Tier 물리 스토리지:
     - Host OS SSD:
@@ -152,7 +159,26 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         ping: http://192.168.1.132:5000
 SERVICES_EOF
 
-# 4. custom.css (2층과 3층 사이의 과도한 공백 제거 및 컴팩트 스타일링)
+# 4. bookmarks.yaml (Developer: GitHub | Social: Instagram, YouTube)
+cat << 'BOOKMARKS_EOF' > /opt/homepage/config/bookmarks.yaml
+- Developer:
+    - GitHub:
+        - abbr: GH
+          icon: github.png
+          href: https://github.com/waceh
+
+- Social:
+    - Instagram:
+        - abbr: IG
+          icon: instagram.png
+          href: https://www.instagram.com/legato____
+    - YouTube:
+        - abbr: YT
+          icon: youtube.png
+          href: https://www.youtube.com/@mtk-ey
+BOOKMARKS_EOF
+
+# 5. custom.css (2층과 3층 사이의 과도한 공백 제거 및 컴팩트 스타일링)
 cat << 'CSS_EOF' > /opt/homepage/config/custom.css
 /* 그룹 및 카드 간 상하 여백 슬림화 */
 .services-group, .group, section, div[class*="gap-"] {
@@ -165,7 +191,7 @@ div[class*="service-card"] {
 }
 CSS_EOF
 
-# 5. docker-compose.yml 업데이트
+# 6. docker-compose.yml 업데이트
 if [ -f /opt/homepage/.htpasswd ] && [ -f /opt/homepage/nginx.conf ]; then
 cat << 'COMPOSE_EOF' > /opt/homepage/docker-compose.yml
 services:
@@ -219,11 +245,12 @@ docker compose down
 docker compose up -d --force-recreate
 "
 
-log_ok "컴팩트 3단(스토리지 5열 -> 미디어 3열 -> 인프라 2열) 레이아웃 적용 완료!"
+log_ok "대시보드 및 맞춤 북마크(GitHub, Instagram, YouTube) 적용 완료!"
 echo ""
 echo -e "${GREEN}====================================================${NC}"
 echo -e " 💾 [1층]: 4-Tier 물리 스토리지 (깔끔한 텍스트 1줄 5칸)"
 echo -e " 🎬 [2층]: 미디어 서비스 (1줄 3칸)"
 echo -e " 🛠️ [3층]: 인프라 & 스토리지 (1줄 2칸)"
+echo -e " 🌐 [4층]: Developer (GitHub) & Social (Instagram, YouTube)"
 echo -e " 🌐 접속 주소: ${BLUE}http://waceh.asuscomm.com:3000${NC}"
 echo -e "${GREEN}====================================================${NC}"

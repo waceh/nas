@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Waceh NAS Dashboard - 3-Tier Ultimate Layout Preview</title>
+  <title>Waceh NAS Dashboard - Refined 3-Tier Layout Preview</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -24,36 +24,36 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
-    .card-glow:hover { box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
+    .card-glow:hover { box-shadow: 0 0 15px rgba(59, 130, 246, 0.15); }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen p-6 md:p-10 selection:bg-blue-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen p-6 md:p-8 selection:bg-blue-500 selection:text-white">
 
   <!-- Max Width Wrapper -->
-  <div class="max-w-7xl mx-auto space-y-8">
+  <div class="max-w-6xl mx-auto space-y-5">
 
     <!-- ================================================================= -->
-    <!-- [1층] WACEH NAS & Media Hub + CPU/RAM/TIME + 검색바              -->
+    <!-- [상단 헤더] WACEH NAS & Media Hub + CPU/RAM/TIME + 검색바         -->
     <!-- ================================================================= -->
-    <header class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center bg-slate-900/90 border border-slate-800/80 p-5 rounded-2xl shadow-xl backdrop-blur">
+    <header class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center bg-slate-900/90 border border-slate-800 p-4 rounded-xl shadow-md">
       
       <!-- Title & Branding (Col 4) -->
-      <div class="lg:col-span-4 flex items-center gap-3">
-        <img src="https://cdn-icons-png.flaticon.com/512/3208/3208726.png" alt="NAS Icon" class="w-11 h-11 drop-shadow-md">
+      <div class="lg:col-span-4 flex items-center gap-2.5">
+        <img src="https://cdn-icons-png.flaticon.com/512/3208/3208726.png" alt="NAS Icon" class="w-9 h-9 drop-shadow">
         <div>
-          <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
+          <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
             Waceh NAS & Media Hub
           </h1>
-          <p class="text-[11px] text-slate-400">Proxmox VE 8.x 베어메탈 홈 NAS</p>
+          <p class="text-[10px] text-slate-400">Proxmox VE 8.x 베어메탈 홈 NAS</p>
         </div>
       </div>
 
       <!-- CPU / RAM / TIME (Col 5) -->
-      <div class="lg:col-span-5 grid grid-cols-3 gap-2.5 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/60">
+      <div class="lg:col-span-5 grid grid-cols-3 gap-2 bg-slate-950/60 p-2 rounded-lg border border-slate-800/60">
         <!-- CPU -->
-        <div class="space-y-1 text-center">
-          <div class="flex justify-between text-[11px] px-1">
-            <span class="text-slate-400"><i class="fa-solid fa-gauge text-blue-400 mr-1"></i>CPU</span>
+        <div class="space-y-0.5 text-center">
+          <div class="flex justify-between text-[10px] px-1 text-slate-400 font-medium">
+            <span><i class="fa-solid fa-gauge text-blue-400 mr-1"></i>CPU</span>
             <span class="text-blue-400 font-bold">12.4%</span>
           </div>
           <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
@@ -61,9 +61,9 @@
           </div>
         </div>
         <!-- RAM -->
-        <div class="space-y-1 text-center">
-          <div class="flex justify-between text-[11px] px-1">
-            <span class="text-slate-400"><i class="fa-solid fa-memory text-indigo-400 mr-1"></i>RAM</span>
+        <div class="space-y-0.5 text-center">
+          <div class="flex justify-between text-[10px] px-1 text-slate-400 font-medium">
+            <span><i class="fa-solid fa-memory text-indigo-400 mr-1"></i>RAM</span>
             <span class="text-indigo-400 font-bold">4.8G (31%)</span>
           </div>
           <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
@@ -72,8 +72,8 @@
         </div>
         <!-- TIME -->
         <div class="text-center flex flex-col justify-center">
-          <span class="text-[10px] text-slate-400"><i class="fa-solid fa-clock text-emerald-400 mr-1"></i>UPTIME</span>
-          <span class="text-xs font-bold text-slate-200">1일 5시간</span>
+          <span class="text-[9px] text-slate-400"><i class="fa-solid fa-clock text-emerald-400 mr-1"></i>UPTIME</span>
+          <span class="text-[11px] font-bold text-slate-200">1일 5시간</span>
         </div>
       </div>
 
@@ -81,7 +81,7 @@
       <div class="lg:col-span-3">
         <div class="relative flex items-center">
           <i class="fa-solid fa-magnifying-glass absolute left-3 text-slate-500 text-xs"></i>
-          <input type="text" placeholder="Google 검색..." class="w-full bg-slate-950/80 border border-slate-800 rounded-xl py-2 pl-8 pr-3 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+          <input type="text" placeholder="Google 검색..." class="w-full bg-slate-950/80 border border-slate-800 rounded-lg py-1.5 pl-8 pr-3 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500">
         </div>
       </div>
 
@@ -89,106 +89,58 @@
 
 
     <!-- ================================================================= -->
-    <!-- [2층] 💾 디스크 스토리지 섹션 (5대 물리 디스크 가로 5열 널찍 배치)   -->
+    <!-- [1층] 💾 4-Tier 물리 스토리지 (이미지 없는 깔끔한 텍스트 5열 카드) -->
     <!-- ================================================================= -->
-    <section class="space-y-3">
-      <div class="flex items-center justify-between px-1">
-        <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-          <i class="fa-solid fa-hard-drive text-blue-400"></i> 💾 4-Tier 물리 스토리지 티어링 현황
-        </h2>
-        <span class="text-[11px] text-slate-500">총 5개 물리 드라이브 연동</span>
-      </div>
+    <section class="space-y-2">
+      <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider px-1">
+        💾 4-Tier 물리 스토리지
+      </h2>
       
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         
         <!-- [1] Intel 710 SSD OS -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-2 shadow-sm hover:border-purple-500/40 transition">
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-1 hover:border-purple-500/40 transition">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-slate-200 truncate">1. Host OS SSD</span>
+            <span class="text-xs font-bold text-slate-200">Host OS SSD</span>
             <span class="text-[10px] text-purple-400 font-mono font-semibold">24.5G 여유</span>
           </div>
-          <p class="text-[10px] text-slate-400 truncate">Intel 710 (100G MLC OS)</p>
-          <div class="space-y-1 pt-1">
-            <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-              <div class="bg-purple-500 h-1.5 rounded-full" style="width: 17%"></div>
-            </div>
-            <div class="flex justify-between text-[10px] text-slate-400">
-              <span>5.1 GB</span>
-              <span>29.6 GB (17%)</span>
-            </div>
-          </div>
+          <p class="text-[11px] text-slate-400 leading-tight">Intel 710 100GB MLC (PVE OS)</p>
         </div>
 
         <!-- [2] Intel 530 SSD Fast Pool -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-2 shadow-sm hover:border-blue-500/40 transition">
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-1 hover:border-blue-500/40 transition">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-slate-200 truncate">2. 고속 컨테이너 풀</span>
-            <span class="text-[10px] text-blue-400 font-mono font-semibold">2.15G 여유</span>
+            <span class="text-xs font-bold text-slate-200">고속 컨테이너 풀</span>
+            <span class="text-[10px] text-blue-400 font-mono font-semibold">120G 풀</span>
           </div>
-          <p class="text-[10px] text-slate-400 truncate">Intel 530 (120G MLC DB)</p>
-          <div class="space-y-1 pt-1">
-            <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-              <div class="bg-blue-500 h-1.5 rounded-full" style="width: 46%"></div>
-            </div>
-            <div class="flex justify-between text-[10px] text-slate-400">
-              <span>1.85 GB</span>
-              <span>4.0 GB (46%)</span>
-            </div>
-          </div>
+          <p class="text-[11px] text-slate-400 leading-tight">Intel 530 120GB MLC (LXC/DB)</p>
         </div>
 
         <!-- [3] WD Gold 4TB -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-2 shadow-sm hover:border-amber-500/40 transition">
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-1 hover:border-amber-500/40 transition">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-slate-200 truncate">3. 라이프 허브</span>
-            <span class="text-[10px] text-amber-400 font-mono font-semibold">3.4 TB 여유</span>
+            <span class="text-xs font-bold text-slate-200">라이프 & 미디어 허브</span>
+            <span class="text-[10px] text-amber-400 font-mono font-semibold">3.4T 여유</span>
           </div>
-          <p class="text-[10px] text-slate-400 truncate">WD Gold 4TB (사진·음악)</p>
-          <div class="space-y-1 pt-1">
-            <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-              <div class="bg-amber-500 h-1.5 rounded-full" style="width: 3%"></div>
-            </div>
-            <div class="flex justify-between text-[10px] text-slate-400">
-              <span>100 GB</span>
-              <span>3.5 TB (3%)</span>
-            </div>
-          </div>
+          <p class="text-[11px] text-slate-400 leading-tight">WD Gold 4TB (사진·음악·백업)</p>
         </div>
 
         <!-- [4] WD White 18TB -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-2 shadow-sm hover:border-emerald-500/40 transition">
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-1 hover:border-emerald-500/40 transition">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-slate-200 truncate">4. PDS1 미디어</span>
-            <span class="text-[10px] text-emerald-400 font-mono font-semibold">9.2 TB 여유</span>
+            <span class="text-xs font-bold text-slate-200">PDS1 대용량 미디어</span>
+            <span class="text-[10px] text-emerald-400 font-mono font-semibold">6.8T 사용</span>
           </div>
-          <p class="text-[10px] text-slate-400 truncate">WD White 18TB (비디오)</p>
-          <div class="space-y-1 pt-1">
-            <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-              <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 43%"></div>
-            </div>
-            <div class="flex justify-between text-[10px] text-slate-400">
-              <span>6.8 TB</span>
-              <span>16.0 TB (43%)</span>
-            </div>
-          </div>
+          <p class="text-[11px] text-slate-400 leading-tight">WD White 18TB (영화·드라마)</p>
         </div>
 
         <!-- [5] WD White 8TB -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-2 shadow-sm hover:border-cyan-500/40 transition">
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-1 hover:border-cyan-500/40 transition">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-slate-200 truncate">5. PDS2 엔터</span>
-            <span class="text-[10px] text-cyan-400 font-mono font-semibold">7.0 TB 여유</span>
+            <span class="text-xs font-bold text-slate-200">PDS2 보조 엔터</span>
+            <span class="text-[10px] text-cyan-400 font-mono font-semibold">7.0T 여유</span>
           </div>
-          <p class="text-[10px] text-slate-400 truncate">WD White 8TB (콜드)</p>
-          <div class="space-y-1 pt-1">
-            <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-              <div class="bg-cyan-500 h-1.5 rounded-full" style="width: 1%"></div>
-            </div>
-            <div class="flex justify-between text-[10px] text-slate-400">
-              <span>18 MB</span>
-              <span>7.0 TB (1%)</span>
-            </div>
-          </div>
+          <p class="text-[11px] text-slate-400 leading-tight">WD White 8TB (콜드 미디어)</p>
         </div>
 
       </div>
@@ -196,115 +148,160 @@
 
 
     <!-- ================================================================= -->
-    <!-- [3층] 미디어 서비스 (좌측 3열)  |  인프라 & 스토리지 (우측 2열)     -->
+    <!-- [2층] 🎬 미디어 서비스 (1줄 3칸)                                  -->
     <!-- ================================================================= -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <section class="space-y-2">
+      <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider px-1">
+        🎬 미디어 서비스
+      </h2>
       
-      <!-- [3층 좌측 - 7칸] 🎬 미디어 서비스 (Media Core) -->
-      <section class="lg:col-span-7 space-y-3">
-        <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2 px-1">
-          <i class="fa-solid fa-film text-purple-400"></i> 🎬 미디어 서비스 (Media Core)
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <!-- Immich -->
+        <a href="http://waceh.asuscomm.com:2283" target="_blank" class="group bg-slate-900 border border-slate-800 hover:border-blue-500/50 rounded-xl p-3.5 transition card-glow flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <img src="https://raw.githubusercontent.com/immich-app/immich/main/assets/immich-logo.png" alt="Immich" class="w-8 h-8 rounded-lg object-contain bg-slate-950 p-1 border border-slate-800">
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="font-bold text-xs text-slate-100 group-hover:text-blue-400 transition">Immich Photo</h3>
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
+              </div>
+              <p class="text-[11px] text-slate-400">AI 사진 백업 / 앨범 인식 (WD Gold 4TB)</p>
+            </div>
+          </div>
+          <span class="text-xs text-slate-500 group-hover:text-blue-400 transition font-mono"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+        </a>
+
+        <!-- Gonic -->
+        <a href="http://waceh.asuscomm.com:4747" target="_blank" class="group bg-slate-900 border border-slate-800 hover:border-red-500/50 rounded-xl p-3.5 transition card-glow flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 text-sm">
+              <i class="fa-solid fa-music"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="font-bold text-xs text-slate-100 group-hover:text-red-400 transition">Gonic Music</h3>
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
+              </div>
+              <p class="text-[11px] text-slate-400">무손실 음악 스트리밍 (WD Gold 4TB)</p>
+            </div>
+          </div>
+          <span class="text-xs text-slate-500 group-hover:text-red-400 transition font-mono"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+        </a>
+
+        <!-- Jellyfin -->
+        <a href="http://waceh.asuscomm.com:8096" target="_blank" class="group bg-slate-900 border border-slate-800 hover:border-purple-500/50 rounded-xl p-3.5 transition card-glow flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 text-sm">
+              <i class="fa-solid fa-film"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="font-bold text-xs text-slate-100 group-hover:text-purple-400 transition">Jellyfin Video</h3>
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
+              </div>
+              <p class="text-[11px] text-slate-400">4K QuickSync 비디오 (WD White 18T/8T)</p>
+            </div>
+          </div>
+          <span class="text-xs text-slate-500 group-hover:text-purple-400 transition font-mono"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+        </a>
+      </div>
+    </section>
+
+
+    <!-- ================================================================= -->
+    <!-- [3층] 🛠️ 인프라 & 스토리지 (1줄 2칸)                              -->
+    <!-- ================================================================= -->
+    <section class="space-y-2">
+      <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider px-1">
+        🛠️ 인프라 & 스토리지
+      </h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <!-- Proxmox VE -->
+        <a href="https://waceh.asuscomm.com:8006" target="_blank" class="group bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-xl p-3.5 transition card-glow flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-xs font-bold font-mono">
+              PVE
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="font-bold text-xs text-slate-100 group-hover:text-amber-400 transition">Proxmox VE</h3>
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
+              </div>
+              <p class="text-[11px] text-slate-400">하이퍼바이저 호스트 (Intel 710 SSD OS)</p>
+            </div>
+          </div>
+          <span class="text-xs text-slate-500 group-hover:text-amber-400 transition font-mono"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+        </a>
+
+        <!-- Xpenology DSM -->
+        <a href="http://waceh.asuscomm.com:5000" target="_blank" class="group bg-slate-900 border border-slate-800 hover:border-blue-500/50 rounded-xl p-3.5 transition card-glow flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-xs font-bold font-mono">
+              DSM
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="font-bold text-xs text-slate-100 group-hover:text-blue-400 transition">Xpenology DSM</h3>
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
+              </div>
+              <p class="text-[11px] text-slate-400">Pure Storage Core (Gold 4T + White 26T Btrfs)</p>
+            </div>
+          </div>
+          <span class="text-xs text-slate-500 group-hover:text-blue-400 transition font-mono"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- [4층] 🌐 Developer & Social 북마크 섹션                           -->
+    <!-- ================================================================= -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+      
+      <!-- Developer -->
+      <div class="space-y-2">
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider px-1 flex items-center gap-1.5">
+          <i class="fa-solid fa-code text-blue-400"></i> Developer
         </h2>
-        
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-          <!-- Immich -->
-          <a href="http://waceh.asuscomm.com:2283" target="_blank" class="group bg-slate-900 border border-slate-800 hover:border-blue-500/50 rounded-xl p-3.5 transition-all duration-200 card-glow flex flex-col justify-between">
-            <div class="flex items-start gap-3">
-              <img src="https://raw.githubusercontent.com/immich-app/immich/main/assets/immich-logo.png" alt="Immich" class="w-9 h-9 rounded-lg object-contain bg-slate-950 p-1 border border-slate-800">
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between">
-                  <h3 class="font-bold text-xs text-slate-100 group-hover:text-blue-400 transition truncate">Immich Photo</h3>
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
-                </div>
-                <p class="text-[11px] text-slate-400 mt-0.5 truncate">AI 사진 백업</p>
-              </div>
+        <div class="grid grid-cols-1 gap-2">
+          <a href="https://github.com/waceh" target="_blank" class="group bg-slate-900/70 border border-slate-800/80 hover:border-slate-600 rounded-lg p-2.5 transition flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <i class="fa-brands fa-github text-slate-300 text-base group-hover:text-white transition"></i>
+              <span class="text-xs font-medium text-slate-200 group-hover:text-white transition">GitHub</span>
             </div>
-            <span class="text-[10px] text-blue-400/80 mt-2 font-mono">:2283 ➔</span>
-          </a>
-
-          <!-- Gonic -->
-          <a href="http://waceh.asuscomm.com:4747" target="_blank" class="group bg-slate-900 border border-slate-800 hover:border-red-500/50 rounded-xl p-3.5 transition-all duration-200 card-glow flex flex-col justify-between">
-            <div class="flex items-start gap-3">
-              <div class="w-9 h-9 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 text-base">
-                <i class="fa-solid fa-music"></i>
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between">
-                  <h3 class="font-bold text-xs text-slate-100 group-hover:text-red-400 transition truncate">Gonic Music</h3>
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
-                </div>
-                <p class="text-[11px] text-slate-400 mt-0.5 truncate">무손실 음원 스트리밍</p>
-              </div>
-            </div>
-            <span class="text-[10px] text-red-400/80 mt-2 font-mono">:4747 ➔</span>
-          </a>
-
-          <!-- Jellyfin -->
-          <a href="http://waceh.asuscomm.com:8096" target="_blank" class="group bg-slate-900 border border-slate-800 hover:border-purple-500/50 rounded-xl p-3.5 transition-all duration-200 card-glow flex flex-col justify-between">
-            <div class="flex items-start gap-3">
-              <div class="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 text-base">
-                <i class="fa-solid fa-film"></i>
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between">
-                  <h3 class="font-bold text-xs text-slate-100 group-hover:text-purple-400 transition truncate">Jellyfin Video</h3>
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
-                </div>
-                <p class="text-[11px] text-slate-400 mt-0.5 truncate">4K QuickSync 비디오</p>
-              </div>
-            </div>
-            <span class="text-[10px] text-purple-400/80 mt-2 font-mono">:8096 ➔</span>
+            <span class="text-[11px] text-slate-500 font-mono">github.com/waceh</span>
           </a>
         </div>
-      </section>
+      </div>
 
-      <!-- [3층 우측 - 5칸] 🛠️ 인프라 & 스토리지 (Infrastructure) -->
-      <section class="lg:col-span-5 space-y-3">
-        <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2 px-1">
-          <i class="fa-solid fa-server text-amber-400"></i> 🛠️ 인프라 & 스토리지 관리
+      <!-- Social -->
+      <div class="space-y-2">
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider px-1 flex items-center gap-1.5">
+          <i class="fa-solid fa-share-nodes text-pink-400"></i> Social & Media
         </h2>
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          <!-- Proxmox VE -->
-          <a href="https://waceh.asuscomm.com:8006" target="_blank" class="group bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-xl p-3.5 transition-all duration-200 card-glow flex flex-col justify-between">
-            <div class="flex items-start gap-3">
-              <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-sm font-bold font-mono">
-                PVE
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between">
-                  <h3 class="font-bold text-xs text-slate-100 group-hover:text-amber-400 transition truncate">Proxmox VE</h3>
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
-                </div>
-                <p class="text-[11px] text-slate-400 mt-0.5 truncate">하이퍼바이저 호스트</p>
-              </div>
+        <div class="grid grid-cols-2 gap-2">
+          <a href="https://www.instagram.com/legato____" target="_blank" class="group bg-slate-900/70 border border-slate-800/80 hover:border-pink-500/50 rounded-lg p-2.5 transition flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i class="fa-brands fa-instagram text-pink-400 text-sm"></i>
+              <span class="text-xs font-medium text-slate-200 group-hover:text-pink-400 transition truncate">Instagram</span>
             </div>
-            <span class="text-[10px] text-amber-400/80 mt-2 font-mono">:8006 ➔</span>
+            <span class="text-[10px] text-slate-500 font-mono truncate">@legato____</span>
           </a>
 
-          <!-- Xpenology DSM -->
-          <a href="http://waceh.asuscomm.com:5000" target="_blank" class="group bg-slate-900 border border-slate-800 hover:border-blue-500/50 rounded-xl p-3.5 transition-all duration-200 card-glow flex flex-col justify-between">
-            <div class="flex items-start gap-3">
-              <div class="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-sm font-bold font-mono">
-                DSM
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between">
-                  <h3 class="font-bold text-xs text-slate-100 group-hover:text-blue-400 transition truncate">Xpenology DSM</h3>
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
-                </div>
-                <p class="text-[11px] text-slate-400 mt-0.5 truncate">Storage Core (Btrfs)</p>
-              </div>
+          <a href="https://www.youtube.com/@mtk-ey" target="_blank" class="group bg-slate-900/70 border border-slate-800/80 hover:border-red-500/50 rounded-lg p-2.5 transition flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i class="fa-brands fa-youtube text-red-500 text-sm"></i>
+              <span class="text-xs font-medium text-slate-200 group-hover:text-red-400 transition truncate">YouTube</span>
             </div>
-            <span class="text-[10px] text-blue-400/80 mt-2 font-mono">:5000 ➔</span>
+            <span class="text-[10px] text-slate-500 font-mono truncate">@mtk-ey</span>
           </a>
         </div>
-      </section>
+      </div>
 
-    </div>
+    </section>
 
     <!-- Footer -->
-    <footer class="pt-6 border-t border-slate-900 text-center text-xs text-slate-500">
+    <footer class="pt-4 border-t border-slate-900 text-center text-[11px] text-slate-500">
       Self-NAS Architecture by MTK Studio & Waceh • Pure Storage Core + Native LXC Isolations
     </footer>
 

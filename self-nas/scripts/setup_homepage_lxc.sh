@@ -7,6 +7,7 @@
 # - 1층: 💾 4-Tier 물리 스토리지 (이미지/위젯 에러 없는 순수 텍스트 5열 카드)
 # - 2층: 🎬 미디어 서비스 (1줄 3칸)
 # - 3층: 🛠️ 인프라 & 스토리지 (1줄 2칸)
+# - 4층: 🌐 Developer (GitHub) & Social (Instagram, YouTube) 북마크
 # - 공백 최적화: 2층-3층 간 과도한 여백 슬림화
 # - Immich, Gonic, Jellyfin, Proxmox, 헤놀로지 통합 대시보드 자동 사전구성
 # ==============================================================================
@@ -106,7 +107,7 @@ fi
 
 mkdir -p /opt/homepage/config
 
-# 1. settings.yaml (1층 5열 / 2층 3열 / 3층 2열 설정)
+# 1. settings.yaml (스토리지 5열, 미디어 3열, 인프라 2열, 북마크 레이아웃)
 cat << 'SETTINGS_EOF' > /opt/homepage/config/settings.yaml
 title: Waceh NAS Dashboard
 favicon: https://cdn-icons-png.flaticon.com/512/3208/3208726.png
@@ -125,6 +126,12 @@ layout:
     style: row
     columns: 3
   인프라 & 스토리지:
+    style: row
+    columns: 2
+  Developer:
+    style: row
+    columns: 1
+  Social:
     style: row
     columns: 2
 SETTINGS_EOF
@@ -146,7 +153,7 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     target: _blank
 WIDGETS_EOF
 
-# 3. services.yaml (1층: 텍스트 스토리지 카드 5개 | 2층: 미디어 3개 | 3층: 인프라 2개)
+# 3. services.yaml (1층: 텍스트 스토리지 5개 | 2층: 미디어 3개 | 3층: 인프라 2개)
 cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
 - 4-Tier 물리 스토리지:
     - Host OS SSD:
@@ -190,7 +197,26 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         ping: http://192.168.1.132:5000
 SERVICES_EOF
 
-# 4. custom.css (2층과 3층 사이의 과도한 공백 제거 및 컴팩트 스타일링)
+# 4. bookmarks.yaml (Developer: GitHub | Social: Instagram, YouTube)
+cat << 'BOOKMARKS_EOF' > /opt/homepage/config/bookmarks.yaml
+- Developer:
+    - GitHub:
+        - abbr: GH
+          icon: github.png
+          href: https://github.com/waceh
+
+- Social:
+    - Instagram:
+        - abbr: IG
+          icon: instagram.png
+          href: https://www.instagram.com/legato____
+    - YouTube:
+        - abbr: YT
+          icon: youtube.png
+          href: https://www.youtube.com/@mtk-ey
+BOOKMARKS_EOF
+
+# 5. custom.css (2층과 3층 사이의 과도한 공백 제거 및 컴팩트 스타일링)
 cat << 'CSS_EOF' > /opt/homepage/config/custom.css
 /* 그룹 및 카드 간 상하 여백 슬림화 */
 .services-group, .group, section, div[class*="gap-"] {
@@ -203,7 +229,7 @@ div[class*="service-card"] {
 }
 CSS_EOF
 
-# 5. docker-compose.yml 생성
+# 6. docker-compose.yml 생성
 cat << 'COMPOSE_EOF' > /opt/homepage/docker-compose.yml
 services:
   homepage:
@@ -225,7 +251,7 @@ cd /opt/homepage
 docker compose up -d --force-recreate
 "
 
-# 6. 호스트 부팅 및 종료 순서 설정
+# 7. 호스트 부팅 및 종료 순서 설정
 pct set "$CTID" --startup "order=2,up=5,down=10"
 
 echo ""
@@ -236,5 +262,6 @@ echo -e " 1. 접속 URL: ${BLUE}http://${IP_ADDR%/*}:3000${NC} 또는 ${BLUE}htt
 echo -e " 2. 💾 [1층]: 4-Tier 물리 스토리지 (깔끔한 텍스트 1줄 5칸)"
 echo -e " 3. 🎬 [2층]: 미디어 서비스 (1줄 3칸)"
 echo -e " 4. 🛠️ [3층]: 인프라 & 스토리지 (1줄 2칸)"
-echo -e " 5. 설정 파일 위치: LXC ${CTID} 내부 ${GREEN}/opt/homepage/config/${NC}"
+echo -e " 5. 🌐 [4층]: Developer (GitHub) & Social (Instagram, YouTube)"
+echo -e " 6. 설정 파일 위치: LXC ${CTID} 내부 ${GREEN}/opt/homepage/config/${NC}"
 echo -e "${GREEN}====================================================${NC}"
