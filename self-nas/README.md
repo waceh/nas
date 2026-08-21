@@ -37,21 +37,24 @@
 | 가상 머신 (VM) / 컨테이너 | 할당 자원 | 스토리지 (위치) | 주요 역할 |
 | :--- | :--- | :--- | :--- |
 | **VM 101: 헤놀로지**<br/>*(Pure Storage Core)* | 2 Core / 4GB | WD Gold 4TB, WD White 8TB, WD White 18TB (Raw Passthrough) | **순수 NAS 스토리지 코어** (Samba / NFS 파일 공유 데몬 전용, 도커 미구동으로 초경량 유지) |
-| **LXC 102: AdGuard Home** | 1 Core / 512MB | Intel 530 SSD (MLC, Non-Disk) | 24/7 상시 무소음 DNS 쿼리 캐시 & 네트워크 광고 차단 |
+| **LXC 102: AdGuard Home** | 1 Core / 512MB | Intel 530 SSD (`local-530`) | **네트워크 광고 차단 & 로컬 DNS** (`nas.home`, `photo.home`) |
 | **LXC 103: Immich Server** | 2 Core / 4GB | Intel 530 SSD (DB/앱) + WD Gold 4TB (사진/영상 원본) | AI 기반 사진 백업 백엔드 + PostgreSQL + Vector Search DB |
 | **LXC 104: Gonic Music Server** | 1 Core / 512MB | Intel 530 SSD (루트/DB) + WD Gold 4TB (음원 라이브러리) | 초경량 Go 기반 **폴더(디렉토리) 기반 고음질 음악 스트리밍 서버** (Subsonic API) |
 | **LXC 105: Jellyfin Server** | 2 Core / 2GB | Intel 530 SSD (루트/캐시) + WD Gold 4TB (홈비디오) + WD White 26TB (영화/드라마) | Intel UHD 630 iGPU QuickSync HW 가속 미디어 스트리밍 |
-| **LXC 107: Homepage Dashboard** | 1 Core / 512MB | Intel 530 SSD (`local-530`) | **올인원 포털 대시보드 & 4-Tier 5대 물리 스토리지/하드웨어 실시간 관제** |
+| **LXC 107: Homepage + Kuma** | 1 Core / 512MB | Intel 530 SSD (`local-530`) | **올인원 포털 대시보드 (4단 5열 레이아웃) & Uptime Kuma 24H 장애 관제 데몬** |
+| **Host: Cockpit Web GUI** | PVE Host | Debian 12 Native (`:9090`) | **5대 물리 디스크 실시간 온도 & S.M.A.R.T 건강도 웹 콘솔** |
 | **LXC 106: Dev Web Server** | 2 Core / 2GB | Intel 530 SSD (MLC, Non-Disk) | Spring Boot / Node.js / Nginx 개인 프로젝트 개발 & 테스트 웹 서버 |
 | *(선택 확장) Windows VM* | *2~4 Core / 4GB* | *Intel 530 SSD or WD Gold 4TB* | *추후 필요 시에만 최소 리소스로 On-Demand 생성 예정* |
 
 ## ⚡ 4. Services Architecture (Proxmox Native LXC 격리 구동)
 헤놀로지 내부에서 무겁게 도커를 돌리지 않고, **Proxmox 하이퍼바이저 레벨의 초경량 Native LXC 컨테이너**로 각 서비스를 완전 분리하여 초고속 SSD(Intel 530) 위에서 구동합니다:
 
-* **DNS & Network Security**: `LXC 102 (AdGuard Home)` — 24/7 무소음 DNS 필터링/캐시
+* **DNS & Adblock Security**: `LXC 102 (AdGuard Home)` — 24/7 무소음 DNS 필터링/캐시 & 로컬 도메인 (`nas.home`)
 * **AI Photo Cloud**: `LXC 103 (Immich)` — 초고속 PostgreSQL/벡터 DB는 SSD에서 구동, 대용량 원본 사진은 4TB Gold NFS로 저장
 * **Folder-based Music Streaming**: `LXC 104 (Gonic)` — 폴더/디렉토리 구조 그대로 스트리밍, 완전 무료 Subsonic 클라이언트(Amperfy/Ultrasonic/Substreamer) 및 CarPlay/Android Auto 연동
-* **Media Streaming**: `LXC 105 (Jellyfin)` — iGPU 하드웨어 가속, 4TB Gold NFS 미디어 라이브러리 연동
+* **Media Streaming**: `LXC 105 (Jellyfin)` — iGPU 하드웨어 가속, 4TB Gold & 26TB White NFS 미디어 라이브러리 연동
+* **Dashboard & Monitoring Stack**: `LXC 107 (Homepage + Uptime Kuma)` — 4단 5열 대칭 포털 & 텔레그램 봇 실시간 장애 알림
+* **Hardware Health Console**: `Proxmox Host (Cockpit)` — 5대 물리 디스크 S.M.A.R.T 건강도 및 실시간 온도(°C) 관제
 * **Development Web Server**: `LXC 106 (Dev Web)` — 개인 웹 애플리케이션 개발/배포 환경
 
 ## 🌐 5. Network Topology & ISP Bridge Mode (LG U+)
@@ -83,21 +86,21 @@ LG U+ 공유기와 ASUS 공유기 사이 **이중 NAT** 상태. 포트포워딩/
    ```
 
 ## ⚙️ 6. Build & Setup Checklist (빌드 순서)
-- [ ] 1. 모든 하드웨어 1차 가조립 (Node 304 전면->후면 쿨링 터널 확인)
-- [ ] 2. 하드디스크(White 8TB, White 18TB, Gold 4TB) SATA 케이블 메인보드에서 분리해 두기 (OS 설치 시 데이터 보호)
-- [ ] 3. Intel 710 SSD에 Proxmox VE 설치 (Host OS 전용) → [`01_proxmox_install.md`](docs/01_proxmox_install.md)
-- [ ] 4. Proxmox 네트워크 설정 (관리용 vmbr0 / 10Gbps 맥북 직결 vmbr1) → [`02_network_setup.md`](docs/02_network_setup.md)
-- [x] 5. Intel 530 SSD(상시 고속 LXC 컨테이너 스토리지) Proxmox `local-530` LVM-Thin 스토리지 등록
-- [x] 6. 시스템 종료 후 White 8TB, White 18TB, Gold 4TB SATA 케이블 메인보드에 결착
-- [x] 7. Proxmox 부팅 후 터미널에서 HDD 3대(White 8TB, White 18TB, Gold 4TB) 패스스루 설정 → [`03_disk_passthrough.md`](docs/03_disk_passthrough.md), [`05_wd_gold_storage_setup.md`](docs/05_wd_gold_storage_setup.md)
-- [x] 8. 헤놀로지 VM(101) 부팅 및 순수 NAS 4TB 5대 공유폴더(`photo`, `video`, `music`, `temp`, `backups`) & NFS 구성 → [`04_xpenology_install.md`](docs/04_xpenology_install.md), [`09_immich_caddy_https_and_storage_setup.md`](docs/09_immich_caddy_https_and_storage_setup.md)
-- [ ] 9. Intel 530 SSD 위에 Proxmox Native LXC 컨테이너 순차 구축 → [통합 미디어 마스터 가이드](docs/07_media_services_master_guide.md), [Immich/Caddy HTTPS 가이드](docs/09_immich_caddy_https_and_storage_setup.md):
-  - [ ] 9-1. `LXC 102 (AdGuard Home)` DNS 캐시 구축
-  - [x] 9-2. `LXC 103 (Immich Photo Server)` 구축 (4TB Gold 실시간 백업 + 10GB+ 사진 인덱싱) → [`09_immich_caddy_https_and_storage_setup.md`](docs/09_immich_caddy_https_and_storage_setup.md)
-  - [x] 9-3. `LXC 104 (Gonic Music Server)` 구축 (4TB 음악 라이브러리 연동 & 폴더 기반 브라우징 / 완전 무료 앱 / CarPlay / Android Auto)
-  - [x] 9-4. `LXC 105 (Jellyfin Media Server)` 구축 (18TB/8TB/4TB 미디어 연동 & iGPU QSV 가속 & RAM 트랜스코딩 캐시) → [`docs/10_graceful_power_management_and_jellyfin_guide.md`](docs/10_graceful_power_management_and_jellyfin_guide.md)
-  - [x] 9-5. `LXC 107 (Homepage Dashboard)` 구축 (올인원 시작 포털 & 실시간 리소스/스토리지 관제) → [`docs/12_homepage_dashboard_and_disk_architecture.md`](docs/12_homepage_dashboard_and_disk_architecture.md)
-  - [ ] 9-6. `LXC 106 (Dev Web Server)` Spring Boot / Node.js 개발 서버 구축
+- [x] 1. 모든 하드웨어 1차 조립 완료 (Node 304 쿨링 터널 최적화)
+- [x] 2. Intel 710 SSD에 Proxmox VE 8.x 설치 및 OS 파티션 100GB 온라인 확장 (`merge_pve_root_storage.sh`)
+- [x] 3. Proxmox 네트워크 설정 (관리용 `vmbr0`)
+- [x] 4. Intel 530 SSD(상시 고속 LXC 컨테이너 스토리지) Proxmox `local-530` LVM-Thin 스토리지 등록
+- [x] 5. HDD 3대(White 8TB, White 18TB, Gold 4TB) 헤놀로지 Raw Passthrough 설정
+- [x] 6. 헤놀로지 VM(101) 부팅 및 순수 NAS 4TB 5대 공유폴더(`photo`, `video`, `music`, `temp`, `backups`) & NFS 구성
+- [x] 7. Intel 530 SSD 위에 Proxmox Native LXC 컨테이너 순차 구축 완료:
+  - [x] 7-1. `LXC 102 (AdGuard Home)` DNS 캐시 & 광고 차단 구축 (`13_adguard_home_dns_setup.md`)
+  - [x] 7-2. `LXC 103 (Immich Photo Server)` 구축 (4TB Gold 실시간 백업 + 10GB+ 사진 인덱싱 완료)
+  - [x] 7-3. `LXC 104 (Gonic Music Server)` 구축 (4TB 음악 라이브러리 연동 & 폴더 브라우징 / CarPlay 연동)
+  - [x] 7-4. `LXC 105 (Jellyfin Media Server)` 구축 (26TB 미디어 연동 & iGPU QSV 가속 & RAM 캐시 영구화)
+  - [x] 7-5. `LXC 107 (Homepage + Uptime Kuma)` 구축 (4단 대칭 포털 & 24H 장애 관제 텔레그램 연동)
+  - [x] 7-6. `Proxmox Host (Cockpit)` 구축 (5대 디스크 실시간 온도 & S.M.A.R.T 건강도 관제)
+  - [ ] 7-7. `LXC 106 (Dev Web Server)` Spring Boot / Node.js 개발 서버 구축 (선택 대기)
+
 - [ ] 10. (선택 확장) Windows VM 필요 시 Intel 530 SSD or WD Gold에 On-Demand 생성
 - [x] 11. (상시 전원 관리) NAS Graceful 순차 기동·종료 자동화 (`nas_power.sh` + 5대 디스크 통합 모니터) → [`docs/10_graceful_power_management_and_jellyfin_guide.md`](docs/10_graceful_power_management_and_jellyfin_guide.md)
 - [x] 12. (백업 및 재해 복구) Proxmox 자동 백업 스토리지(`nas-backups`) 500GB 등록 및 주간 정기 백업(`mon 01:00`) 스케줄 활성화 → [`docs/11_proxmox_backup_and_disaster_recovery_guide.md`](docs/11_proxmox_backup_and_disaster_recovery_guide.md)
