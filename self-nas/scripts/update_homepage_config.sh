@@ -295,7 +295,11 @@ cat << 'SERVICES_REST' >> "$TMP_SERVICES"
         icon: uptime-kuma.png
         href: http://waceh.asuscomm.com:3001
         description: "24시간 장애 감시"
-        ping: http://127.0.0.1:3001
+        widget:
+          type: uptimekuma
+          url: http://192.168.1.107:3001
+          slug: default
+
 
 - "Developer & Social":
     - "GitHub":
