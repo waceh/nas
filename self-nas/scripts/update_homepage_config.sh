@@ -30,7 +30,7 @@ CONF_FILE="/etc/pve/lxc/${CTID}.conf"
 
 ADGUARD_USER="${ADGUARD_USER:-}"
 ADGUARD_PASS="${ADGUARD_PASS:-}"
-ADGUARD_URL="${ADGUARD_URL:-http://192.168.1.102:3000}"
+ADGUARD_URL="${ADGUARD_URL:-http://192.168.1.102}"
 
 if ! pct status "$CTID" &>/dev/null; then
     log_err "LXC 컨테이너 ${CTID} 가 존재하지 않습니다."
