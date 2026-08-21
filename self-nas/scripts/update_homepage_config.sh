@@ -28,6 +28,10 @@ fi
 CTID="${CTID:-107}"
 CONF_FILE="/etc/pve/lxc/${CTID}.conf"
 
+ADGUARD_USER="${ADGUARD_USER:-}"
+ADGUARD_PASS="${ADGUARD_PASS:-}"
+ADGUARD_URL="${ADGUARD_URL:-http://192.168.1.102}"
+
 if ! pct status "$CTID" &>/dev/null; then
     log_err "LXC 컨테이너 ${CTID} 가 존재하지 않습니다."
     exit 1
@@ -111,9 +115,11 @@ cat << "WIDGETS_EOF" > /opt/homepage/config/widgets.yaml
     provider: google
     target: _blank
 WIDGETS_EOF
+'
 
-# 3. services.yaml (인프라 & 관제에 Cockpit 포함 1줄 5칸)
-cat << "SERVICES_EOF" > /opt/homepage/config/services.yaml
+# 3. services.yaml 생성 (AdGuard 위젯 지원)
+TMP_SERVICES=$(mktemp)
+cat << 'SERVICES_BASE' > "$TMP_SERVICES"
 - "4-Tier 물리 스토리지":
     - "Intel 710 100GB (94.5GB 여유)":
         description: "Host OS (Proxmox VE)"
@@ -164,11 +170,31 @@ cat << "SERVICES_EOF" > /opt/homepage/config/services.yaml
         href: https://waceh.asuscomm.com:9090
         description: "디스크 S.M.A.R.T/온도"
         ping: https://192.168.1.200:9090
+SERVICES_BASE
+
+if [ -n "$ADGUARD_USER" ] && [ -n "$ADGUARD_PASS" ]; then
+cat << ADGUARD_WIDGET_EOF >> "$TMP_SERVICES"
     - "AdGuard Home":
         icon: adguard-home.png
-        href: http://192.168.1.102
+        href: ${ADGUARD_URL}
         description: "광고차단 & 내부 DNS"
-        ping: http://192.168.1.102
+        widget:
+          type: adguard
+          url: ${ADGUARD_URL}
+          username: ${ADGUARD_USER}
+          password: "${ADGUARD_PASS}"
+ADGUARD_WIDGET_EOF
+else
+cat << ADGUARD_PING_EOF >> "$TMP_SERVICES"
+    - "AdGuard Home":
+        icon: adguard-home.png
+        href: ${ADGUARD_URL}
+        description: "광고차단 & 내부 DNS"
+        ping: ${ADGUARD_URL}
+ADGUARD_PING_EOF
+fi
+
+cat << 'SERVICES_REST' >> "$TMP_SERVICES"
     - "Uptime Kuma":
         icon: uptime-kuma.png
         href: http://waceh.asuscomm.com:3001
@@ -188,8 +214,12 @@ cat << "SERVICES_EOF" > /opt/homepage/config/services.yaml
         icon: youtube.png
         href: https://www.youtube.com/@mtk-ey
         description: "@mtk-ey"
-SERVICES_EOF
+SERVICES_REST
 
+pct push "$CTID" "$TMP_SERVICES" /opt/homepage/config/services.yaml
+rm -f "$TMP_SERVICES"
+
+pct exec "$CTID" -- bash -c '
 # 4. bookmarks.yaml 빈 배열로 초기화
 echo "[]" > /opt/homepage/config/bookmarks.yaml
 
@@ -208,6 +238,7 @@ CSS_EOF
 
 # 6. docker-compose.yml 업데이트 (Homepage + Uptime Kuma)
 cat << "COMPOSE_EOF" > /opt/homepage/docker-compose.yml
+
 services:
   homepage:
     image: ghcr.io/gethomepage/homepage:latest
