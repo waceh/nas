@@ -54,14 +54,15 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
 
 ---
 
-## 🏷️ 5. 예쁜 로컬 도메인 (DNS Rewrite) 설정
+## 🏷️ 5. 예쁜 로컬 도메인 (DNS 변경 / Rewrite) 설정
 
 복잡한 IP 번호 대신 예쁜 도메인을 붙여 쓸 수 있습니다:
 
-1. AdGuard Home 관리자 페이지 ➔ **[필터] ➔ [DNS 재작성 (DNS rewrites)]** 클릭.
-2. **`[DNS 재작성 추가]`** 클릭:
+1. AdGuard Home 관리자 페이지 ➔ **[필터링] ➔ [DNS 변경 (DNS rewrites)]** 클릭.
+2. **`[DNS 변경 추가]`** 클릭:
    - **도메인**: `nas.home` ➔ **IP**: `192.168.1.107` (Homepage 대시보드)
    - **도메인**: `photo.home` ➔ **IP**: `192.168.1.103` (Immich)
    - **도메인**: `music.home` ➔ **IP**: `192.168.1.104` (Gonic)
+   - **도메인**: `video.home` ➔ **IP**: `192.168.1.105` (Jellyfin)
    - **도메인**: `pve.home` ➔ **IP**: `192.168.1.200` (Proxmox VE)
    - **도메인**: `dsm.home` ➔ **IP**: `192.168.1.132` (Xpenology)
