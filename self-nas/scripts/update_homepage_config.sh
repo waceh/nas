@@ -2,9 +2,9 @@
 # ==============================================================================
 # Homepage Dashboard Unified Stack Updater (self-nas)
 # ==============================================================================
-# - 1층: 💾 4-Tier 물리 스토리지 (Intel 710 100GB 94.5GB 여유 완벽 통합 표기)
+# - 1층: 💾 4-Tier 물리 스토리지 (1줄 5칸)
 # - 2층: 🎬 미디어 서비스 (1줄 3칸: Immich, Gonic, Jellyfin)
-# - 3층: 🛠️ 인프라 & 관제 (1줄 4칸: Proxmox VE, Xpenology, AdGuard Home, Uptime Kuma)
+# - 3층: 🛠️ 인프라 & 관제 (1줄 5칸: PVE, DSM, Cockpit, AdGuard, Uptime Kuma)
 # - 4층: 🌐 Developer & Social (GitHub, Instagram, YouTube 1줄 3칸)
 # ==============================================================================
 
@@ -60,7 +60,7 @@ if [ "$NEED_REBOOT" -eq 1 ]; then
     sleep 5
 fi
 
-log_info "Homepage 대시보드 (AdGuard Home 포함 4단 레이아웃) 배포 중..."
+log_info "Homepage 대시보드 (Cockpit 포함 대칭 4단 레이아웃) 배포 중..."
 
 pct exec "$CTID" -- bash -c "
 export DEBIAN_FRONTEND=noninteractive
@@ -69,7 +69,7 @@ apt-get update -qq
 mkdir -p /opt/homepage/config
 mkdir -p /opt/uptime-kuma/data
 
-# 1. settings.yaml (스토리지 5열, 미디어 3열, 인프라&관제 4열, 소셜 3열)
+# 1. settings.yaml (스토리지 5열, 미디어 3열, 인프라&관제 5열, 소셜 3열)
 cat << 'SETTINGS_EOF' > /opt/homepage/config/settings.yaml
 title: Waceh NAS Dashboard
 favicon: https://cdn-icons-png.flaticon.com/512/3208/3208726.png
@@ -89,7 +89,7 @@ layout:
     columns: 3
   \"인프라 & 관제\":
     style: row
-    columns: 4
+    columns: 5
   \"Developer & Social\":
     style: row
     columns: 3
@@ -112,7 +112,7 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     target: _blank
 WIDGETS_EOF
 
-# 3. services.yaml (인프라 & 관제에 AdGuard Home 포함 1줄 4칸)
+# 3. services.yaml (인프라 & 관제에 Cockpit 포함 1줄 5칸)
 cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
 - \"4-Tier 물리 스토리지\":
     - \"Intel 710 100GB (94.5GB 여유)\":
@@ -152,22 +152,27 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
     - \"Proxmox VE\":
         icon: proxmox.png
         href: https://waceh.asuscomm.com:8006
-        description: \"호스트 시스템 (710 OS)\"
+        description: \"하이퍼바이저 호스트\"
         ping: https://192.168.1.200:8006
     - \"Xpenology DSM\":
         icon: synology.png
         href: http://waceh.asuscomm.com:5000
         description: \"Pure Storage Core\"
         ping: http://192.168.1.132:5000
+    - \"Cockpit GUI\":
+        icon: cockpit.png
+        href: https://waceh.asuscomm.com:9090
+        description: \"디스크 S.M.A.R.T/온도\"
+        ping: https://192.168.1.200:9090
     - \"AdGuard Home\":
         icon: adguard-home.png
         href: http://192.168.1.102
-        description: \"광고 차단 & 내부 DNS\"
+        description: \"광고차단 & 내부 DNS\"
         ping: http://192.168.1.102
     - \"Uptime Kuma\":
         icon: uptime-kuma.png
         href: http://waceh.asuscomm.com:3001
-        description: \"장애 모니터링 & 알림\"
+        description: \"24시간 장애 감시\"
         ping: http://127.0.0.1:3001
 
 - \"Developer & Social\":
@@ -188,7 +193,7 @@ SERVICES_EOF
 # 4. bookmarks.yaml 빈 배열로 초기화
 echo \"[]\" > /opt/homepage/config/bookmarks.yaml
 
-# 5. custom.css (슬림한 여백과 카드 정돈)
+# 5. custom.css
 cat << 'CSS_EOF' > /opt/homepage/config/custom.css
 /* 그룹 및 카드 간 상하 여백 슬림화 */
 .services-group, .group, section, div[class*=\"gap-\"] {
@@ -234,14 +239,15 @@ docker rm -f auth-proxy homepage uptime-kuma || true
 docker compose up -d --remove-orphans --force-recreate
 "
 
-log_ok "AdGuard Home 포함 4단 대시보드 업데이트 완료!"
+log_ok "Cockpit 포함 완벽 대칭 4단 대시보드 업데이트 완료!"
 echo ""
 echo -e "${GREEN}====================================================${NC}"
 echo -e " 🏠 [포털 대시보드]: ${BLUE}http://waceh.asuscomm.com:3000${NC} (또는 192.168.1.107:3000)"
-echo -e " 🛡️ [AdGuard Home]:   ${BLUE}http://192.168.1.102${NC} (또는 192.168.1.102:3000)"
-echo -e " 📊 [Uptime Kuma]:   ${BLUE}http://waceh.asuscomm.com:3001${NC} (또는 192.168.1.107:3001)"
+echo -e " 🖥️ [Cockpit 관제]:  ${BLUE}https://waceh.asuscomm.com:9090${NC} (또는 192.168.1.200:9090)"
+echo -e " 🛡️ [AdGuard Home]:   ${BLUE}http://192.168.1.102${NC}"
+echo -e " 📊 [Uptime Kuma]:   ${BLUE}http://waceh.asuscomm.com:3001${NC}"
 echo -e " 💾 [1층]: 4-Tier 물리 스토리지 (1줄 5칸)"
 echo -e " 🎬 [2층]: 미디어 서비스 (1줄 3칸)"
-echo -e " 🛠️ [3층]: 인프라 & 관제 (1줄 4칸: PVE | DSM | AdGuard | Kuma)"
+echo -e " 🛠️ [3층]: 인프라 & 관제 (1줄 5칸: PVE | DSM | Cockpit | AdGuard | Kuma)"
 echo -e " 🌐 [4층]: Developer & Social (1줄 3칸)"
 echo -e "${GREEN}====================================================${NC}"

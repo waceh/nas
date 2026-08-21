@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Waceh NAS Dashboard - Complete Infrastructure Preview</title>
+  <title>Waceh NAS Dashboard - Complete Infrastructure & Cockpit Preview</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -89,7 +89,7 @@
 
 
     <!-- ================================================================= -->
-    <!-- [1층] 💾 4-Tier 물리 스토리지 (100GB 통합 깔끔 명시)                -->
+    <!-- [1층] 💾 4-Tier 물리 스토리지 (1줄 5칸)                            -->
     <!-- ================================================================= -->
     <section class="space-y-1.5">
       <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider px-1">
@@ -209,17 +209,17 @@
 
 
     <!-- ================================================================= -->
-    <!-- [3층] 🛠️ 인프라 & 관제 (1줄 4칸: PVE | DSM | AdGuard | Uptime Kuma)-->
+    <!-- [3층] 🛠️ 인프라 & 관제 (1줄 5칸: PVE | DSM | Cockpit | AdGuard | Kuma) -->
     <!-- ================================================================= -->
     <section class="space-y-1.5">
       <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider px-1">
         🛠️ 인프라 & 관제
       </h2>
       
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
         <!-- Proxmox VE -->
         <a href="https://waceh.asuscomm.com:8006" target="_blank" class="group bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-xl p-3 transition card-glow flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
+          <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-xs font-bold font-mono">
               PVE
             </div>
@@ -228,7 +228,7 @@
                 <h3 class="font-bold text-xs text-slate-100 group-hover:text-amber-400 transition">Proxmox VE</h3>
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
               </div>
-              <p class="text-[10px] text-slate-400">호스트 시스템 (710 OS)</p>
+              <p class="text-[10px] text-slate-400">하이퍼바이저 호스트</p>
             </div>
           </div>
           <span class="text-xs text-slate-500 group-hover:text-amber-400 transition font-mono"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
@@ -236,7 +236,7 @@
 
         <!-- Xpenology DSM -->
         <a href="http://waceh.asuscomm.com:5000" target="_blank" class="group bg-slate-900 border border-slate-800 hover:border-blue-500/50 rounded-xl p-3 transition card-glow flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
+          <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-xs font-bold font-mono">
               DSM
             </div>
@@ -251,18 +251,35 @@
           <span class="text-xs text-slate-500 group-hover:text-blue-400 transition font-mono"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
         </a>
 
+        <!-- Cockpit -->
+        <a href="https://waceh.asuscomm.com:9090" target="_blank" class="group bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-xl p-3 transition card-glow flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs font-bold font-mono">
+              CKP
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <h3 class="font-bold text-xs text-slate-100 group-hover:text-indigo-400 transition">Cockpit</h3>
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
+              </div>
+              <p class="text-[10px] text-slate-400">디스크 S.M.A.R.T/온도</p>
+            </div>
+          </div>
+          <span class="text-xs text-slate-500 group-hover:text-indigo-400 transition font-mono"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+        </a>
+
         <!-- AdGuard Home -->
         <a href="http://192.168.1.102" target="_blank" class="group bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-3 transition card-glow flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
+          <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-sm">
               <i class="fa-solid fa-shield-halved"></i>
             </div>
             <div>
               <div class="flex items-center gap-1.5">
-                <h3 class="font-bold text-xs text-slate-100 group-hover:text-emerald-400 transition">AdGuard Home</h3>
+                <h3 class="font-bold text-xs text-slate-100 group-hover:text-emerald-400 transition">AdGuard</h3>
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
               </div>
-              <p class="text-[10px] text-slate-400">광고 차단 & 내부 DNS</p>
+              <p class="text-[10px] text-slate-400">광고차단 & DNS</p>
             </div>
           </div>
           <span class="text-xs text-slate-500 group-hover:text-emerald-400 transition font-mono"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
@@ -270,7 +287,7 @@
 
         <!-- Uptime Kuma -->
         <a href="http://waceh.asuscomm.com:3001" target="_blank" class="group bg-slate-900 border border-slate-800 hover:border-teal-500/50 rounded-xl p-3 transition card-glow flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
+          <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 text-sm">
               <i class="fa-solid fa-heart-pulse"></i>
             </div>
@@ -279,7 +296,7 @@
                 <h3 class="font-bold text-xs text-slate-100 group-hover:text-teal-400 transition">Uptime Kuma</h3>
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
               </div>
-              <p class="text-[10px] text-slate-400">장애 모니터링 & 알림</p>
+              <p class="text-[10px] text-slate-400">24시간 장애 감시</p>
             </div>
           </div>
           <span class="text-xs text-slate-500 group-hover:text-teal-400 transition font-mono"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>

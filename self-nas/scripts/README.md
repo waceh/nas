@@ -125,4 +125,18 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
 - **DNS 서버 IP**: `192.168.1.102` (포트 53)
 - **상세 가이드**: [`docs/13_adguard_home_dns_setup.md`](../docs/13_adguard_home_dns_setup.md)
 
+---
+
+## 🖥️ 9. Cockpit 웹 시스템 & 디스크 건강도 관리자 설치 (`setup_cockpit_pve.sh`)
+
+Proxmox VE 호스트(Debian 12)에 경량 Cockpit 웹 콘솔을 설치하여 5대 물리 디스크의 실시간 온도, S.M.A.R.T 건강도, 불량 섹터를 확인합니다.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/setup_cockpit_pve.sh | bash
+```
+
+- **웹 콘솔 주소**: `https://192.168.1.200:9090` (Proxmox root 계정 로그인)
+- **상세 가이드**: [`docs/14_cockpit_disk_monitoring_guide.md`](../docs/14_cockpit_disk_monitoring_guide.md)
+
+
 
