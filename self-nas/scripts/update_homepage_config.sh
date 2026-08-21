@@ -110,7 +110,7 @@ pct exec "$CTID" -- bash -c 'cat << "WIDGETS_EOF" > /opt/homepage/config/widgets
 WIDGETS_EOF'
 
 TMP_SERVICES=$(mktemp)
-cat << 'SERVICES_BASE' > "$TMP_SERVICES"
+cat << SERVICES_BASE > "$TMP_SERVICES"
 - "4-Tier 물리 스토리지":
     - "Intel 710 100GB (94.5GB 여유)":
         description: "Host OS (Proxmox VE)"
@@ -163,10 +163,22 @@ cat << 'SERVICES_BASE' > "$TMP_SERVICES"
         ping: https://192.168.1.200:9090
     - "AdGuard Home":
         icon: adguard-home.png
-        href: ADGUARD_URL_PLACEHOLDER
+        href: ${ADGUARD_URL}
         description: "광고차단 & 내부 DNS"
-        ping: ADGUARD_URL_PLACEHOLDER
-ADGUARD_WIDGET_PLACEHOLDER
+        ping: ${ADGUARD_URL}
+SERVICES_BASE
+
+if [ -n "$ADGUARD_USER" ] && [ -n "$ADGUARD_PASS" ]; then
+cat << WIDGET_EOF >> "$TMP_SERVICES"
+        widget:
+          type: adguard
+          url: ${ADGUARD_URL}
+          username: ${ADGUARD_USER}
+          password: "${ADGUARD_PASS}"
+WIDGET_EOF
+fi
+
+cat << SERVICES_REST_EOF >> "$TMP_SERVICES"
     - "Uptime Kuma":
         icon: uptime-kuma.png
         href: http://waceh.asuscomm.com:3001
@@ -186,19 +198,11 @@ ADGUARD_WIDGET_PLACEHOLDER
         icon: youtube.png
         href: https://www.youtube.com/@mtk-ey
         description: "@mtk-ey"
-SERVICES_BASE
-
-sed -i "s|ADGUARD_URL_PLACEHOLDER|${ADGUARD_URL}|g" "$TMP_SERVICES"
-
-if [ -n "$ADGUARD_USER" ] && [ -n "$ADGUARD_PASS" ]; then
-    WIDGET_TEXT="        widget:\n          type: adguard\n          url: ${ADGUARD_URL}\n          username: ${ADGUARD_USER}\n          password: \"${ADGUARD_PASS}\""
-    sed -i "s|ADGUARD_WIDGET_PLACEHOLDER|${WIDGET_TEXT}|g" "$TMP_SERVICES"
-else
-    sed -i "/ADGUARD_WIDGET_PLACEHOLDER/d" "$TMP_SERVICES"
-fi
+SERVICES_REST_EOF
 
 pct push "$CTID" "$TMP_SERVICES" /opt/homepage/config/services.yaml
 rm -f "$TMP_SERVICES"
+
 
 pct exec "$CTID" -- bash -c '
 echo "[]" > /opt/homepage/config/bookmarks.yaml
