@@ -93,25 +93,32 @@ log_ok "LXC ${CTID} 생성 및 시작 완료 (iGPU 연동 완료)!"
 # 5. 네트워크 대기
 sleep 5
 
-# 6. 패키지 설치 및 NFS 마운트, Jellyfin 공식 설치 (LXC 내부)
+# 6. 패키지 설치 및 NFS 마운트, 한글 폰트, Jellyfin 공식 설치 (LXC 내부)
 log_info "LXC 내부 패키지 설치 및 Jellyfin 설치 중..."
 pct exec "$CTID" -- bash -c "
   export DEBIAN_FRONTEND=noninteractive
   apt-get update -qq
-  apt-get install -y -qq nfs-common curl ca-certificates gnupg
+  apt-get install -y -qq nfs-common curl ca-certificates gnupg fonts-noto-cjk fonts-nanum
 
-  # RAM 디스크(/dev/shm) 트랜스코딩 캐시 디렉터리 생성
-  mkdir -p /dev/shm/jellyfin-transcodes
-  chmod 777 /dev/shm/jellyfin-transcodes
+  # 1. RAM 디스크(/dev/shm) 트랜스코딩 캐시 디렉터리 영구 자동 생성 규칙
+  echo 'd /dev/shm/jellyfin-transcodes 0777 jellyfin jellyfin -' > /etc/tmpfiles.d/jellyfin-transcodes.conf
+  systemd-tmpfiles --create /etc/tmpfiles.d/jellyfin-transcodes.conf
+  chmod 777 /dev/shm/jellyfin-transcodes 2>/dev/null || true
 
-  # 4TB Gold video NFS 마운트 (nolock으로 안전 마운트)
-  mkdir -p /mnt/video
-  if ! grep -q '${NAS_IP}:${NFS_SHARE}' /etc/fstab; then
-    echo '${NAS_IP}:${NFS_SHARE} /mnt/video nfs defaults,_netdev,nolock 0 0' >> /etc/fstab
-  fi
+  # 2. 4단 스토리지 마운트 포인트 생성
+  mkdir -p /mnt/video /mnt/music /mnt/pds1 /mnt/pds2
+
+  # 3. 락-프리 고성능 NFSv3 영구 마운트 설정
+  cat << 'EOF' > /etc/fstab
+${NAS_IP}:/volume1/video /mnt/video nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr,rsize=1048576,wsize=1048576 0 0
+${NAS_IP}:/volume1/music /mnt/music nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr,rsize=1048576,wsize=1048576 0 0
+${NAS_IP}:/volume2/PDS1 /mnt/pds1 nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr,rsize=1048576,wsize=1048576 0 0
+${NAS_IP}:/volume3/PDS2 /mnt/pds2 nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr,rsize=1048576,wsize=1048576 0 0
+EOF
+
   mount -a || true
 
-  # Jellyfin 공식 설치 스크립트 비대화형 실행
+  # 4. Jellyfin 공식 설치 스크립트 비대화형 실행
   curl -fsSL https://repo.jellyfin.org/install-debuntu.sh | bash
 "
 
@@ -124,7 +131,12 @@ echo -e "${GREEN}      Jellyfin Server (${CTID}) 설치 완료!          ${NC}"
 echo -e "${GREEN}====================================================${NC}"
 echo -e " 1. 로컬 접속: ${BLUE}http://${IP_ADDR%/*}:8096${NC}"
 echo -e " 2. 외부 접속: ${BLUE}http://your-domain.asuscomm.com:8096${NC} (공유기 8096 포트포워딩 후)"
-echo -e " 3. 미디어 저장 위치: ${GREEN}${NAS_IP}:${NFS_SHARE} (/mnt/video)${NC}"
-echo -e " 4. 웹 접속 후: 라이브러리 경로로 ${GREEN}/mnt/video${NC} 지정"
-echo -e "    대시보드 ➔ 재생 ➔ 하드웨어 가속: ${GREEN}Intel QuickSync (QSV)${NC} 활성화"
+echo -e " 3. 미디어 마운트 경로:"
+echo -e "    - /mnt/video (WD Gold 4TB 비디오)"
+echo -e "    - /mnt/music (WD Gold 4TB 음원)"
+echo -e "    - /mnt/pds1  (WD White 18TB 콜드 미디어)"
+echo -e "    - /mnt/pds2  (WD White 8TB 콜드 미디어)"
+echo -e " 4. 웹 접속 후 권장 설정:"
+echo -e "    - 재생 ➔ 하드웨어 가속: ${GREEN}Intel QuickSync (QSV)${NC} (AV1 제외, VPP 톤매핑 ON)"
+echo -e "    - 재생 ➔ 트랜스코딩 임시 경로: ${GREEN}/dev/shm/jellyfin-transcodes${NC}"
 echo -e "${GREEN}====================================================${NC}"

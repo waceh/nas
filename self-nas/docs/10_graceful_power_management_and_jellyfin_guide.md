@@ -25,7 +25,7 @@ flowchart TB
 
 ## 🎬 2. Jellyfin Media Server (LXC 105) 구축
 
-Intel i5-9500T UHD 630 iGPU 하드웨어 가속(`/dev/dri`)과 WD Gold 4TB (`video`) 스토리지를 연동한 초경량 네이티브 컨테이너입니다.
+Intel i5-9500T UHD 630 iGPU 하드웨어 가속(`/dev/dri`)과 4-Tier 스토리지(`video`, `music`, `PDS1`, `PDS2`)를 연동한 초경량 네이티브 컨테이너입니다.
 
 ### ① 설치 스크립트 실행 (Proxmox 호스트 루트)
 ```bash
@@ -33,9 +33,14 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
 ```
 
 ### ② 주요 탑재 기능 & 최적화
-- **Intel QuickSync iGPU 패스스루**: CPU 부하 없이 4K HEVC ➔ 1080p H.264 실시간 무부하 트랜스코딩
-- **RAM 디스크(`/dev/shm`) 트랜스코딩 캐시**: SSD 수명(TBW) 100% 보호
-- **NFSv4 `nolock` 마운트**: 헤놀로지 재시작 시에도 락 프리 영구 연결
+- **Intel QuickSync iGPU 패스스루**: CPU 부하 없이 4K HEVC ➔ 1080p H.264 실시간 무부하 트랜스코딩 (QSV + VPP Tone Mapping)
+- **RAM 디스크(`/dev/shm`) 트랜스코딩 캐시 영구화**: `systemd-tmpfiles` 연동으로 재부팅 시에도 RAM 캐시 자동 생성 및 SSD 수명(TBW) 100% 보호
+- **NFSv3 (`vers=3,soft,intr,nolock`) 락-프리 4단 마운트**:
+  - `/mnt/video` (WD Gold 4TB 비디오)
+  - `/mnt/music` (WD Gold 4TB 음원)
+  - `/mnt/pds1` (WD White 18TB 콜드 엔터테인먼트)
+  - `/mnt/pds2` (WD White 8TB 콜드 엔터테인먼트)
+- **한글 폰트(Noto CJK / Nanum) 기본 탑재**: 외부 자막 깨짐(네모 박스) 원천 방지
 - **Graceful 종료 타임아웃(`down=15`)**: 종료 시 재생 세션 정리 및 메타데이터 안전 저장
 
 ---
