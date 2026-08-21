@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Homepage Dashboard 3-Tier CSS Grid Layout Updater (self-nas)
+# Homepage Dashboard 3-Tier Ultimate Layout Updater (self-nas)
 # ==============================================================================
-# - custom.css 강제 줄바꿈으로 3단 레이아웃 100% 완벽 구현
-# - 1층: WACEH NAS & Media Hub + CPU/RAM/TIME + 검색바
-# - 2층: 💾 4-Tier 5대 물리 스토리지 풀 (가로 100% 널찍한 전용 행)
-# - 3층: 🎬 미디어 서비스 (3열) | 🛠️ 인프라 & 스토리지 (2열)
+# - 1층: WACEH NAS & Media Hub + CPU/RAM/TIME + 검색바 (상단 헤더)
+# - 2층: 💾 4-Tier 5대 물리 스토리지 풀 (가로 100% 5열 독립 행)
+# - 3층: 🎬 미디어 서비스 (3열) | 🛠️ 인프라 & 스토리지 (2열) (동일 행 좌우 나란히 배치)
 # ==============================================================================
 
 set -e
@@ -79,7 +78,7 @@ FSTAB_EOF
 
 mount -a || true
 
-# 2. settings.yaml (3단 레이아웃 및 테마)
+# 2. settings.yaml (2층: 5대 디스크 단독 행, 3층: 미디어 & 인프라 나란히 배치)
 cat << 'SETTINGS_EOF' > /opt/homepage/config/settings.yaml
 title: Waceh NAS Dashboard
 favicon: https://cdn-icons-png.flaticon.com/512/3208/3208726.png
@@ -91,15 +90,18 @@ useEqualHeights: true
 hideVersion: true
 
 layout:
-  미디어 서비스:
-    style: row
-    columns: 3
-  인프라 & 스토리지:
-    style: row
-    columns: 2
+  - 💾 4-Tier 물리 스토리지:
+      style: row
+      columns: 5
+  - 미디어 서비스:
+      style: row
+      columns: 3
+    인프라 & 스토리지:
+      style: row
+      columns: 2
 SETTINGS_EOF
 
-# 3. widgets.yaml (1층: 인사말 + CPU/RAM/TIME + 검색 | 2층: 5대 디스크)
+# 3. widgets.yaml (1층: 인사말 + CPU/RAM/TIME + 검색바만 배치)
 cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
 - greeting:
     text_size: xl
@@ -114,44 +116,42 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
 - search:
     provider: google
     target: _blank
-
-- resources:
-    label: \"💾 4-Tier 5대 물리 스토리지 풀 (Intel SSD 100G/120G, WD Gold 4T, WD White 18T/8T)\"
-    disk:
-      - /mnt/intel710
-      - /mnt/intel530
-      - /mnt/gold
-      - /mnt/pds1
-      - /mnt/pds2
 WIDGETS_EOF
 
-# 4. custom.css (1층 헤더자원과 2층 디스크 스토리지를 물리적으로 100% 완벽 줄바꿈)
-cat << 'CSS_EOF' > /opt/homepage/config/custom.css
-/* 상단 헤더 컨테이너 Flex Wrap 줄바꿈 */
-#widgets-container, .grid-flow-col {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 1rem !important;
-}
-
-/* 1층: 인사말, 자원, 검색바 */
-#widgets-container > div:nth-child(1),
-#widgets-container > div:nth-child(2),
-#widgets-container > div:nth-child(3) {
-  flex: 1 1 300px !important;
-}
-
-/* 2층: 5대 디스크 스토리지 카드 (가로 100% 꽉 채워서 새 줄로 분리) */
-#widgets-container > div:nth-child(4),
-#widgets-container > div:last-child {
-  flex: 1 1 100% !important;
-  width: 100% !important;
-  margin-top: 0.5rem !important;
-}
-CSS_EOF
-
-# 5. services.yaml (3층: 미디어 서비스 & 인프라 서비스)
+# 4. services.yaml (2층: 5대 디스크 스토리지 카드 | 3층: 미디어 서비스 & 인프라 서비스)
 cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
+- 💾 4-Tier 물리 스토리지:
+    - 1. Host OS SSD:
+        icon: proxmox.png
+        description: Intel 710 100G (OS 24.5G 여유)
+        widget:
+          type: disk
+          path: /mnt/intel710
+    - 2. 고속 컨테이너 풀:
+        icon: docker.png
+        description: Intel 530 120G (LXC/DB 풀)
+        widget:
+          type: disk
+          path: /mnt/intel530
+    - 3. 라이프 & 미디어 허브:
+        icon: synology.png
+        description: WD Gold 4TB (사진·음악 3.4T 여유)
+        widget:
+          type: disk
+          path: /mnt/gold
+    - 4. PDS1 대용량 미디어:
+        icon: jellyfin.png
+        description: WD White 18TB (영화 6.8T 사용)
+        widget:
+          type: disk
+          path: /mnt/pds1
+    - 5. PDS2 보조 엔터:
+        icon: jellyfin.png
+        description: WD White 8TB (7.0T 여유)
+        widget:
+          type: disk
+          path: /mnt/pds2
+
 - 미디어 서비스:
     - Immich Photo:
         icon: immich.png
@@ -181,6 +181,9 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         description: Pure Storage Core (Gold 4T + White 26T)
         ping: http://192.168.1.132:5000
 SERVICES_EOF
+
+# 5. custom.css 초기화
+rm -f /opt/homepage/config/custom.css
 
 # 6. docker-compose.yml 업데이트 (5개 디스크 볼륨 마운트)
 if [ -f /opt/homepage/.htpasswd ] && [ -f /opt/homepage/nginx.conf ]; then
@@ -246,11 +249,11 @@ docker compose down
 docker compose up -d --force-recreate
 "
 
-log_ok "3단(헤더 / 디스크 / 서비스) 완벽 레이아웃 적용 완료!"
+log_ok "3단(1층 헤더/자원/검색 -> 2층 5대 디스크 -> 3층 미디어 | 인프라) 완벽 적용 완료!"
 echo ""
 echo -e "${GREEN}====================================================${NC}"
-echo -e " 🖥️ [1층] Waceh NAS & Media Hub + CPU/RAM/TIME + 검색바"
-echo -e " 💾 [2층] 4-Tier 5대 물리 스토리지 풀 (가로 100% 널찍한 전용 행)"
-echo -e " 🎬 [3층] 미디어 서비스 (3열) | 🛠️ 인프라 & 스토리지 (2열)"
+echo -e " 🖥️ [1층]: WACEH NAS & Media Hub + 서버 하드웨어 자원 + [검색바]"
+echo -e " 💾 [2층]: 4-Tier 5대 물리 스토리지 풀 (가로 100% 널찍한 독립 행)"
+echo -e " 🎬 [3층]: 미디어 서비스 (3열) | 인프라 & 스토리지 (2열) (좌우 나란히 배치)"
 echo -e " 🌐 접속 주소: ${BLUE}http://waceh.asuscomm.com:3000${NC}"
 echo -e "${GREEN}====================================================${NC}"
