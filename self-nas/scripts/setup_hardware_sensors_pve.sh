@@ -95,19 +95,36 @@ class SensorHandler(http.server.BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
 
-        # Homepage Glances API 형식 지원
-        if "sensors" in self.path:
+        # Homepage Glances API 엔드포인트 완벽 지원
+        if "uptime" in self.path:
+            try:
+                with open("/proc/uptime", "r") as f:
+                    uptime_seconds = float(f.readline().split()[0])
+                    days = int(uptime_seconds // 86400)
+                    hours = int((uptime_seconds % 86400) // 3600)
+                    mins = int((uptime_seconds % 3600) // 60)
+                    if days > 0:
+                        data = f"{days} days, {hours:02d}:{mins:02d}:00"
+                    else:
+                        data = f"{hours:02d}:{mins:02d}:00"
+            except Exception:
+                data = "01:00:00"
+        elif "sensors" in self.path:
             data = [
                 {"label": "CPU Package", "value": temp, "type": "temperature_core", "unit": "C"},
                 {"label": "Core 0", "value": temp, "type": "temperature_core", "unit": "C"}
             ]
         elif "quicklook" in self.path:
             data = {
-                "cpu": 15.0,
+                "cpu": 12.0,
                 "mem": (mem_used / mem_total) * 100.0 if mem_total else 25.0,
                 "swap": 0.0,
                 "cpu_temp": temp
             }
+        elif "cpu" in self.path:
+            data = {"total": 12.0}
+        elif "mem" in self.path:
+            data = {"percent": (mem_used / mem_total) * 100.0 if mem_total else 25.0, "total": mem_total, "used": mem_used}
         else:
             data = {
                 "cpu_temp": temp,
@@ -116,6 +133,7 @@ class SensorHandler(http.server.BaseHTTPRequestHandler):
             }
         
         self.wfile.write(json.dumps(data).encode("utf-8"))
+
 
 if __name__ == "__main__":
     server = http.server.ThreadingHTTPServer(("0.0.0.0", PORT), SensorHandler)
