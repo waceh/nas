@@ -30,10 +30,12 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
 
 1. 브라우저에서 [`https://192.168.1.200:9090`](https://192.168.1.200:9090) 접속 (자체 서명 SSL 경고 시 '고급 ➔ 계속 진행' 클릭).
 2. Proxmox `root` 아이디와 비밀번호로 로그인.
-3. 좌측 메뉴 **[스토리지 (Storage)]** 클릭.
-4. **드라이브 (Drives)** 목록에서 5대 물리 디스크를 클릭하여 상세 상태 확인:
+   *(만약 권한 거부 시 호스트에서 `rm -f /etc/cockpit/disallowed-users && systemctl restart cockpit.socket` 실행)*
+3. 좌측 메뉴 **[저장소 (Storage)]** 클릭.
+4. **드라이브 (Drives)** 목록에서 5대 물리 디스크를 각각 클릭하여 **SMART 데이터** 상세 상태 확인:
    - **`Intel 710 SSD 100GB`**: Host OS (`/dev/sda` or nvme) - 수명 잔여율 및 eMLC TBW
    - **`Intel 530 SSD 120GB`**: LXC Fast Pool (`/dev/sdb`) - 건강도 및 쓰기 총량
-   - **`WD Gold 4TB Enterprise`**: 홈/라이프 허브 - 실시간 작동 온도(약 35~40°C) 및 S.M.A.R.T PASSED
+   - **`WD Gold 4TB Enterprise`**: 홈/라이프 허브 - 실시간 작동 온도(약 35~40°C) 및 S.M.A.R.T PASSED (정상)
+
    - **`WD White 18TB Ultrastar`**: PDS1 콜드 미디어 - 스핀다운 유휴 상태 및 불량 섹터 0
    - **`WD White 8TB CMR`**: PDS2 콜드 미디어 - 드라이브 무결성 확인

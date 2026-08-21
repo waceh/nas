@@ -40,8 +40,11 @@ apt-get install -y -qq \
     udisks2 \
     lm-sensors
 
-log_info "3. Cockpit 서비스 활성화 및 시작 중..."
+log_info "3. Cockpit 서비스 활성화 및 root 로그인 허용 설정 중..."
+rm -f /etc/cockpit/disallowed-users
 systemctl enable --now cockpit.socket
+systemctl restart cockpit.socket cockpit udisks2 || true
+
 
 log_ok "Cockpit 설치 및 서비스 기동 완료!"
 echo ""
