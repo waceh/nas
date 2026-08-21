@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Homepage Dashboard 3-Tier Ultimate Layout Updater (self-nas)
+# Homepage Dashboard Clean 3-Tier Layout & Compact Spacing Updater (self-nas)
 # ==============================================================================
-# - 1층: WACEH NAS & Media Hub + CPU/RAM/TIME + 검색바 (상단 헤더)
-# - 2층: 💾 4-Tier 5대 물리 스토리지 풀 (가로 100% 5열 독립 행)
-# - 3층: 🎬 미디어 서비스 (3열) | 🛠️ 인프라 & 스토리지 (2열) (동일 행 좌우 나란히 배치)
+# - 1층: 💾 4-Tier 물리 스토리지 (이미지/위젯 에러 없는 순수 텍스트 5열 카드)
+# - 2층: 🎬 미디어 서비스 (1줄 3칸)
+# - 3층: 🛠️ 인프라 & 스토리지 (1줄 2칸)
+# - 공백 최적화: 2층-3층 간 과도한 여백 슬림화
 # ==============================================================================
 
 set -e
@@ -25,7 +26,6 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 CTID="${CTID:-107}"
-NAS_IP="${NAS_IP:-192.168.1.132}"
 CONF_FILE="/etc/pve/lxc/${CTID}.conf"
 
 if ! pct status "$CTID" &>/dev/null; then
@@ -33,7 +33,7 @@ if ! pct status "$CTID" &>/dev/null; then
     exit 1
 fi
 
-log_info "Proxmox 호스트 하드웨어 자원 및 5대 디스크 설정 주입 중..."
+log_info "Proxmox 호스트 하드웨어 자원 설정 확인 중..."
 
 NEED_REBOOT=0
 
@@ -60,25 +60,15 @@ if [ "$NEED_REBOOT" -eq 1 ]; then
     sleep 5
 fi
 
-log_info "Homepage 대시보드 3-Tier(헤더/디스크/서비스) 레이아웃 적용 중..."
+log_info "Homepage 대시보드 컴팩트 3단(스토리지 5열 -> 미디어 3열 -> 인프라 2열) 설정 적용 중..."
 
 pct exec "$CTID" -- bash -c "
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-apt-get install -y -qq nfs-common
 
-mkdir -p /opt/homepage/config /mnt/intel-ssd /mnt/gold /mnt/pds1 /mnt/pds2
+mkdir -p /opt/homepage/config
 
-# 1. NFS 락-프리 마운트 (용량 조회용)
-cat << 'FSTAB_EOF' > /etc/fstab
-${NAS_IP}:/volume1/video /mnt/gold nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr,rsize=1048576,wsize=1048576 0 0
-${NAS_IP}:/volume2/PDS1  /mnt/pds1 nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr,rsize=1048576,wsize=1048576 0 0
-${NAS_IP}:/volume3/PDS2  /mnt/pds2 nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr,rsize=1048576,wsize=1048576 0 0
-FSTAB_EOF
-
-mount -a || true
-
-# 2. settings.yaml (2층: 5대 디스크 단독 행, 3층: 미디어 & 인프라 나란히 배치)
+# 1. settings.yaml (1층 5열 / 2층 3열 / 3층 2열 설정)
 cat << 'SETTINGS_EOF' > /opt/homepage/config/settings.yaml
 title: Waceh NAS Dashboard
 favicon: https://cdn-icons-png.flaticon.com/512/3208/3208726.png
@@ -90,18 +80,18 @@ useEqualHeights: true
 hideVersion: true
 
 layout:
-  - 💾 4-Tier 물리 스토리지:
-      style: row
-      columns: 5
-  - 미디어 서비스:
-      style: row
-      columns: 3
-    인프라 & 스토리지:
-      style: row
-      columns: 2
+  4-Tier 물리 스토리지:
+    style: row
+    columns: 5
+  미디어 서비스:
+    style: row
+    columns: 3
+  인프라 & 스토리지:
+    style: row
+    columns: 2
 SETTINGS_EOF
 
-# 3. widgets.yaml (1층: 인사말 + CPU/RAM/TIME + 검색바만 배치)
+# 2. widgets.yaml (상단 헤더: 인사말 + CPU/RAM/TIME + 검색바)
 cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
 - greeting:
     text_size: xl
@@ -118,39 +108,19 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     target: _blank
 WIDGETS_EOF
 
-# 4. services.yaml (2층: 5대 디스크 스토리지 카드 | 3층: 미디어 서비스 & 인프라 서비스)
+# 3. services.yaml (1층: 텍스트 스토리지 카드 5개 | 2층: 미디어 3개 | 3층: 인프라 2개)
 cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
-- 💾 4-Tier 물리 스토리지:
-    - 1. Host OS SSD:
-        icon: proxmox.png
+- 4-Tier 물리 스토리지:
+    - Host OS SSD:
         description: Intel 710 100G (OS 24.5G 여유)
-        widget:
-          type: disk
-          path: /mnt/intel710
-    - 2. 고속 컨테이너 풀:
-        icon: docker.png
+    - 고속 컨테이너 풀:
         description: Intel 530 120G (LXC/DB 풀)
-        widget:
-          type: disk
-          path: /mnt/intel530
-    - 3. 라이프 & 미디어 허브:
-        icon: synology.png
+    - 라이프 & 미디어 허브:
         description: WD Gold 4TB (사진·음악 3.4T 여유)
-        widget:
-          type: disk
-          path: /mnt/gold
-    - 4. PDS1 대용량 미디어:
-        icon: jellyfin.png
+    - PDS1 대용량 미디어:
         description: WD White 18TB (영화 6.8T 사용)
-        widget:
-          type: disk
-          path: /mnt/pds1
-    - 5. PDS2 보조 엔터:
-        icon: jellyfin.png
+    - PDS2 보조 엔터:
         description: WD White 8TB (7.0T 여유)
-        widget:
-          type: disk
-          path: /mnt/pds2
 
 - 미디어 서비스:
     - Immich Photo:
@@ -182,10 +152,20 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         ping: http://192.168.1.132:5000
 SERVICES_EOF
 
-# 5. custom.css 초기화
-rm -f /opt/homepage/config/custom.css
+# 4. custom.css (2층과 3층 사이의 과도한 공백 제거 및 컴팩트 스타일링)
+cat << 'CSS_EOF' > /opt/homepage/config/custom.css
+/* 그룹 및 카드 간 상하 여백 슬림화 */
+.services-group, .group, section, div[class*="gap-"] {
+  margin-bottom: 0.75rem !important;
+}
 
-# 6. docker-compose.yml 업데이트 (5개 디스크 볼륨 마운트)
+/* 텍스트 디스크 카드 높이 및 패딩 컴팩트 정돈 */
+div[class*="service-card"] {
+  padding: 0.75rem !important;
+}
+CSS_EOF
+
+# 5. docker-compose.yml 업데이트
 if [ -f /opt/homepage/.htpasswd ] && [ -f /opt/homepage/nginx.conf ]; then
 cat << 'COMPOSE_EOF' > /opt/homepage/docker-compose.yml
 services:
@@ -198,11 +178,6 @@ services:
     volumes:
       - /opt/homepage/config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /:/mnt/intel530:ro
-      - /mnt/intel-ssd:/mnt/intel710:ro
-      - /mnt/gold:/mnt/gold:ro
-      - /mnt/pds1:/mnt/pds1:ro
-      - /mnt/pds2:/mnt/pds2:ro
     environment:
       - PUID=0
       - PGID=0
@@ -232,11 +207,6 @@ services:
     volumes:
       - /opt/homepage/config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /:/mnt/intel530:ro
-      - /mnt/intel-ssd:/mnt/intel710:ro
-      - /mnt/gold:/mnt/gold:ro
-      - /mnt/pds1:/mnt/pds1:ro
-      - /mnt/pds2:/mnt/pds2:ro
     environment:
       - PUID=0
       - PGID=0
@@ -249,11 +219,11 @@ docker compose down
 docker compose up -d --force-recreate
 "
 
-log_ok "3단(1층 헤더/자원/검색 -> 2층 5대 디스크 -> 3층 미디어 | 인프라) 완벽 적용 완료!"
+log_ok "컴팩트 3단(스토리지 5열 -> 미디어 3열 -> 인프라 2열) 레이아웃 적용 완료!"
 echo ""
 echo -e "${GREEN}====================================================${NC}"
-echo -e " 🖥️ [1층]: WACEH NAS & Media Hub + 서버 하드웨어 자원 + [검색바]"
-echo -e " 💾 [2층]: 4-Tier 5대 물리 스토리지 풀 (가로 100% 널찍한 독립 행)"
-echo -e " 🎬 [3층]: 미디어 서비스 (3열) | 인프라 & 스토리지 (2열) (좌우 나란히 배치)"
+echo -e " 💾 [1층]: 4-Tier 물리 스토리지 (깔끔한 텍스트 1줄 5칸)"
+echo -e " 🎬 [2층]: 미디어 서비스 (1줄 3칸)"
+echo -e " 🛠️ [3층]: 인프라 & 스토리지 (1줄 2칸)"
 echo -e " 🌐 접속 주소: ${BLUE}http://waceh.asuscomm.com:3000${NC}"
 echo -e "${GREEN}====================================================${NC}"

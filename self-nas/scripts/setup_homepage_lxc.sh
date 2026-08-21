@@ -4,9 +4,10 @@
 # ==============================================================================
 # - LXC 107 생성 (Debian 12, 1 Core, 512MB RAM, 4GB SSD Root on local-530)
 # - Docker 및 Homepage 공식 최신 이미지 자동 배포
-# - 1층: WACEH NAS & Media Hub + CPU/RAM/TIME + 검색바 (상단 헤더)
-# - 2층: 💾 4-Tier 5대 물리 스토리지 풀 (가로 100% 5열 독립 행)
-# - 3층: 🎬 미디어 서비스 (3열) | 🛠️ 인프라 & 스토리지 (2열) (동일 행 좌우 나란히 배치)
+# - 1층: 💾 4-Tier 물리 스토리지 (이미지/위젯 에러 없는 순수 텍스트 5열 카드)
+# - 2층: 🎬 미디어 서비스 (1줄 3칸)
+# - 3층: 🛠️ 인프라 & 스토리지 (1줄 2칸)
+# - 공백 최적화: 2층-3층 간 과도한 여백 슬림화
 # - Immich, Gonic, Jellyfin, Proxmox, 헤놀로지 통합 대시보드 자동 사전구성
 # ==============================================================================
 
@@ -97,24 +98,15 @@ log_info "LXC 내부 Docker 설치 및 Homepage 대시보드 사전 설정 중..
 pct exec "$CTID" -- bash -c "
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-apt-get install -y -qq curl ca-certificates gnupg nfs-common
+apt-get install -y -qq curl ca-certificates gnupg
 
 if ! command -v docker &>/dev/null; then
   curl -fsSL https://get.docker.com | sh
 fi
 
-mkdir -p /opt/homepage/config /mnt/intel-ssd /mnt/gold /mnt/pds1 /mnt/pds2
+mkdir -p /opt/homepage/config
 
-# 1. NFS 락-프리 마운트 (용량 조회용)
-cat << 'FSTAB_EOF' > /etc/fstab
-${NAS_IP}:/volume1/video /mnt/gold nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr,rsize=1048576,wsize=1048576 0 0
-${NAS_IP}:/volume2/PDS1  /mnt/pds1 nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr,rsize=1048576,wsize=1048576 0 0
-${NAS_IP}:/volume3/PDS2  /mnt/pds2 nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr,rsize=1048576,wsize=1048576 0 0
-FSTAB_EOF
-
-mount -a || true
-
-# 2. settings.yaml (2층: 5대 디스크 단독 행, 3층: 미디어 & 인프라 나란히 배치)
+# 1. settings.yaml (1층 5열 / 2층 3열 / 3층 2열 설정)
 cat << 'SETTINGS_EOF' > /opt/homepage/config/settings.yaml
 title: Waceh NAS Dashboard
 favicon: https://cdn-icons-png.flaticon.com/512/3208/3208726.png
@@ -126,18 +118,18 @@ useEqualHeights: true
 hideVersion: true
 
 layout:
-  - 💾 4-Tier 물리 스토리지:
-      style: row
-      columns: 5
-  - 미디어 서비스:
-      style: row
-      columns: 3
-    인프라 & 스토리지:
-      style: row
-      columns: 2
+  4-Tier 물리 스토리지:
+    style: row
+    columns: 5
+  미디어 서비스:
+    style: row
+    columns: 3
+  인프라 & 스토리지:
+    style: row
+    columns: 2
 SETTINGS_EOF
 
-# 3. widgets.yaml (1층: 인사말 + CPU/RAM/TIME + 검색바만 배치)
+# 2. widgets.yaml (상단 헤더: 인사말 + CPU/RAM/TIME + 검색바)
 cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
 - greeting:
     text_size: xl
@@ -154,39 +146,19 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     target: _blank
 WIDGETS_EOF
 
-# 4. services.yaml (2층: 5대 디스크 스토리지 카드 | 3층: 미디어 서비스 & 인프라 서비스)
+# 3. services.yaml (1층: 텍스트 스토리지 카드 5개 | 2층: 미디어 3개 | 3층: 인프라 2개)
 cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
-- 💾 4-Tier 물리 스토리지:
-    - 1. Host OS SSD:
-        icon: proxmox.png
+- 4-Tier 물리 스토리지:
+    - Host OS SSD:
         description: Intel 710 100G (OS 24.5G 여유)
-        widget:
-          type: disk
-          path: /mnt/intel710
-    - 2. 고속 컨테이너 풀:
-        icon: docker.png
+    - 고속 컨테이너 풀:
         description: Intel 530 120G (LXC/DB 풀)
-        widget:
-          type: disk
-          path: /mnt/intel530
-    - 3. 라이프 & 미디어 허브:
-        icon: synology.png
+    - 라이프 & 미디어 허브:
         description: WD Gold 4TB (사진·음악 3.4T 여유)
-        widget:
-          type: disk
-          path: /mnt/gold
-    - 4. PDS1 대용량 미디어:
-        icon: jellyfin.png
+    - PDS1 대용량 미디어:
         description: WD White 18TB (영화 6.8T 사용)
-        widget:
-          type: disk
-          path: /mnt/pds1
-    - 5. PDS2 보조 엔터:
-        icon: jellyfin.png
+    - PDS2 보조 엔터:
         description: WD White 8TB (7.0T 여유)
-        widget:
-          type: disk
-          path: /mnt/pds2
 
 - 미디어 서비스:
     - Immich Photo:
@@ -218,7 +190,20 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         ping: http://192.168.1.132:5000
 SERVICES_EOF
 
-# 5. docker-compose.yml 생성 (5개 디스크 마운트)
+# 4. custom.css (2층과 3층 사이의 과도한 공백 제거 및 컴팩트 스타일링)
+cat << 'CSS_EOF' > /opt/homepage/config/custom.css
+/* 그룹 및 카드 간 상하 여백 슬림화 */
+.services-group, .group, section, div[class*="gap-"] {
+  margin-bottom: 0.75rem !important;
+}
+
+/* 텍스트 디스크 카드 높이 및 패딩 컴팩트 정돈 */
+div[class*="service-card"] {
+  padding: 0.75rem !important;
+}
+CSS_EOF
+
+# 5. docker-compose.yml 생성
 cat << 'COMPOSE_EOF' > /opt/homepage/docker-compose.yml
 services:
   homepage:
@@ -230,11 +215,6 @@ services:
     volumes:
       - /opt/homepage/config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /:/mnt/intel530:ro
-      - /mnt/intel-ssd:/mnt/intel710:ro
-      - /mnt/gold:/mnt/gold:ro
-      - /mnt/pds1:/mnt/pds1:ro
-      - /mnt/pds2:/mnt/pds2:ro
     environment:
       - PUID=0
       - PGID=0
@@ -253,8 +233,8 @@ echo -e "${GREEN}====================================================${NC}"
 echo -e "${GREEN}     Homepage Dashboard (${CTID}) 설치 완료!         ${NC}"
 echo -e "${GREEN}====================================================${NC}"
 echo -e " 1. 접속 URL: ${BLUE}http://${IP_ADDR%/*}:3000${NC} 또는 ${BLUE}http://waceh.asuscomm.com:3000${NC}"
-echo -e " 2. [1층]: WACEH NAS & Media Hub + 서버 하드웨어 자원 + [검색바]"
-echo -e " 3. [2층]: 💾 4-Tier 5대 물리 스토리지 풀 (가로 100% 5열 독립 행)"
-echo -e " 4. [3층]: 🎬 미디어 서비스 (3열) | 🛠️ 인프라 & 스토리지 (2열)"
+echo -e " 2. 💾 [1층]: 4-Tier 물리 스토리지 (깔끔한 텍스트 1줄 5칸)"
+echo -e " 3. 🎬 [2층]: 미디어 서비스 (1줄 3칸)"
+echo -e " 4. 🛠️ [3층]: 인프라 & 스토리지 (1줄 2칸)"
 echo -e " 5. 설정 파일 위치: LXC ${CTID} 내부 ${GREEN}/opt/homepage/config/${NC}"
 echo -e "${GREEN}====================================================${NC}"
