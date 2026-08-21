@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Homepage Dashboard Clean 4-Row Layout & Bookmarks Cleanup (self-nas)
+# Homepage Dashboard & Uptime Kuma Unified Stack Updater (self-nas)
 # ==============================================================================
 # - 1층: 💾 4-Tier 물리 스토리지 (Intel 710 100GB 94.5GB 여유 완벽 통합 표기)
-# - 2층: 🎬 미디어 서비스 (1줄 3칸)
-# - 3층: 🛠️ 인프라 & 스토리지 (1줄 2칸)
+# - 2층: 🎬 미디어 서비스 (1줄 3칸: Immich, Gonic, Jellyfin)
+# - 3층: 🛠️ 인프라 & 관제 (1줄 3칸: Proxmox VE, Xpenology DSM, Uptime Kuma)
 # - 4층: 🌐 Developer & Social (GitHub, Instagram, YouTube 1줄 3칸)
-# - 하단 중복 기본 북마크(Developer, Social, Entertainment) 100% 제거
+# - Uptime Kuma (포트 3001) 초경량(RAM 40MB) 24시간 장애 모니터링 데몬 탑재
 # ==============================================================================
 
 set -e
@@ -61,15 +61,16 @@ if [ "$NEED_REBOOT" -eq 1 ]; then
     sleep 5
 fi
 
-log_info "Homepage 대시보드 중복 북마크 정리 및 깔끔한 4-Row 적용 중..."
+log_info "Homepage 대시보드 & Uptime Kuma 관제 스택 배포 중..."
 
 pct exec "$CTID" -- bash -c "
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 
 mkdir -p /opt/homepage/config
+mkdir -p /opt/uptime-kuma/data
 
-# 1. settings.yaml (스토리지 5열, 미디어 3열, 인프라 2열, 소셜 3열 완벽 통일)
+# 1. settings.yaml (스토리지 5열, 미디어 3열, 인프라&관제 3열, 소셜 3열)
 cat << 'SETTINGS_EOF' > /opt/homepage/config/settings.yaml
 title: Waceh NAS Dashboard
 favicon: https://cdn-icons-png.flaticon.com/512/3208/3208726.png
@@ -87,9 +88,9 @@ layout:
   \"미디어 서비스\":
     style: row
     columns: 3
-  \"인프라 & 스토리지\":
+  \"인프라 & 관제\":
     style: row
-    columns: 2
+    columns: 3
   \"Developer & Social\":
     style: row
     columns: 3
@@ -112,7 +113,7 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     target: _blank
 WIDGETS_EOF
 
-# 3. services.yaml (스토리지 5개, 미디어 3개, 인프라 2개, Developer & Social 3개)
+# 3. services.yaml (인프라 & 관제에 Uptime Kuma 포함 1줄 3칸)
 cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
 - \"4-Tier 물리 스토리지\":
     - \"Intel 710 100GB (94.5GB 여유)\":
@@ -148,7 +149,7 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         description: \"iGPU QuickSync 4K 비디오 (WD White 18TB / 8TB)\"
         ping: http://192.168.1.105:8096
 
-- \"인프라 & 스토리지\":
+- \"인프라 & 관제\":
     - \"Proxmox VE\":
         icon: proxmox.png
         href: https://waceh.asuscomm.com:8006
@@ -159,6 +160,11 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         href: http://waceh.asuscomm.com:5000
         description: \"Pure Storage Core (Gold 4TB + White 26TB Btrfs)\"
         ping: http://192.168.1.132:5000
+    - \"Uptime Kuma\":
+        icon: uptime-kuma.png
+        href: http://waceh.asuscomm.com:3001
+        description: \"24시간 서버 장애 모니터링 & 알림\"
+        ping: http://127.0.0.1:3001
 
 - \"Developer & Social\":
     - \"GitHub\":
@@ -175,7 +181,7 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         description: \"@mtk-ey\"
 SERVICES_EOF
 
-# 4. bookmarks.yaml 빈 배열로 명시적 초기화 (하단 중복 기본 북마크 완전 비활성화)
+# 4. bookmarks.yaml 빈 배열로 초기화
 echo \"[]\" > /opt/homepage/config/bookmarks.yaml
 
 # 5. custom.css (슬림한 여백과 카드 정돈)
@@ -191,16 +197,15 @@ div[class*=\"service-card\"] {
 }
 CSS_EOF
 
-# 6. docker-compose.yml 업데이트
-if [ -f /opt/homepage/.htpasswd ] && [ -f /opt/homepage/nginx.conf ]; then
+# 6. docker-compose.yml 업데이트 (Homepage + Uptime Kuma 통합)
 cat << 'COMPOSE_EOF' > /opt/homepage/docker-compose.yml
 services:
   homepage:
     image: ghcr.io/gethomepage/homepage:latest
     container_name: homepage
     restart: unless-stopped
-    expose:
-      - 3000
+    ports:
+      - 3000:3000
     volumes:
       - /opt/homepage/config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -209,48 +214,28 @@ services:
       - PGID=0
       - HOMEPAGE_ALLOWED_HOSTS=*
 
-  auth-proxy:
-    image: nginx:alpine
-    container_name: auth-proxy
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
     restart: unless-stopped
     ports:
-      - 3000:3000
+      - 3001:3001
     volumes:
-      - /opt/homepage/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - /opt/homepage/.htpasswd:/etc/nginx/.htpasswd:ro
-    depends_on:
-      - homepage
+      - /opt/uptime-kuma/data:/app/data
 COMPOSE_EOF
-else
-cat << 'COMPOSE_EOF' > /opt/homepage/docker-compose.yml
-services:
-  homepage:
-    image: ghcr.io/gethomepage/homepage:latest
-    container_name: homepage
-    restart: unless-stopped
-    ports:
-      - 3000:3000
-    volumes:
-      - /opt/homepage/config:/app/config
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    environment:
-      - PUID=0
-      - PGID=0
-      - HOMEPAGE_ALLOWED_HOSTS=*
-COMPOSE_EOF
-fi
 
 cd /opt/homepage
 docker compose down
 docker compose up -d --force-recreate
 "
 
-log_ok "중복 북마크 제거 및 4-Row 레이아웃 정리 완료!"
+log_ok "Homepage 대시보드 & Uptime Kuma 통합 배포 완료!"
 echo ""
 echo -e "${GREEN}====================================================${NC}"
-echo -e " 💾 [1층]: Intel 710 100GB (94.5GB 여유) - Host OS (Proxmox VE)"
+echo -e " 🏠 [포털 대시보드]: ${BLUE}http://waceh.asuscomm.com:3000${NC} (또는 192.168.1.107:3000)"
+echo -e " 📊 [Uptime Kuma]:   ${BLUE}http://waceh.asuscomm.com:3001${NC} (또는 192.168.1.107:3001)"
+echo -e " 💾 [1층]: 4-Tier 물리 스토리지 (1줄 5칸)"
 echo -e " 🎬 [2층]: 미디어 서비스 (1줄 3칸)"
-echo -e " 🛠️ [3층]: 인프라 & 스토리지 (1줄 2칸)"
-echo -e " 🌐 [4층]: Developer & Social (GitHub | Instagram | YouTube 1줄 3칸 단독)"
-echo -e " 🌐 접속 주소: ${BLUE}http://waceh.asuscomm.com:3000${NC}"
+echo -e " 🛠️ [3층]: 인프라 & 관제 (1줄 3칸: PVE | DSM | Kuma)"
+echo -e " 🌐 [4층]: Developer & Social (1줄 3칸: GitHub | Instagram | YouTube)"
 echo -e "${GREEN}====================================================${NC}"

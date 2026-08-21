@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Homepage Dashboard Proxmox Native LXC Installer (self-nas)
+# Homepage Dashboard & Uptime Kuma Proxmox Native LXC Installer (self-nas)
 # ==============================================================================
 # - LXC 107 생성 (Debian 12, 1 Core, 512MB RAM, 4GB SSD Root on local-530)
-# - Docker 및 Homepage 공식 최신 이미지 자동 배포
+# - Docker 및 Homepage + Uptime Kuma 공식 최신 이미지 자동 배포
 # - 1층: 💾 4-Tier 물리 스토리지 (Intel 710 100GB 94.5GB 여유 완벽 통합 표기)
 # - 2층: 🎬 미디어 서비스 (1줄 3칸)
-# - 3층: 🛠️ 인프라 & 스토리지 (1줄 2칸)
+# - 3층: 🛠️ 인프라 & 관제 (1줄 3칸: Proxmox VE, Xpenology DSM, Uptime Kuma)
 # - 4층: 🌐 Developer & Social (GitHub, Instagram, YouTube 1줄 3칸)
-# - Immich, Gonic, Jellyfin, Proxmox, 헤놀로지 통합 대시보드 자동 사전구성
 # ==============================================================================
 
 set -e
@@ -41,7 +40,7 @@ GATEWAY="${GATEWAY:-192.168.1.1}"
 NAS_IP="${NAS_IP:-192.168.1.132}"
 
 echo -e "${GREEN}====================================================${NC}"
-echo -e "${GREEN}      Homepage Dashboard LXC 자동 설치기            ${NC}"
+echo -e "${GREEN}  Homepage & Uptime Kuma 통합 LXC 자동 설치기       ${NC}"
 echo -e "${GREEN}====================================================${NC}"
 echo "컨테이너 ID: ${CTID}"
 echo "호스트명: ${HOSTNAME}"
@@ -77,7 +76,7 @@ pct create "$CTID" "$TEMPLATE" \
   --unprivileged 0 \
   --features nesting=1,keyctl=1 \
   --mp0 /,mp=/mnt/intel-ssd,ro=1 \
-  --tags "dashboard,web" \
+  --tags "dashboard,web,monitor" \
   --onboot 1
 
 # 호스트 전체 6코어 CPU 및 전체 16GB RAM 패스스루
@@ -93,8 +92,8 @@ log_ok "LXC ${CTID} 생성 및 시작 완료!"
 # 4. 네트워크 대기
 sleep 5
 
-# 5. 패키지 설치, NFS 용량 마운트 및 Homepage 구성 (LXC 내부)
-log_info "LXC 내부 Docker 설치 및 Homepage 대시보드 사전 설정 중..."
+# 5. 패키지 설치 및 Homepage + Uptime Kuma 구성 (LXC 내부)
+log_info "LXC 내부 Docker 설치 및 통합 스택 배포 중..."
 pct exec "$CTID" -- bash -c "
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
@@ -105,8 +104,9 @@ if ! command -v docker &>/dev/null; then
 fi
 
 mkdir -p /opt/homepage/config
+mkdir -p /opt/uptime-kuma/data
 
-# 1. settings.yaml (특수문자 & 이스케이프 및 4단 컬럼 설정)
+# 1. settings.yaml
 cat << 'SETTINGS_EOF' > /opt/homepage/config/settings.yaml
 title: Waceh NAS Dashboard
 favicon: https://cdn-icons-png.flaticon.com/512/3208/3208726.png
@@ -124,15 +124,15 @@ layout:
   \"미디어 서비스\":
     style: row
     columns: 3
-  \"인프라 & 스토리지\":
+  \"인프라 & 관제\":
     style: row
-    columns: 2
+    columns: 3
   \"Developer & Social\":
     style: row
     columns: 3
 SETTINGS_EOF
 
-# 2. widgets.yaml (상단 헤더: 인사말 + CPU/RAM/TIME + 검색바)
+# 2. widgets.yaml
 cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
 - greeting:
     text_size: xl
@@ -149,7 +149,7 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     target: _blank
 WIDGETS_EOF
 
-# 3. services.yaml (특수문자 따옴표 처리 및 완벽한 YAML 구조)
+# 3. services.yaml
 cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
 - \"4-Tier 물리 스토리지\":
     - \"Intel 710 100GB (94.5GB 여유)\":
@@ -185,7 +185,7 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         description: \"iGPU QuickSync 4K 비디오 (WD White 18TB / 8TB)\"
         ping: http://192.168.1.105:8096
 
-- \"인프라 & 스토리지\":
+- \"인프라 & 관제\":
     - \"Proxmox VE\":
         icon: proxmox.png
         href: https://waceh.asuscomm.com:8006
@@ -196,6 +196,11 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         href: http://waceh.asuscomm.com:5000
         description: \"Pure Storage Core (Gold 4TB + White 26TB Btrfs)\"
         ping: http://192.168.1.132:5000
+    - \"Uptime Kuma\":
+        icon: uptime-kuma.png
+        href: http://waceh.asuscomm.com:3001
+        description: \"24시간 서버 장애 모니터링 & 알림\"
+        ping: http://127.0.0.1:3001
 
 - \"Developer & Social\":
     - \"GitHub\":
@@ -212,10 +217,10 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         description: \"@mtk-ey\"
 SERVICES_EOF
 
-# 4. bookmarks.yaml 빈 배열로 명시적 초기화 (하단 중복 기본 북마크 완전 비활성화)
+# 4. bookmarks.yaml 빈 배열로 초기화
 echo \"[]\" > /opt/homepage/config/bookmarks.yaml
 
-# 5. custom.css (슬림한 여백과 카드 정돈)
+# 5. custom.css
 cat << 'CSS_EOF' > /opt/homepage/config/custom.css
 /* 그룹 및 카드 간 상하 여백 슬림화 */
 .services-group, .group, section, div[class*=\"gap-\"] {
@@ -228,7 +233,7 @@ div[class*=\"service-card\"] {
 }
 CSS_EOF
 
-# 6. docker-compose.yml 생성
+# 6. docker-compose.yml 생성 (Homepage + Uptime Kuma)
 cat << 'COMPOSE_EOF' > /opt/homepage/docker-compose.yml
 services:
   homepage:
@@ -244,6 +249,15 @@ services:
       - PUID=0
       - PGID=0
       - HOMEPAGE_ALLOWED_HOSTS=*
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    restart: unless-stopped
+    ports:
+      - 3001:3001
+    volumes:
+      - /opt/uptime-kuma/data:/app/data
 COMPOSE_EOF
 
 cd /opt/homepage
@@ -255,12 +269,8 @@ pct set "$CTID" --startup "order=2,up=5,down=10"
 
 echo ""
 echo -e "${GREEN}====================================================${NC}"
-echo -e "${GREEN}     Homepage Dashboard (${CTID}) 설치 완료!         ${NC}"
+echo -e "${GREEN}  Homepage & Uptime Kuma 통합 LXC (${CTID}) 완료!    ${NC}"
 echo -e "${GREEN}====================================================${NC}"
-echo -e " 1. 접속 URL: ${BLUE}http://${IP_ADDR%/*}:3000${NC} 또는 ${BLUE}http://waceh.asuscomm.com:3000${NC}"
-echo -e " 2. 💾 [1층]: Intel 710 100GB (94.5GB 여유) - Host OS (Proxmox VE)"
-echo -e " 3. 🎬 [2층]: 미디어 서비스 (1줄 3칸)"
-echo -e " 4. 🛠️ [3층]: 인프라 & 스토리지 (1줄 2칸)"
-echo -e " 5. 🌐 [4층]: Developer & Social (GitHub | Instagram | YouTube 1줄 3칸)"
-echo -e " 6. 설정 파일 위치: LXC ${CTID} 내부 ${GREEN}/opt/homepage/config/${NC}"
+echo -e " 1. 🏠 Homepage 대시보드: ${BLUE}http://${IP_ADDR%/*}:3000${NC} 또는 ${BLUE}http://waceh.asuscomm.com:3000${NC}"
+echo -e " 2. 📊 Uptime Kuma 관제:  ${BLUE}http://${IP_ADDR%/*}:3001${NC} 또는 ${BLUE}http://waceh.asuscomm.com:3001${NC}"
 echo -e "${GREEN}====================================================${NC}"

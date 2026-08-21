@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Waceh NAS Dashboard - Clean Layout Preview</title>
+  <title>Waceh NAS Dashboard - With Uptime Kuma Preview</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -98,7 +98,7 @@
       
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
         
-        <!-- [1] Intel 710 SSD OS (100GB 통합) -->
+        <!-- [1] Intel 710 SSD OS -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-0.5 hover:border-purple-500/40 transition">
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-slate-200">Intel 710 100GB</span>
@@ -209,14 +209,14 @@
 
 
     <!-- ================================================================= -->
-    <!-- [3층] 🛠️ 인프라 & 스토리지 (1줄 2칸)                              -->
+    <!-- [3층] 🛠️ 인프라 & 관제 (1줄 3칸: PVE | DSM | Uptime Kuma)          -->
     <!-- ================================================================= -->
     <section class="space-y-1.5">
       <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider px-1">
-        🛠️ 인프라 & 스토리지
+        🛠️ 인프라 & 관제
       </h2>
       
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
         <!-- Proxmox VE -->
         <a href="https://waceh.asuscomm.com:8006" target="_blank" class="group bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-xl p-3 transition card-glow flex items-center justify-between">
           <div class="flex items-center gap-3">
@@ -245,10 +245,27 @@
                 <h3 class="font-bold text-xs text-slate-100 group-hover:text-blue-400 transition">Xpenology DSM</h3>
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
               </div>
-              <p class="text-[11px] text-slate-400">Pure Storage Core (Gold 4TB + White 26TB Btrfs)</p>
+              <p class="text-[11px] text-slate-400">Pure Storage Core (Gold 4TB + White 26TB)</p>
             </div>
           </div>
           <span class="text-xs text-slate-500 group-hover:text-blue-400 transition font-mono"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+        </a>
+
+        <!-- Uptime Kuma -->
+        <a href="http://waceh.asuscomm.com:3001" target="_blank" class="group bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-3 transition card-glow flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-sm">
+              <i class="fa-solid fa-heart-pulse"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="font-bold text-xs text-slate-100 group-hover:text-emerald-400 transition">Uptime Kuma</h3>
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
+              </div>
+              <p class="text-[11px] text-slate-400">24시간 서버 장애 모니터링 & 알림</p>
+            </div>
+          </div>
+          <span class="text-xs text-slate-500 group-hover:text-emerald-400 transition font-mono"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
         </a>
       </div>
     </section>
