@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Homepage Dashboard Unified 4-Row Clean Layout Updater (self-nas)
+# Homepage Dashboard Clean 4-Row Layout & Bookmarks Cleanup (self-nas)
 # ==============================================================================
 # - 1층: 💾 4-Tier 물리 스토리지 (Intel 710 100GB 94.5GB 여유 완벽 통합 표기)
 # - 2층: 🎬 미디어 서비스 (1줄 3칸)
 # - 3층: 🛠️ 인프라 & 스토리지 (1줄 2칸)
-# - 4층: 🌐 Developer & Social (GitHub, Instagram, YouTube 1줄 3칸 일렬 배치)
+# - 4층: 🌐 Developer & Social (GitHub, Instagram, YouTube 1줄 3칸)
+# - 하단 중복 기본 북마크(Developer, Social, Entertainment) 100% 제거
 # ==============================================================================
 
 set -e
@@ -60,7 +61,7 @@ if [ "$NEED_REBOOT" -eq 1 ]; then
     sleep 5
 fi
 
-log_info "Homepage 대시보드 YAML 문법 완벽 검증 및 레이아웃 적용 중..."
+log_info "Homepage 대시보드 중복 북마크 정리 및 깔끔한 4-Row 적용 중..."
 
 pct exec "$CTID" -- bash -c "
 export DEBIAN_FRONTEND=noninteractive
@@ -68,7 +69,7 @@ apt-get update -qq
 
 mkdir -p /opt/homepage/config
 
-# 1. settings.yaml (특수문자 & 이스케이프 및 4단 컬럼 설정)
+# 1. settings.yaml (스토리지 5열, 미디어 3열, 인프라 2열, 소셜 3열 완벽 통일)
 cat << 'SETTINGS_EOF' > /opt/homepage/config/settings.yaml
 title: Waceh NAS Dashboard
 favicon: https://cdn-icons-png.flaticon.com/512/3208/3208726.png
@@ -111,7 +112,7 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     target: _blank
 WIDGETS_EOF
 
-# 3. services.yaml (특수문자 따옴표 처리 및 완벽한 YAML 구조)
+# 3. services.yaml (스토리지 5개, 미디어 3개, 인프라 2개, Developer & Social 3개)
 cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
 - \"4-Tier 물리 스토리지\":
     - \"Intel 710 100GB (94.5GB 여유)\":
@@ -174,8 +175,8 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         description: \"@mtk-ey\"
 SERVICES_EOF
 
-# 4. 불필요한 bookmarks.yaml 제거
-rm -f /opt/homepage/config/bookmarks.yaml
+# 4. bookmarks.yaml 빈 배열로 명시적 초기화 (하단 중복 기본 북마크 완전 비활성화)
+echo \"[]\" > /opt/homepage/config/bookmarks.yaml
 
 # 5. custom.css (슬림한 여백과 카드 정돈)
 cat << 'CSS_EOF' > /opt/homepage/config/custom.css
@@ -244,12 +245,12 @@ docker compose down
 docker compose up -d --force-recreate
 "
 
-log_ok "YAML 구문 검증 및 대시보드 업데이트 완료!"
+log_ok "중복 북마크 제거 및 4-Row 레이아웃 정리 완료!"
 echo ""
 echo -e "${GREEN}====================================================${NC}"
 echo -e " 💾 [1층]: Intel 710 100GB (94.5GB 여유) - Host OS (Proxmox VE)"
 echo -e " 🎬 [2층]: 미디어 서비스 (1줄 3칸)"
 echo -e " 🛠️ [3층]: 인프라 & 스토리지 (1줄 2칸)"
-echo -e " 🌐 [4층]: Developer & Social (GitHub | Instagram | YouTube 1줄 3칸)"
+echo -e " 🌐 [4층]: Developer & Social (GitHub | Instagram | YouTube 1줄 3칸 단독)"
 echo -e " 🌐 접속 주소: ${BLUE}http://waceh.asuscomm.com:3000${NC}"
 echo -e "${GREEN}====================================================${NC}"

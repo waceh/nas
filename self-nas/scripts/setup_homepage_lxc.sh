@@ -7,7 +7,7 @@
 # - 1층: 💾 4-Tier 물리 스토리지 (Intel 710 100GB 94.5GB 여유 완벽 통합 표기)
 # - 2층: 🎬 미디어 서비스 (1줄 3칸)
 # - 3층: 🛠️ 인프라 & 스토리지 (1줄 2칸)
-# - 4층: 🌐 Developer & Social (GitHub, Instagram, YouTube 1줄 3칸 일렬 배치)
+# - 4층: 🌐 Developer & Social (GitHub, Instagram, YouTube 1줄 3칸)
 # - Immich, Gonic, Jellyfin, Proxmox, 헤놀로지 통합 대시보드 자동 사전구성
 # ==============================================================================
 
@@ -212,7 +212,10 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         description: \"@mtk-ey\"
 SERVICES_EOF
 
-# 4. custom.css (슬림한 여백과 카드 정돈)
+# 4. bookmarks.yaml 빈 배열로 명시적 초기화 (하단 중복 기본 북마크 완전 비활성화)
+echo \"[]\" > /opt/homepage/config/bookmarks.yaml
+
+# 5. custom.css (슬림한 여백과 카드 정돈)
 cat << 'CSS_EOF' > /opt/homepage/config/custom.css
 /* 그룹 및 카드 간 상하 여백 슬림화 */
 .services-group, .group, section, div[class*=\"gap-\"] {
@@ -225,7 +228,7 @@ div[class*=\"service-card\"] {
 }
 CSS_EOF
 
-# 5. docker-compose.yml 생성
+# 6. docker-compose.yml 생성
 cat << 'COMPOSE_EOF' > /opt/homepage/docker-compose.yml
 services:
   homepage:
@@ -247,7 +250,7 @@ cd /opt/homepage
 docker compose up -d --force-recreate
 "
 
-# 6. 호스트 부팅 및 종료 순서 설정
+# 7. 호스트 부팅 및 종료 순서 설정
 pct set "$CTID" --startup "order=2,up=5,down=10"
 
 echo ""
