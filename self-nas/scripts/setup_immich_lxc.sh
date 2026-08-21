@@ -93,10 +93,10 @@ pct exec "$CTID" -- bash -c "
     curl -fsSL https://get.docker.com | sh
   fi
 
-  # 4TB Gold photo NFS 마운트 (NFSv4 + nolock 완벽 안정화)
+  # 4TB Gold photo NFS 마운트 (NFSv3 + 락프리 soft 고속 마운트)
   mkdir -p /mnt/photo
   if ! grep -q "${NAS_IP}:${NFS_SHARE}" /etc/fstab; then
-    echo "${NAS_IP}:${NFS_SHARE} /mnt/photo nfs vers=4,nolock,defaults,_netdev 0 0" >> /etc/fstab
+    echo "${NAS_IP}:${NFS_SHARE} /mnt/photo nfs vers=3,nolock,soft,timeo=30,intr,_netdev 0 0" >> /etc/fstab
   fi
   systemctl daemon-reload
   mount -a || true

@@ -88,11 +88,12 @@ pct exec "$CTID" -- bash -c "
   apt-get update -qq
   apt-get install -y -qq nfs-common curl ffmpeg jq
 
-  # 4TB Gold music NFS 마운트 (NFSv4 + nolock 완벽 안정화)
+  # 4TB Gold music NFS 마운트 (NFSv3 + 락프리 soft 고속 마운트)
   mkdir -p /mnt/music
   if ! grep -q '${NAS_IP}:${NFS_SHARE}' /etc/fstab; then
-    echo '${NAS_IP}:${NFS_SHARE} /mnt/music nfs vers=4,nolock,defaults,_netdev 0 0' >> /etc/fstab
+    echo '${NAS_IP}:${NFS_SHARE} /mnt/music nfs vers=3,nolock,soft,timeo=30,intr,_netdev 0 0' >> /etc/fstab
   fi
+  systemctl daemon-reload 2>/dev/null || true
   mount -a || true
 
   # Gonic 최신 바이너리 초고속 다운로드 및 설치
