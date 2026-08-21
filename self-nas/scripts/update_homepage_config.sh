@@ -2,7 +2,7 @@
 # ==============================================================================
 # Homepage Dashboard Unified 4-Row Clean Layout Updater (self-nas)
 # ==============================================================================
-# - 1층: 💾 4-Tier 물리 스토리지 (GB/TB 단위 통일, Intel 710 LVM 70GB 예약 명시)
+# - 1층: 💾 4-Tier 물리 스토리지 (Intel 710 100GB 94.5GB 여유 완벽 통합 표기)
 # - 2층: 🎬 미디어 서비스 (1줄 3칸)
 # - 3층: 🛠️ 인프라 & 스토리지 (1줄 2칸)
 # - 4층: 🌐 Developer & Social (GitHub, Instagram, YouTube 1줄 3칸 일렬 배치)
@@ -60,7 +60,7 @@ if [ "$NEED_REBOOT" -eq 1 ]; then
     sleep 5
 fi
 
-log_info "Homepage 대시보드 통일 레이아웃 및 1줄 3칸 소셜 링크 적용 중..."
+log_info "Homepage 대시보드 100GB SSD 통합 및 1줄 3칸 소셜 링크 적용 중..."
 
 pct exec "$CTID" -- bash -c "
 export DEBIAN_FRONTEND=noninteractive
@@ -111,11 +111,11 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     target: _blank
 WIDGETS_EOF
 
-# 3. services.yaml (스토리지 5개, 미디어 3개, 인프라 2개, 소셜/개발자 3개 통합)
+# 3. services.yaml (710 100GB 94.5GB 여유 통합 표기)
 cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
 - 4-Tier 물리 스토리지:
-    - Intel 710 100GB (24.5GB 여유):
-        description: Host OS (Proxmox / LVM 70GB 예약)
+    - Intel 710 100GB (94.5GB 여유):
+        description: Host OS (Proxmox VE)
     - Intel 530 120GB (98.0GB 여유):
         description: VM / LXC / DB 풀
     - WD Gold 4TB (3.4TB 여유):
@@ -239,10 +239,10 @@ docker compose down
 docker compose up -d --force-recreate
 "
 
-log_ok "통일된 4-Row 레이아웃(GB/TB 단위 및 1줄 3칸 소셜 링크) 적용 완료!"
+log_ok "Intel 710 SSD 100GB 통합 표기 및 대시보드 업데이트 완료!"
 echo ""
 echo -e "${GREEN}====================================================${NC}"
-echo -e " 💾 [1층]: 4-Tier 물리 스토리지 (GB/TB 단위, 710 LVM 70GB 예약 명시)"
+echo -e " 💾 [1층]: Intel 710 100GB (94.5GB 여유) - Host OS (Proxmox VE)"
 echo -e " 🎬 [2층]: 미디어 서비스 (1줄 3칸)"
 echo -e " 🛠️ [3층]: 인프라 & 스토리지 (1줄 2칸)"
 echo -e " 🌐 [4층]: Developer & Social (GitHub | Instagram | YouTube 1줄 3칸)"

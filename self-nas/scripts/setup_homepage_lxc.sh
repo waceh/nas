@@ -4,7 +4,7 @@
 # ==============================================================================
 # - LXC 107 생성 (Debian 12, 1 Core, 512MB RAM, 4GB SSD Root on local-530)
 # - Docker 및 Homepage 공식 최신 이미지 자동 배포
-# - 1층: 💾 4-Tier 물리 스토리지 (GB/TB 단위 통일, Intel 710 LVM 70GB 예약 명시)
+# - 1층: 💾 4-Tier 물리 스토리지 (Intel 710 100GB 94.5GB 여유 통합 표기)
 # - 2층: 🎬 미디어 서비스 (1줄 3칸)
 # - 3층: 🛠️ 인프라 & 스토리지 (1줄 2칸)
 # - 4층: 🌐 Developer & Social (GitHub, Instagram, YouTube 1줄 3칸 일렬 배치)
@@ -149,11 +149,11 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     target: _blank
 WIDGETS_EOF
 
-# 3. services.yaml (스토리지 5개, 미디어 3개, 인프라 2개, 소셜/개발자 3개 통합)
+# 3. services.yaml (710 100GB 94.5GB 여유 통합 표기)
 cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
 - 4-Tier 물리 스토리지:
-    - Intel 710 100GB (24.5GB 여유):
-        description: Host OS (Proxmox / LVM 70GB 예약)
+    - Intel 710 100GB (94.5GB 여유):
+        description: Host OS (Proxmox VE)
     - Intel 530 120GB (98.0GB 여유):
         description: VM / LXC / DB 풀
     - WD Gold 4TB (3.4TB 여유):
@@ -207,7 +207,7 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         description: @mtk-ey
 SERVICES_EOF
 
-# 4. custom.css (슬림한 여백과 카드 정돈)
+# 4. custom.css (여백 최적화)
 cat << 'CSS_EOF' > /opt/homepage/config/custom.css
 /* 그룹 및 카드 간 상하 여백 슬림화 */
 .services-group, .group, section, div[class*="gap-"] {
@@ -250,7 +250,7 @@ echo -e "${GREEN}====================================================${NC}"
 echo -e "${GREEN}     Homepage Dashboard (${CTID}) 설치 완료!         ${NC}"
 echo -e "${GREEN}====================================================${NC}"
 echo -e " 1. 접속 URL: ${BLUE}http://${IP_ADDR%/*}:3000${NC} 또는 ${BLUE}http://waceh.asuscomm.com:3000${NC}"
-echo -e " 2. 💾 [1층]: 4-Tier 물리 스토리지 (GB/TB 단위, 710 LVM 70GB 예약 명시)"
+echo -e " 2. 💾 [1층]: Intel 710 100GB (94.5GB 여유) - Host OS (Proxmox VE)"
 echo -e " 3. 🎬 [2층]: 미디어 서비스 (1줄 3칸)"
 echo -e " 4. 🛠️ [3층]: 인프라 & 스토리지 (1줄 2칸)"
 echo -e " 5. 🌐 [4층]: Developer & Social (GitHub | Instagram | YouTube 1줄 3칸)"
