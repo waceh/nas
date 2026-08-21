@@ -4,9 +4,9 @@
 # ==============================================================================
 # - LXC 107 생성 (Debian 12, 1 Core, 512MB RAM, 4GB SSD Root on local-530)
 # - Docker 및 Homepage 공식 최신 이미지 자동 배포
-# - 1층: CPU / RAM / UPTIME 시스템 자원
-# - 2층: 5대 물리 스토리지 (Intel 710, Intel 530, WD Gold 4T, WD White 18T/8T) 분리
-# - Immich, Gonic, Jellyfin, Proxmox, 헤놀로지 통합 대시보드 자동 사전구성
+# - 1층: WACEH NAS & Media Hub + CPU/RAM/TIME + 검색바
+# - 2층: 💾 4-Tier 5대 물리 스토리지 (가로 5열 널찍한 독립 섹션)
+# - 3층: 🎬 미디어 서비스 (3열) | 🛠️ 인프라 & 스토리지 (2열)
 # ==============================================================================
 
 set -e
@@ -113,7 +113,7 @@ FSTAB_EOF
 
 mount -a || true
 
-# 2. settings.yaml (사이트 제목 & 테마)
+# 2. settings.yaml (3단 커스텀 레이아웃 및 테마)
 cat << 'SETTINGS_EOF' > /opt/homepage/config/settings.yaml
 title: Waceh NAS Dashboard
 favicon: https://cdn-icons-png.flaticon.com/512/3208/3208726.png
@@ -123,17 +123,24 @@ headerStyle: clean
 language: ko
 useEqualHeights: true
 hideVersion: true
+
+layout:
+  \"💾 4-Tier 물리 스토리지 (Storage Tiering)\":
+    style: row
+    columns: 5
+  \"🎬 미디어 서비스 (Media Core)\":
+    style: row
+    columns: 3
+  \"🛠️ 인프라 & 스토리지 (Infrastructure)\":
+    style: row
+    columns: 2
 SETTINGS_EOF
 
-# 3. widgets.yaml (1층: CPU/RAM/TIME + 2층: 5대 디스크 리스트 분리)
+# 3. widgets.yaml (1층: 인사말 + CPU/RAM/TIME + 검색바)
 cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
 - greeting:
     text_size: xl
     text: \"Waceh NAS & Media Hub\"
-
-- search:
-    provider: google
-    target: _blank
 
 - resources:
     label: \"🖥️ 서버 하드웨어 전체 자원 (i5-9500T 6C / 16GB RAM)\"
@@ -141,19 +148,46 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     memory: true
     uptime: true
 
-- resources:
-    label: \"💾 5-Tier 물리 스토리지 풀 (SSD + HDD)\"
-    disk:
-      - /mnt/intel710
-      - /mnt/intel530
-      - /mnt/gold
-      - /mnt/pds1
-      - /mnt/pds2
+- search:
+    provider: google
+    target: _blank
 WIDGETS_EOF
 
-# 4. services.yaml (전체 외부 DDNS 링크 + 내부 초고속 상태 점검)
+# 4. services.yaml (2층: 5대 디스크 스토리지 카드 | 3층: 미디어 & 인프라 서비스)
 cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
-- 미디어 서비스 (Media Core):
+- 💾 4-Tier 물리 스토리지 (Storage Tiering):
+    - 1. Host OS SSD:
+        icon: proxmox.png
+        description: Intel 710 100G (OS 24.5G 여유)
+        widget:
+          type: disk
+          path: /mnt/intel710
+    - 2. 고속 컨테이너 풀:
+        icon: docker.png
+        description: Intel 530 120G (LXC/DB 풀)
+        widget:
+          type: disk
+          path: /mnt/intel530
+    - 3. 라이프 & 미디어 허브:
+        icon: synology.png
+        description: WD Gold 4TB (사진·음악 3.4T 여유)
+        widget:
+          type: disk
+          path: /mnt/gold
+    - 4. PDS1 대용량 미디어:
+        icon: jellyfin.png
+        description: WD White 18TB (영화 6.8T 사용)
+        widget:
+          type: disk
+          path: /mnt/pds1
+    - 5. PDS2 보조 엔터:
+        icon: jellyfin.png
+        description: WD White 8TB (7.0T 여유)
+        widget:
+          type: disk
+          path: /mnt/pds2
+
+- 🎬 미디어 서비스 (Media Core):
     - Immich Photo:
         icon: immich.png
         href: http://waceh.asuscomm.com:2283
@@ -170,7 +204,7 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
         description: iGPU QuickSync 4K 비디오 (WD White 18TB / 8TB)
         ping: http://192.168.1.105:8096
 
-- 인프라 & 스토리지 (Infrastructure):
+- 🛠️ 인프라 & 스토리지 (Infrastructure):
     - Proxmox VE:
         icon: proxmox.png
         href: https://waceh.asuscomm.com:8006
@@ -218,7 +252,8 @@ echo -e "${GREEN}====================================================${NC}"
 echo -e "${GREEN}     Homepage Dashboard (${CTID}) 설치 완료!         ${NC}"
 echo -e "${GREEN}====================================================${NC}"
 echo -e " 1. 접속 URL: ${BLUE}http://${IP_ADDR%/*}:3000${NC} 또는 ${BLUE}http://waceh.asuscomm.com:3000${NC}"
-echo -e " 2. 1층: CPU / RAM / UPTIME 핵심 자원 카드"
-echo -e " 3. 2층: 5대 물리 스토리지 풀 (Intel 710, 530, WD Gold, White 18T/8T)"
-echo -e " 4. 설정 파일 위치: LXC ${CTID} 내부 ${GREEN}/opt/homepage/config/${NC}"
+echo -e " 2. 1층: WACEH NAS & Media Hub + CPU/RAM/TIME + 검색바"
+echo -e " 3. 2층: 💾 4-Tier 5대 물리 스토리지 (가로 5열 널찍한 독립 섹션)"
+echo -e " 4. 3층: 🎬 미디어 서비스 (3열) | 🛠️ 인프라 & 스토리지 (2열)"
+echo -e " 5. 설정 파일 위치: LXC ${CTID} 내부 ${GREEN}/opt/homepage/config/${NC}"
 echo -e "${GREEN}====================================================${NC}"
