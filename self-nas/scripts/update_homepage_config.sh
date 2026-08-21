@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Homepage Dashboard Layout & 5-Disk Storage Detail Updater (self-nas)
+# Homepage Dashboard Unified 4-Row Clean Layout Updater (self-nas)
 # ==============================================================================
-# - 1층: 💾 4-Tier 물리 스토리지 (여유 용량 & 간단 사용처 명시 5열 카드)
+# - 1층: 💾 4-Tier 물리 스토리지 (GB/TB 단위 통일, Intel 710 LVM 70GB 예약 명시)
 # - 2층: 🎬 미디어 서비스 (1줄 3칸)
 # - 3층: 🛠️ 인프라 & 스토리지 (1줄 2칸)
-# - 4층: 🌐 Developer | Social | YouTube (1줄 3칸 나란히 배치)
+# - 4층: 🌐 Developer & Social (GitHub, Instagram, YouTube 1줄 3칸 일렬 배치)
 # ==============================================================================
 
 set -e
@@ -60,7 +60,7 @@ if [ "$NEED_REBOOT" -eq 1 ]; then
     sleep 5
 fi
 
-log_info "Homepage 대시보드 스토리지 라벨(여유용량/사용처) 및 북마크 적용 중..."
+log_info "Homepage 대시보드 통일 레이아웃 및 1줄 3칸 소셜 링크 적용 중..."
 
 pct exec "$CTID" -- bash -c "
 export DEBIAN_FRONTEND=noninteractive
@@ -68,7 +68,7 @@ apt-get update -qq
 
 mkdir -p /opt/homepage/config
 
-# 1. settings.yaml (스토리지 5열, 미디어 3열, 인프라 2열, 북마크 1줄 3열)
+# 1. settings.yaml (스토리지 5열, 미디어 3열, 인프라 2열, 소셜 3열 완벽 통일)
 cat << 'SETTINGS_EOF' > /opt/homepage/config/settings.yaml
 title: Waceh NAS Dashboard
 favicon: https://cdn-icons-png.flaticon.com/512/3208/3208726.png
@@ -89,15 +89,9 @@ layout:
   인프라 & 스토리지:
     style: row
     columns: 2
-  Developer:
+  Developer & Social:
     style: row
-    columns: 1
-  Social:
-    style: row
-    columns: 1
-  YouTube:
-    style: row
-    columns: 1
+    columns: 3
 SETTINGS_EOF
 
 # 2. widgets.yaml (상단 헤더: 인사말 + CPU/RAM/TIME + 검색바)
@@ -117,18 +111,18 @@ cat << 'WIDGETS_EOF' > /opt/homepage/config/widgets.yaml
     target: _blank
 WIDGETS_EOF
 
-# 3. services.yaml (1층: 여유용량 & 사용처 명시 5개 디스크 | 2층: 미디어 | 3층: 인프라)
+# 3. services.yaml (스토리지 5개, 미디어 3개, 인프라 2개, 소셜/개발자 3개 통합)
 cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
 - 4-Tier 물리 스토리지:
-    - Intel 710 100G (24.5G 여유):
-        description: Host OS (Proxmox)
-    - Intel 530 120G (98G 여유):
+    - Intel 710 100GB (24.5GB 여유):
+        description: Host OS (Proxmox / LVM 70GB 예약)
+    - Intel 530 120GB (98.0GB 여유):
         description: VM / LXC / DB 풀
-    - WD Gold 4TB (3.4T 여유):
+    - WD Gold 4TB (3.4TB 여유):
         description: 사진(Immich), 음악(Gonic), 영상
-    - WD White 18TB (9.2T 여유):
+    - WD White 18TB (9.2TB 여유):
         description: PDS1 (Cold Storage / Jellyfin)
-    - WD White 8TB (7.0T 여유):
+    - WD White 8TB (7.0TB 여유):
         description: PDS2 (Cold Storage / Jellyfin)
 
 - 미디어 서비스:
@@ -157,32 +151,28 @@ cat << 'SERVICES_EOF' > /opt/homepage/config/services.yaml
     - Xpenology DSM:
         icon: synology.png
         href: http://waceh.asuscomm.com:5000
-        description: Pure Storage Core (Gold 4T + White 26T)
+        description: Pure Storage Core (Gold 4TB + White 26TB Btrfs)
         ping: http://192.168.1.132:5000
+
+- Developer & Social:
+    - GitHub:
+        icon: github.png
+        href: https://github.com/waceh
+        description: github.com/waceh
+    - Instagram:
+        icon: instagram.png
+        href: https://www.instagram.com/legato____
+        description: @legato____
+    - YouTube:
+        icon: youtube.png
+        href: https://www.youtube.com/@mtk-ey
+        description: @mtk-ey
 SERVICES_EOF
 
-# 4. bookmarks.yaml (1줄 3칸: Developer | Social | YouTube)
-cat << 'BOOKMARKS_EOF' > /opt/homepage/config/bookmarks.yaml
-- Developer:
-    - GitHub:
-        - abbr: GH
-          icon: github.png
-          href: https://github.com/waceh
+# 4. 불필요한 bookmarks.yaml 제거 (세로 중복 노출 차단)
+rm -f /opt/homepage/config/bookmarks.yaml
 
-- Social:
-    - Instagram:
-        - abbr: IG
-          icon: instagram.png
-          href: https://www.instagram.com/legato____
-
-- YouTube:
-    - YouTube:
-        - abbr: YT
-          icon: youtube.png
-          href: https://www.youtube.com/@mtk-ey
-BOOKMARKS_EOF
-
-# 5. custom.css (여백 최적화)
+# 5. custom.css (슬림한 여백과 카드 정돈)
 cat << 'CSS_EOF' > /opt/homepage/config/custom.css
 /* 그룹 및 카드 간 상하 여백 슬림화 */
 .services-group, .group, section, div[class*="gap-"] {
@@ -249,12 +239,12 @@ docker compose down
 docker compose up -d --force-recreate
 "
 
-log_ok "스토리지 라벨(여유용량/사용처) 및 3단/북마크 설정 완료!"
+log_ok "통일된 4-Row 레이아웃(GB/TB 단위 및 1줄 3칸 소셜 링크) 적용 완료!"
 echo ""
 echo -e "${GREEN}====================================================${NC}"
-echo -e " 💾 [1층]: 4-Tier 물리 스토리지 (여유용량 & 사용처 명시 5칸)"
+echo -e " 💾 [1층]: 4-Tier 물리 스토리지 (GB/TB 단위, 710 LVM 70GB 예약 명시)"
 echo -e " 🎬 [2층]: 미디어 서비스 (1줄 3칸)"
 echo -e " 🛠️ [3층]: 인프라 & 스토리지 (1줄 2칸)"
-echo -e " 🌐 [4층]: Developer | Social | YouTube (1줄 3칸)"
+echo -e " 🌐 [4층]: Developer & Social (GitHub | Instagram | YouTube 1줄 3칸)"
 echo -e " 🌐 접속 주소: ${BLUE}http://waceh.asuscomm.com:3000${NC}"
 echo -e "${GREEN}====================================================${NC}"
