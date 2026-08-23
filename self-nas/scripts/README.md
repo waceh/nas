@@ -138,5 +138,56 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
 - **웹 콘솔 주소**: `https://192.168.1.200:9090` (Proxmox root 계정 로그인)
 - **상세 가이드**: [`docs/14_cockpit_disk_monitoring_guide.md`](../docs/14_cockpit_disk_monitoring_guide.md)
 
+---
 
+## ⏰ 10. Proxmox 일일 자동 백업 스케줄러 등록 (`setup_backup_schedule_pve.sh`)
 
+매일 새벽 04:00에 전체 6대 게스트(101~107)를 WD Gold 4TB 백업 스토리지(`nas-backups`)에 무중단 라이브 스냅샷 백업하고 최신 3회분 롤링 보관(Keep Last: 3)을 설정합니다.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/setup_backup_schedule_pve.sh | bash
+```
+
+- **상세 가이드**: [`docs/11_proxmox_backup_and_disaster_recovery_guide.md`](../docs/11_proxmox_backup_and_disaster_recovery_guide.md)
+
+---
+
+## 🔐 11. Tailscale 하이브리드 Subnet Router 구축 (`setup_tailscale_subnet_router.sh`)
+
+Proxmox VE 호스트에 Tailscale WireGuard 2FA 서브넷 라우터(`192.168.1.0/24`)를 구축하여 외부 어디서나 내부 IP로 안전하게 관리자 포트에 접속합니다.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/setup_tailscale_subnet_router.sh | bash
+```
+
+- **상세 가이드**: [`docs/15_tailscale_hybrid_security_and_remote_access_guide.md`](../docs/15_tailscale_hybrid_security_and_remote_access_guide.md)
+
+---
+
+## 🌡️ 12. PVE 실시간 하드웨어 센서 관제 데몬 (`setup_hardware_sensors_pve.sh`)
+
+CPU 코어 온도 및 5대 물리 디스크 온도를 초경량 JSON API(`:8888/sensors`)로 노출하여 Homepage 대시보드와 연동합니다.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/setup_hardware_sensors_pve.sh | bash
+```
+
+---
+
+## 🔒 13. Homepage 대시보드 비밀번호 인증 활성화 (`enable_homepage_auth.sh`)
+
+외부 포트 개방 시 대시보드 보안을 강화하기 위해 패스워드 인증 및 세션 보안을 즉시 적용합니다.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/enable_homepage_auth.sh | bash
+```
+
+---
+
+## 🔍 14. Proxmox 시스템 감사 및 클린업 (`audit_and_cleanup_pve.sh`)
+
+전체 VM/LXC 상태, 스토리지 사용량, 네트워크 브리지, 불필요한 패키지 및 임시 파일 정리 점검을 원클릭으로 수행합니다.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/audit_and_cleanup_pve.sh | bash
+```
