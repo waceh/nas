@@ -186,7 +186,9 @@ services:
     volumes:
       - /opt/media-stack/radarr_config:/config
       - /mnt/temp:/downloads/temp
+      - /mnt/pds1:/pds1
       - /mnt/pds1:/movies
+      - /mnt/pds2:/pds2
       - /mnt/video:/video
 
   # 3. Sonarr (TV 시리즈 / 드라마 자동 수집봇)
@@ -204,7 +206,9 @@ services:
     volumes:
       - /opt/media-stack/sonarr_config:/config
       - /mnt/temp:/downloads/temp
-      - /mnt/pds2:/tv
+      - /mnt/pds1:/pds1
+      - /mnt/pds1:/tv
+      - /mnt/pds2:/pds2
       - /mnt/video:/video
 
   # 4. Prowlarr (토렌트 인덱서/트래커 자동 연동)
