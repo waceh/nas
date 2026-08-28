@@ -42,29 +42,29 @@ if ! pct status "$CTID" &>/dev/null; then
     exit 1
 fi
 
-log_info "1. LXC ${CTID} 내부 NFS 클라이언트 및 다운로드 마운트 디렉토리 점검..."
+log_info "1. LXC ${CTID} 필수 패키지 점검 (nfs-common, curl)..."
 pct exec "$CTID" -- bash -c "
 export DEBIAN_FRONTEND=noninteractive
-apt-get update -qq
-apt-get install -y -qq nfs-common curl ca-certificates
+apt-get update
+apt-get install -y nfs-common curl ca-certificates
 
 mkdir -p /mnt/gold-temp /mnt/gold-music /mnt/gold-video /opt/metube/data /opt/metube/downloads /opt/metube/audio
 
-# /etc/fstab NFS 자동 마운트 등록 (NAS IP 접근 가능 시)
+# 고성능 락프리 NFSv3 마운트 등록 (타임아웃 3초 soft 설정)
 if ! grep -q \"/mnt/gold-temp\" /etc/fstab; then
-    echo \"${NAS_IP}:/volume1/temp /mnt/gold-temp nfs defaults,nofail,bg,intr,vers=4.1 0 0\" >> /etc/fstab
+    echo \"${NAS_IP}:/volume1/temp /mnt/gold-temp nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr 0 0\" >> /etc/fstab
 fi
 if ! grep -q \"/mnt/gold-music\" /etc/fstab; then
-    echo \"${NAS_IP}:/volume1/music /mnt/gold-music nfs defaults,nofail,bg,intr,vers=4.1 0 0\" >> /etc/fstab
+    echo \"${NAS_IP}:/volume1/music /mnt/gold-music nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr 0 0\" >> /etc/fstab
 fi
 if ! grep -q \"/mnt/gold-video\" /etc/fstab; then
-    echo \"${NAS_IP}:/volume1/video /mnt/gold-video nfs defaults,nofail,bg,intr,vers=4.1 0 0\" >> /etc/fstab
+    echo \"${NAS_IP}:/volume1/video /mnt/gold-video nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr 0 0\" >> /etc/fstab
 fi
 
 mount -a || true
 "
 
-log_info "2. MeTube Docker Compose 스택 배포 중..."
+log_info "2. MeTube Docker Compose 설정 생성..."
 pct exec "$CTID" -- bash -c "
 cat << 'EOF' > /opt/metube/docker-compose.yml
 services:
@@ -92,7 +92,10 @@ services:
       - /mnt/gold-music:/mnt/gold-music
       - /mnt/gold-video:/mnt/gold-video
 EOF
+"
 
+log_info "3. MeTube Docker 이미지 다운로드 및 기동 중 (약 200MB)..."
+pct exec "$CTID" -- bash -c "
 cd /opt/metube
 docker compose pull
 docker compose up -d --remove-orphans

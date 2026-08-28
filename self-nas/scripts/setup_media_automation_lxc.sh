@@ -89,11 +89,11 @@ log_ok "LXC ${CTID} 생성 및 시작 완료!"
 sleep 5
 
 # 5. 패키지 설치 및 Docker + NFS + 스택 배포 (LXC 내부)
-log_info "LXC 내부 Docker 설치 및 Jellyseerr + qBittorrent 스택 구성 중..."
+log_info "LXC 내부 패키지 및 Docker 엔진 설치 중..."
 pct exec "$CTID" -- bash -c "
 export DEBIAN_FRONTEND=noninteractive
-apt-get update -qq
-apt-get install -y -qq curl ca-certificates gnupg nfs-common
+apt-get update
+apt-get install -y curl ca-certificates gnupg nfs-common
 
 # Docker 공식 저장소 설치
 install -m 0755 -d /etc/apt/keyrings
@@ -102,24 +102,24 @@ chmod a+r /etc/apt/keyrings/docker.gpg
 
 echo \"deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \$(. /etc/os-release && echo \"\$VERSION_CODENAME\") stable\" > /etc/apt/sources.list.d/docker.list
 
-apt-get update -qq
-apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+apt-get update
+apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 # NFS 마운트 디렉토리 생성
 mkdir -p /mnt/temp /mnt/video /mnt/pds1 /mnt/pds2 /opt/media-stack/jellyseerr_config /opt/media-stack/qbittorrent_config
 
-# /etc/fstab NFS 자동 마운트 등록
+# /etc/fstab 고성능 락프리 NFSv3 마운트 등록
 if ! grep -q \"/mnt/temp\" /etc/fstab; then
-    echo \"${NAS_IP}:/volume1/temp /mnt/temp nfs defaults,nofail,bg,intr,vers=4.1 0 0\" >> /etc/fstab
+    echo \"${NAS_IP}:/volume1/temp /mnt/temp nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr 0 0\" >> /etc/fstab
 fi
 if ! grep -q \"/mnt/video\" /etc/fstab; then
-    echo \"${NAS_IP}:/volume1/video /mnt/video nfs defaults,nofail,bg,intr,vers=4.1 0 0\" >> /etc/fstab
+    echo \"${NAS_IP}:/volume1/video /mnt/video nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr 0 0\" >> /etc/fstab
 fi
 if ! grep -q \"/mnt/pds1\" /etc/fstab; then
-    echo \"${NAS_IP}:/volume2/PDS1 /mnt/pds1 nfs defaults,nofail,bg,intr,vers=4.1 0 0\" >> /etc/fstab
+    echo \"${NAS_IP}:/volume2/PDS1 /mnt/pds1 nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr 0 0\" >> /etc/fstab
 fi
 if ! grep -q \"/mnt/pds2\" /etc/fstab; then
-    echo \"${NAS_IP}:/volume3/PDS2 /mnt/pds2 nfs defaults,nofail,bg,intr,vers=4.1 0 0\" >> /etc/fstab
+    echo \"${NAS_IP}:/volume3/PDS2 /mnt/pds2 nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr 0 0\" >> /etc/fstab
 fi
 
 mount -a || true
@@ -133,7 +133,7 @@ services:
     container_name: jellyseerr
     restart: unless-stopped
     ports:
-      - "5055:5055"
+      - \"5055:5055\"
     environment:
       - LOG_LEVEL=debug
       - TZ=Asia/Seoul
@@ -146,9 +146,9 @@ services:
     container_name: qbittorrent
     restart: unless-stopped
     ports:
-      - "8080:8080"
-      - "6881:6881"
-      - "6881:6881/udp"
+      - \"8080:8080\"
+      - \"6881:6881\"
+      - \"6881:6881/udp\"
     environment:
       - PUID=1000
       - PGID=1000
@@ -164,13 +164,16 @@ services:
       - /mnt/pds1:/downloads/pds1
       - /mnt/pds2:/downloads/pds2
 EOF
+"
 
+log_info "6. Jellyseerr & qBittorrent 이미지 다운로드 및 기동 중..."
+pct exec "$CTID" -- bash -c "
 cd /opt/media-stack
 docker compose pull
 docker compose up -d --remove-orphans
 "
 
-# 6. 부팅 우선순위 설정 (Order 3)
+# 7. 부팅 우선순위 설정 (Order 3)
 pct set "$CTID" --startup "order=3,up=10,down=20"
 
 IP_CLEAN="${IP_ADDR%/*}"
