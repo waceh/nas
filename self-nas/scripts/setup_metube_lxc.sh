@@ -71,8 +71,9 @@ fi
 
 mount -a || true
 
-# WD Gold 4TB 실제 공유폴더 내 download 디렉토리 생성
+# WD Gold 4TB 실제 공유폴더 내 download 디렉토리 생성 및 전체 쓰기 권한 부여
 mkdir -p /mnt/gold-video/downloads /mnt/gold-music/downloads /mnt/gold-temp/downloads
+chmod -R 777 /mnt/gold-video/downloads /mnt/gold-music/downloads /mnt/gold-temp/downloads || true
 "
 
 log_info "2. MeTube Docker Compose 설정 생성 (WD Gold downloads 디렉토리 직통 연동)..."
@@ -83,11 +84,13 @@ services:
     image: ghcr.io/alexta69/metube:latest
     container_name: metube
     restart: unless-stopped
+    user: \"0:0\"
     ports:
       - \"${PORT}:8081\"
     environment:
-      UID: 1000
-      GID: 1000
+      UID: 0
+      GID: 0
+      UMASK: \"000\"
       DOWNLOAD_DIR: /downloads
       AUDIO_DOWNLOAD_DIR: /audio
       CUSTOM_DIRS: \"true\"
