@@ -178,10 +178,10 @@ layout:
   "미디어 수집 & 다운로드":
     style: row
     columns: 3
-  "인프라 & 관제":
+  "인프라 & 시스템 관제":
     style: row
     columns: 5
-  "Developer & Social":
+  "개발 & 바로가기":
     style: row
     columns: 3
 SETTINGS_EOF
@@ -191,7 +191,7 @@ SETTINGS_EOF
 pct exec "$CTID" -- bash -c 'cat << "WIDGETS_EOF" > /opt/homepage/config/widgets.yaml
 - greeting:
     text_size: xl
-    text: "Waceh NAS & Media Hub"
+    text: "Waceh NAS & 미디어 허브"
 
 - resources:
     label: "🖥️ 서버 하드웨어 전체 자원 (i5-9500T 6C / 16GB RAM)"
@@ -210,70 +210,70 @@ TMP_SERVICES=$(mktemp)
 cat << 'SERVICES_BASE' > "$TMP_SERVICES"
 - "4-Tier 물리 스토리지":
     - "Intel 710 100GB (94.5GB 여유)":
-        description: "Host OS (Proxmox VE)"
+        description: "호스트 OS (Proxmox VE)"
         href: "#"
     - "Intel 530 120GB (98.0GB 여유)":
-        description: "VM / LXC / DB 풀"
+        description: "VM / LXC / DB 고속 풀"
         href: "#"
     - "WD Gold 4TB (3.4TB 여유)":
         description: "사진(Immich), 음악(Gonic), 영상"
         href: "#"
     - "WD White 18TB (9.2TB 여유)":
-        description: "PDS1 (Cold Storage / Jellyfin)"
+        description: "PDS1 (콜드 스토리지 / Jellyfin)"
         href: "#"
     - "WD White 8TB (7.0TB 여유)":
-        description: "PDS2 (Cold Storage / Jellyfin)"
+        description: "PDS2 (콜드 스토리지 / Jellyfin)"
         href: "#"
 
 - "미디어 스트리밍":
-    - "Immich Photo":
+    - "Immich 사진 클라우드":
         icon: immich.png
         href: http://waceh.asuscomm.com:2283
-        description: "AI 사진 백업 / 앨범 인식 (WD Gold 4TB)"
+        description: "AI 사진 백업 & 앨범 자동 인식 (WD Gold 4TB)"
         ping: http://192.168.1.103:2283
-    - "Gonic Music":
+    - "Gonic 무손실 음악":
         icon: gonic.png
         href: http://waceh.asuscomm.com:4747
-        description: "무손실 음악 스트리밍 / Amperfy (WD Gold 4TB)"
+        description: "무손실 음원 스트리밍 & 폴더 브라우징 (WD Gold 4TB)"
         ping: http://192.168.1.104:4747
-    - "Jellyfin Video":
+    - "Jellyfin 4K 영상":
         icon: jellyfin.png
         href: http://waceh.asuscomm.com:8096
-        description: "iGPU QuickSync 4K 비디오 (WD White 18TB / 8TB)"
+        description: "iGPU QuickSync 4K HW 가속 미디어 (26TB)"
         ping: http://192.168.1.105:8096
 
 - "미디어 수집 & 다운로드":
-    - "MeTube Downloader":
+    - "MeTube 유튜브 다운로더":
         icon: youtube.png
         href: http://waceh.asuscomm.com:8081
-        description: "YouTube/웹 4K 영상 & 음원 추출 (WD Gold)"
+        description: "YouTube/웹 4K 영상 & 고음질 음원 추출 (WD Gold)"
         ping: http://192.168.1.107:8081
-    - "Jellyseerr Media":
+    - "Jellyseerr 미디어 요청":
         icon: jellyseerr.png
         href: http://waceh.asuscomm.com:5055
-        description: "넷플릭스 스타일 미디어 원클릭 요청 UI"
+        description: "넷플릭스 스타일 미디어 원클릭 요청 & 탐색 UI"
         ping: http://192.168.1.109:5055
-    - "qBittorrent":
+    - "qBittorrent 다운로더":
         icon: qbittorrent.png
         href: http://waceh.asuscomm.com:8080
         description: "스마트 버퍼링 다운로더 (WD Gold Temp)"
         ping: http://192.168.1.109:8080
 
-- "인프라 & 관제":
-    - "Proxmox VE":
+- "인프라 & 시스템 관제":
+    - "Proxmox 하이퍼바이저":
         icon: proxmox.png
         href: https://waceh.asuscomm.com:8006
-        description: "하이퍼바이저 호스트"
+        description: "PVE 호스트 가상화 콘솔"
         ping: https://192.168.1.200:8006
-    - "Xpenology DSM":
+    - "헤놀로지 스토리지 코어":
         icon: synology.png
         href: http://waceh.asuscomm.com:5000
-        description: "Pure Storage Core"
+        description: "순수 Samba/NFS 파일 서버"
         ping: http://192.168.1.132:5000
-    - "Cockpit GUI":
+    - "Cockpit 디스크 건강도":
         icon: cockpit.png
         href: https://waceh.asuscomm.com:9090
-        description: "디스크 S.M.A.R.T 관제"
+        description: "5대 디스크 S.M.A.R.T & 실시간 온도"
         widget:
           type: customapi
           url: http://192.168.1.200:61208/api/temp
@@ -290,10 +290,10 @@ SERVICES_BASE
 
 if [ -n "$ADGUARD_USER" ] && [ -n "$ADGUARD_PASS" ]; then
 cat << ADGUARD_WIDGET_EOF >> "$TMP_SERVICES"
-    - "AdGuard Home":
+    - "AdGuard 광고차단 & DNS":
         icon: adguard-home.png
         href: ${ADGUARD_URL}
-        description: "광고차단 & 내부 DNS"
+        description: "네트워크 광고차단 & 내부 로컬 DNS"
         widget:
           type: adguard
           url: ${ADGUARD_URL}
@@ -302,35 +302,35 @@ cat << ADGUARD_WIDGET_EOF >> "$TMP_SERVICES"
 ADGUARD_WIDGET_EOF
 else
 cat << ADGUARD_PING_EOF >> "$TMP_SERVICES"
-    - "AdGuard Home":
+    - "AdGuard 광고차단 & DNS":
         icon: adguard-home.png
         href: ${ADGUARD_URL}
-        description: "광고차단 & 내부 DNS"
+        description: "네트워크 광고차단 & 내부 로컬 DNS"
         ping: ${ADGUARD_URL}
 ADGUARD_PING_EOF
 fi
 
 cat << 'SERVICES_REST' >> "$TMP_SERVICES"
-    - "Uptime Kuma":
+    - "Uptime Kuma 장애 감시":
         icon: uptime-kuma.png
         href: http://waceh.asuscomm.com:3001
-        description: "24시간 장애 감시"
+        description: "24시간 서비스 헬스체크 & 텔레그램 알림"
         widget:
           type: uptimekuma
           url: http://192.168.1.107:3001
           slug: default
 
 
-- "Developer & Social":
-    - "GitHub":
+- "개발 & 바로가기":
+    - "GitHub 저장소":
         icon: github.png
         href: https://github.com/waceh
         description: "github.com/waceh"
-    - "Instagram":
+    - "Instagram 인스타그램":
         icon: instagram.png
         href: https://www.instagram.com/legato____
         description: "@legato____"
-    - "YouTube":
+    - "YouTube 채널":
         icon: youtube.png
         href: https://www.youtube.com/@mtk-ey
         description: "@mtk-ey"

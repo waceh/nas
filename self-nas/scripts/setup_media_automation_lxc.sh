@@ -114,7 +114,23 @@ apt-get update
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 # NFS 마운트 디렉토리 생성
-mkdir -p /mnt/temp /mnt/video /mnt/pds1 /mnt/pds2 /opt/media-stack/jellyseerr_config /opt/media-stack/qbittorrent_config
+mkdir -p /mnt/temp /mnt/video /mnt/pds1 /mnt/pds2 /opt/media-stack/jellyseerr_config /opt/media-stack/qbittorrent_config/qBittorrent
+
+# qBittorrent 한국어 기본 로케일 사전 구성
+cat << 'QBIT_CONF_EOF' > /opt/media-stack/qbittorrent_config/qBittorrent/qBittorrent.conf
+[BitTorrent]
+Session\DefaultSavePath=/downloads/temp
+Session\Port=6881
+Session\TempPath=/downloads/temp
+
+[General]
+Locale=ko
+
+[Preferences]
+General\Locale=ko
+WebUI\Locale=ko
+WebUI\Port=8080
+QBIT_CONF_EOF
 
 # /etc/fstab 고성능 락프리 NFSv3 마운트 등록
 if ! grep -q \"/mnt/temp\" /etc/fstab; then
