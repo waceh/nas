@@ -207,6 +207,8 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
 
 ---
 
+---
+
 ## 🍿 16. Jellyseerr & qBittorrent 스마트 미디어 수집 스택 배포 (`setup_media_automation_lxc.sh`)
 
 넷플릭스 스타일 UI에서 미디어를 검색/원클릭 요청하고, 스마트 버퍼링(WD Gold 4TB 임시 조각 쓰기 ➔ 26TB White 하드 스핀다운 완벽 보존)으로 전자동 수집합니다.
@@ -219,3 +221,13 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
   - Jellyseerr (요청 UI): `http://192.168.1.109:5055`
   - qBittorrent (다운로더): `http://192.168.1.109:8080`
 - **상세 가이드**: [`docs/17_media_automation_jellyseerr_qbittorrent_guide.md`](../docs/17_media_automation_jellyseerr_qbittorrent_guide.md)
+
+---
+
+## 🇰🇷 17. MeTube 웹 UI 100% 한국어 즉시 패치 (`patch_metube_korean.sh`)
+
+현재 구동 중인 MeTube(`http://192.168.1.107:8081`)의 영문 메뉴(Add, Format, Quality, Downloads 등)를 1초 만에 완전한 한국어로 실시간 번역 패치합니다.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/patch_metube_korean.sh | bash
+```
