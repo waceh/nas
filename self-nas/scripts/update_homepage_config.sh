@@ -172,7 +172,10 @@ layout:
   "4-Tier 물리 스토리지":
     style: row
     columns: 5
-  "미디어 서비스":
+  "미디어 스트리밍":
+    style: row
+    columns: 3
+  "미디어 수집 & 다운로드":
     style: row
     columns: 3
   "인프라 & 관제":
@@ -222,7 +225,7 @@ cat << 'SERVICES_BASE' > "$TMP_SERVICES"
         description: "PDS2 (Cold Storage / Jellyfin)"
         href: "#"
 
-- "미디어 서비스":
+- "미디어 스트리밍":
     - "Immich Photo":
         icon: immich.png
         href: http://waceh.asuscomm.com:2283
@@ -238,6 +241,23 @@ cat << 'SERVICES_BASE' > "$TMP_SERVICES"
         href: http://waceh.asuscomm.com:8096
         description: "iGPU QuickSync 4K 비디오 (WD White 18TB / 8TB)"
         ping: http://192.168.1.105:8096
+
+- "미디어 수집 & 다운로드":
+    - "MeTube Downloader":
+        icon: youtube.png
+        href: http://waceh.asuscomm.com:8081
+        description: "YouTube/웹 4K 영상 & 음원 추출 (WD Gold)"
+        ping: http://192.168.1.107:8081
+    - "Jellyseerr Media":
+        icon: jellyseerr.png
+        href: http://waceh.asuscomm.com:5055
+        description: "넷플릭스 스타일 미디어 원클릭 요청 UI"
+        ping: http://192.168.1.109:5055
+    - "qBittorrent":
+        icon: qbittorrent.png
+        href: http://waceh.asuscomm.com:8080
+        description: "스마트 버퍼링 다운로더 (WD Gold Temp)"
+        ping: http://192.168.1.109:8080
 
 - "인프라 & 관제":
     - "Proxmox VE":

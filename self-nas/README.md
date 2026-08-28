@@ -41,7 +41,8 @@
 | **LXC 103: Immich Server** | 2 Core / 4GB | Intel 530 SSD (DB/앱) + WD Gold 4TB (사진/영상 원본) | AI 기반 사진 백업 백엔드 + PostgreSQL + Vector Search DB |
 | **LXC 104: Gonic Music Server** | 1 Core / 512MB | Intel 530 SSD (루트/DB) + WD Gold 4TB (음원 라이브러리) | 초경량 Go 기반 **폴더(디렉토리) 기반 고음질 음악 스트리밍 서버** (Subsonic API) |
 | **LXC 105: Jellyfin Server** | 2 Core / 2GB | Intel 530 SSD (루트/캐시) + WD Gold 4TB (홈비디오) + WD White 26TB (영화/드라마) | Intel UHD 630 iGPU QuickSync HW 가속 미디어 스트리밍 |
-| **LXC 107: Homepage + Kuma** | 1 Core / 512MB | Intel 530 SSD (`local-530`) | **올인원 포털 대시보드 (4단 5열 레이아웃) & Uptime Kuma 24H 장애 관제 데몬** |
+| **LXC 107: Homepage + Kuma + MeTube** | 1 Core / 512MB | Intel 530 SSD (`local-530`) | **올인원 포털 대시보드 (4단 대칭 레이아웃) & Uptime Kuma 24H 장애 관제 & MeTube 유튜브 4K/음원 다운로더** |
+| **LXC 109: Jellyseerr + qBit** | 2 Core / 1024MB | Intel 530 SSD + WD Gold Temp 버퍼 | **넷플릭스 스타일 미디어 원클릭 요청 UI & 스마트 버퍼링 다운로더 (26TB 스핀다운 보호)** |
 | **Host: Cockpit Web GUI** | PVE Host | Debian 12 Native (`:9090`) | **5대 물리 디스크 실시간 온도 & S.M.A.R.T 건강도 웹 콘솔** |
 | **LXC 106: Dev Web Server** | 2 Core / 2GB | Intel 530 SSD (MLC, Non-Disk) | Spring Boot / Node.js / Nginx 개인 프로젝트 개발 & 테스트 웹 서버 |
 | *(선택 확장) Windows VM* | *2~4 Core / 4GB* | *Intel 530 SSD or WD Gold 4TB* | *추후 필요 시에만 최소 리소스로 On-Demand 생성 예정* |
@@ -97,9 +98,10 @@ LG U+ 공유기와 ASUS 공유기 사이 **이중 NAT** 상태. 포트포워딩/
   - [x] 7-2. `LXC 103 (Immich Photo Server)` 구축 (4TB Gold 실시간 백업 + 10GB+ 사진 인덱싱 완료)
   - [x] 7-3. `LXC 104 (Gonic Music Server)` 구축 (4TB 음악 라이브러리 연동 & 폴더 브라우징 / CarPlay 연동)
   - [x] 7-4. `LXC 105 (Jellyfin Media Server)` 구축 (26TB 미디어 연동 & iGPU QSV 가속 & RAM 캐시 영구화)
-  - [x] 7-5. `LXC 107 (Homepage + Uptime Kuma)` 구축 (4단 대칭 포털 & 24H 장애 관제 텔레그램 연동)
-  - [x] 7-6. `Proxmox Host (Cockpit)` 구축 (5대 디스크 실시간 온도 & S.M.A.R.T 건강도 관제)
-  - [ ] 7-7. `LXC 106 (Dev Web Server)` Spring Boot / Node.js 개발 서버 구축 (선택 대기)
+  - [x] 7-5. `LXC 107 (Homepage + Uptime Kuma + MeTube)` 구축 (4단 대칭 포털 & 24H 장애 관제 & YouTube 4K/음원 추출)
+  - [x] 7-6. `LXC 109 (Jellyseerr + qBittorrent)` 구축 (넷플릭스 스타일 요청 UI & 스마트 버퍼링 다운로더)
+  - [x] 7-7. `Proxmox Host (Cockpit)` 구축 (5대 디스크 실시간 온도 & S.M.A.R.T 건강도 관제)
+  - [ ] 7-8. `LXC 106 (Dev Web Server)` Spring Boot / Node.js 개발 서버 구축 (선택 대기)
 
 - [ ] 10. (선택 확장) Windows VM 필요 시 Intel 530 SSD or WD Gold에 On-Demand 생성
 - [x] 11. (상시 전원 관리) NAS Graceful 순차 기동·종료 자동화 (`nas_power.sh` + 5대 디스크 통합 모니터) → [`docs/10_graceful_power_management_and_jellyfin_guide.md`](docs/10_graceful_power_management_and_jellyfin_guide.md)

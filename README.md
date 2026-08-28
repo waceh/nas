@@ -102,6 +102,8 @@ flowchart TB
 | | **LXC 103: Immich Server** | 2 Core / 4GB RAM, AI 사진 백업 백엔드 + PostgreSQL + Vector DB (미디어 저장은 **헤놀로지 WD Gold 4TB** NFS 연동) |
 | | **LXC 104: Gonic Server** | 1 Core / 512MB RAM, Go 기반 초경량 **폴더(디렉토리) 기반 고음질 음악 스트리밍** (Subsonic API 완벽 호환, 음원은 **헤놀로지 WD Gold 4TB** NFS 연동) |
 | | **LXC 105: Jellyfin Server** | 2 Core / 2GB RAM, Intel UHD 630 iGPU QuickSync HW 가속 미디어 서버 (미디어 라이브러리는 **헤놀로지 WD Gold 4TB** NFS 연동) |
+| | **LXC 107: Homepage + MeTube** | 1 Core / 512MB RAM, 올인원 포털 대시보드 + Uptime Kuma + **YouTube 4K/음원 추출 다운로더** |
+| | **LXC 109: Jellyseerr + qBit** | 2 Core / 1024MB RAM, **넷플릭스 스타일 미디어 요청 UI & 스마트 버퍼링 다운로더 (26TB 스핀다운 보호)** |
 | | **LXC 106: Dev Web Server** | 2 Core / 2GB RAM, Spring Boot / Node.js / Nginx 개인 개발 및 테스트 웹 서버 |
 
 ### 💾 물리적 디스크 용도 및 역할 분담 (4-Tier Storage)

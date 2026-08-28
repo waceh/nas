@@ -40,7 +40,8 @@
 | **LXC 103** | **Immich Photo Server** | 2C / 4GB | Intel 530 SSD + WD Gold (`/volume1/photo` NFS) | **✅ 구축 완료**<br/>*(10GB+ 색인 완료)* | [`09_immich_caddy_https_and_storage_setup.md`](09_immich_caddy_https_and_storage_setup.md)<br>[`setup_immich_lxc.sh`](../scripts/setup_immich_lxc.sh) |
 | **LXC 104** | **Gonic Music Server** | 1C / 512MB | Intel 530 SSD + WD Gold (`/volume1/music` NFS) | **✅ 구축 완료**<br/>*(폴더 기반 스트리밍)* | [`09_immich_caddy_https_and_storage_setup.md`](09_immich_caddy_https_and_storage_setup.md)<br>[`setup_gonic_lxc.sh`](../scripts/setup_gonic_lxc.sh) |
 | **LXC 105** | **Jellyfin Media Server** | 2C / 2GB | Intel 530 SSD + iGPU QuickSync + 4단 NFS (`video`, `music`, `pds1`, `pds2`) | **✅ 구축 완료**<br/>*(iGPU QSV + RAM 캐시 + NFSv3 락프리)* | [`10_graceful_power_management_and_jellyfin_guide.md`](10_graceful_power_management_and_jellyfin_guide.md)<br>[`setup_jellyfin_lxc.sh`](../scripts/setup_jellyfin_lxc.sh) |
-| **LXC 107** | **Homepage + Uptime Kuma** | 1C / 512MB | Intel 530 SSD (`local-530`) | **✅ 구축 완료**<br/>*(포털 & 24H 장애 관제)* | [`12_homepage_dashboard_and_disk_architecture.md`](12_homepage_dashboard_and_disk_architecture.md)<br>[`update_homepage_config.sh`](../scripts/update_homepage_config.sh) |
+| **LXC 107** | **Homepage + Uptime Kuma + MeTube** | 1C / 512MB | Intel 530 SSD (`local-530`) | **✅ 구축 완료**<br/>*(포털 & 24H 관제 & 유튜브 다운로더)* | [`12_homepage_dashboard_and_disk_architecture.md`](12_homepage_dashboard_and_disk_architecture.md)<br>[`16_metube_youtube_media_downloader_guide.md`](16_metube_youtube_media_downloader_guide.md)<br>[`setup_metube_lxc.sh`](../scripts/setup_metube_lxc.sh) |
+| **LXC 109** | **Jellyseerr + qBittorrent** | 2C / 1024MB | Intel 530 SSD + WD Gold Temp 버퍼 | **✅ 스택 구성 완료**<br/>*(미디어 원클릭 요청 & 스마트 버퍼링)* | [`17_media_automation_jellyseerr_qbittorrent_guide.md`](17_media_automation_jellyseerr_qbittorrent_guide.md)<br>[`setup_media_automation_lxc.sh`](../scripts/setup_media_automation_lxc.sh) |
 | **LXC 102** | **AdGuard Home** | 1C / 512MB | Intel 530 SSD (`local-530`) | **✅ 구축 완료**<br/>*(광고차단 & 로컬 DNS)* | [`13_adguard_home_dns_setup.md`](13_adguard_home_dns_setup.md)<br>[`setup_adguard_lxc.sh`](../scripts/setup_adguard_lxc.sh) |
 | **Host** | **Cockpit Web GUI** | PVE Host | Debian 12 Native (`:9090`) | **✅ 설치 완료**<br/>*(디스크 S.M.A.R.T/온도)* | [`14_cockpit_disk_monitoring_guide.md`](14_cockpit_disk_monitoring_guide.md)<br>[`setup_cockpit_pve.sh`](../scripts/setup_cockpit_pve.sh) |
 | **LXC 106** | **Dev Web Server** | 2C / 2GB | Intel 530 SSD (`local-530`) | **⚪ 대기 (선택)** | Spring Boot / Node 개발용 |
@@ -169,7 +170,7 @@ bash /root/nas_power.sh shutdown-host
 - [07. 멀티미디어 서비스 스택 마스터 가이드](07_media_services_master_guide.md)
 - [08. 4-Tier 스토리지 티어링 및 미디어 분리 아키텍처](08_storage_tiering_and_media_separation.md)
 
-### 🚀 2. 실전 서비스 운영 및 고도화 가이드 (09~15)
+### 🚀 2. 실전 서비스 운영 및 고도화 가이드 (09~17)
 - [00. 작업 진행 현황 및 인수인계 마스터 노트](00_progress_and_handover_notes.md) (현재 문서)
 - [09. Immich & Gonic 실전 운영 마스터 가이드](09_immich_caddy_https_and_storage_setup.md)
 - [10. NAS Graceful 순차 전원 & Jellyfin 구축 가이드](10_graceful_power_management_and_jellyfin_guide.md)
@@ -178,6 +179,8 @@ bash /root/nas_power.sh shutdown-host
 - [13. AdGuard Home 네트워크 광고 차단 및 내부 DNS 구축 가이드](13_adguard_home_dns_setup.md)
 - [14. Cockpit 웹 시스템 및 5대 디스크 S.M.A.R.T 건강도 관제 가이드](14_cockpit_disk_monitoring_guide.md)
 - [15. Tailscale WireGuard 하이브리드 보안망 및 원격 접속 가이드](15_tailscale_hybrid_security_and_remote_access_guide.md)
+- [16. MeTube 고화질 영상/음원 원클릭 웹 다운로더 구축 가이드](16_metube_youtube_media_downloader_guide.md)
+- [17. Jellyseerr & qBittorrent 스마트 미디어 수집 스택 가이드](17_media_automation_jellyseerr_qbittorrent_guide.md)
 
 ### 🔮 3. 아키텍처 검토 및 확장 로드맵 (97~99)
 - [97. OCI 하이브리드 AI 서비스 및 Ollama 아키텍처 가이드](97_oci_hybrid_ai_service_and_ollama_architecture.md)

@@ -191,3 +191,31 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/ena
 ```bash
 curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/audit_and_cleanup_pve.sh | bash
 ```
+
+---
+
+## 📹 15. MeTube 고화질 영상/음원 원클릭 웹 다운로더 배포 (`setup_metube_lxc.sh`)
+
+yt-dlp 기반 유튜브/웹 영상 4K 비디오 및 MP3/FLAC 고음질 음원을 NAS(WD Gold 4TB)로 즉시 다운로드하여 Gonic 및 Jellyfin에 자동 연동합니다.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/setup_metube_lxc.sh | bash
+```
+
+- **웹 콘솔 주소**: `http://192.168.1.107:8081` (또는 `http://waceh.asuscomm.com:8081`)
+- **상세 가이드**: [`docs/16_metube_youtube_media_downloader_guide.md`](../docs/16_metube_youtube_media_downloader_guide.md)
+
+---
+
+## 🍿 16. Jellyseerr & qBittorrent 스마트 미디어 수집 스택 배포 (`setup_media_automation_lxc.sh`)
+
+넷플릭스 스타일 UI에서 미디어를 검색/원클릭 요청하고, 스마트 버퍼링(WD Gold 4TB 임시 조각 쓰기 ➔ 26TB White 하드 스핀다운 완벽 보존)으로 전자동 수집합니다.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/setup_media_automation_lxc.sh | bash
+```
+
+- **웹 콘솔 주소**:
+  - Jellyseerr (요청 UI): `http://192.168.1.109:5055`
+  - qBittorrent (다운로더): `http://192.168.1.109:8080`
+- **상세 가이드**: [`docs/17_media_automation_jellyseerr_qbittorrent_guide.md`](../docs/17_media_automation_jellyseerr_qbittorrent_guide.md)

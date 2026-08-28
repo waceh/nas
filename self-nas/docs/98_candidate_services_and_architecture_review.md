@@ -12,16 +12,17 @@
 | **인프라/관제** | **📊 Uptime Kuma** | LXC 107 (`:3001`) | ~40 MB | **✅ 실제 구축 완료** | 24시간 서비스 장애/복구 모니터링 & 텔레그램 알림 ([가이드 12](12_homepage_dashboard_and_disk_architecture.md)) |
 | **인프라/관제** | **🛡️ AdGuard Home** | LXC 102 (`:80/53`)| ~40 MB | **✅ 실제 구축 완료** | 집안 전체 기기 광고/트래커 차단 & 내부 DNS 매핑 ([가이드 13](13_adguard_home_dns_setup.md)) |
 | **인프라/관제** | **🖥️ Cockpit Web GUI** | PVE Host (`:9090`) | ~10 MB | **✅ 실제 구축 완료** | 5대 물리 디스크 실시간 온도 & S.M.A.R.T 건강도 관제 ([가이드 14](14_cockpit_disk_monitoring_guide.md)) |
-| **네트워크/보안** | **🛡️ Tailscale Subnet Router** | PVE / LXC | ~20 MB | **✅ 설계 & 문서화 완료**<br/>*(구축 대기)* | 관리자 포트(PVE, DSM, SSH) 완전 은폐 & 가족 미디어 포트포워딩 유지 |
-| **접속/런처** | **📑 Organizr** | LXC / Docker | ~50 MB | **⏳ 진행 예정 후보** | 단일 창 탭 런처 포털 (Home 탭에 Homepage 임베드 검토) |
+| **네트워크/보안** | **🛡️ Tailscale Subnet Router** | PVE / LXC | ~20 MB | **✅ 구축 스크립트 & 가이드 완료** | 관리자 포트(PVE, DSM, SSH) 완전 은폐 & 가족 미디어 포트포워딩 유지 ([가이드 15](15_tailscale_hybrid_security_and_remote_access_guide.md)) |
+| **미디어 다운로드** | **📹 MeTube Downloader** | LXC 107 (`:8081`) | ~40 MB | **✅ 구축 스크립트 & 가이드 완료** | YouTube/웹 영상 4K 및 MP3 고음질 추출 & Gonic/Jellyfin 연동 ([가이드 16](16_metube_youtube_media_downloader_guide.md)) |
+| **미디어 자동화** | **🍿 Jellyseerr** | LXC 109 (`:5055`) | ~100 MB | **✅ 구축 스크립트 & 가이드 완료** | 넷플릭스 스타일 웹 화면에서 영화/드라마 원클릭 요청 UI ([가이드 17](17_media_automation_jellyseerr_qbittorrent_guide.md)) |
+| **미디어 자동화** | **⚡ qBittorrent-nox** | LXC 109 (`:8080`) | ~80 MB | **✅ 구축 스크립트 & 가이드 완료** | 스마트 버퍼링(WD Gold 4TB 1차 조각 쓰기 ➔ 26TB White 하드 보호) ([가이드 17](17_media_automation_jellyseerr_qbittorrent_guide.md)) |
 | **보안/금고** | **🔒 Vaultwarden** | LXC 107 (Docker) | ~20 MB | **⏳ 진행 예정 후보** | 1Password 대체 나만의 초경량 비밀번호/보안메모 금고 |
-| **미디어 자동화** | **🍿 Jellyseerr** | LXC 109 | ~150 MB | **⏳ 진행 예정 후보** | 넷플릭스 스타일 웹 화면에서 영화/드라마 원클릭 요청 UI |
+| **접속/런처** | **📑 Organizr** | LXC / Docker | ~50 MB | **⏳ 진행 예정 후보** | 단일 창 탭 런처 포털 (Home 탭에 Homepage 임베드 검토) |
 | **미디어 자동화** | **🤖 Sonarr / Radarr** | LXC 109 | ~300 MB | **⏳ 진행 예정 후보** | 방영/개봉 일정 추적, 한글 자막 매칭 및 26TB White 하드 자동 분류 |
-| **미디어 자동화** | **⚡ qBittorrent-nox** | LXC 109 | ~100 MB | **⏳ 진행 예정 후보** | 백그라운드 토렌트 다운로드 및 완료 후 자동 시딩 중지 (스핀다운 보호) |
 | **지식/웹사이트** | **📝 Ghost / Astro** | LXC 108 | ~150 MB | **⏳ 진행 예정 후보** | 개인 기술 블로그 & 포트폴리오 웹사이트 |
 | **지식/웹사이트** | **📚 Quartz** | LXC 108 | ~50 MB | **⏳ 진행 예정 후보** | Obsidian(옵시디언) 마크다운 노트를 예쁜 웹 지식 위키로 호스팅 |
 | **파일 관리** | **📁 FileBrowser** | LXC 107 / 독립 | ~15 MB | **⏳ 진행 예정 후보** | 웹 브라우저 기반 파일 탐색기 & 임시 다운로드 링크 공유기 |
-| **AI / 개발** | **🤖 Spring AI Backend** | LXC 106 | ~500 MB | **⏳ 진행 예정 후보** | Java 21 + Spring Boot 기반 개인 AI 챗봇 및 NAS 제어 백엔드 |
+| **AI / 개발** | **🤖 Spring AI Backend** | LXC 106 | ~500 MB | **⏳ 진행 예정 후보** | Java 21 + Spring Boot 기반 개인 AI 챗봇 및 NAS 제어 백엔드 ([가이드 97](97_oci_hybrid_ai_service_and_ollama_architecture.md)) |
 
 ---
 
