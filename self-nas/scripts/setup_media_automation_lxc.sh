@@ -113,8 +113,9 @@ echo \"deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docke
 apt-get update
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# NFS 마운트 디렉토리 생성
+# NFS 마운트 디렉토리 생성 및 권한 개방
 mkdir -p /mnt/temp /mnt/video /mnt/pds1 /mnt/pds2 /opt/media-stack/jellyseerr_config /opt/media-stack/qbittorrent_config/qBittorrent
+chmod -R 777 /opt/media-stack || true
 
 # qBittorrent 한국어 기본 로케일 사전 구성
 cat << 'QBIT_CONF_EOF' > /opt/media-stack/qbittorrent_config/qBittorrent/qBittorrent.conf
@@ -148,6 +149,9 @@ fi
 
 mount -a || true
 
+mkdir -p /mnt/temp/torrents /mnt/video/downloads /mnt/pds1/Movies /mnt/pds2/TV || true
+chmod -R 777 /mnt/temp /mnt/video /mnt/pds1 /mnt/pds2 2>/dev/null || true
+
 # Docker Compose 스택 정의
 cat << 'EOF' > /opt/media-stack/docker-compose.yml
 services:
@@ -174,8 +178,9 @@ services:
       - \"6881:6881\"
       - \"6881:6881/udp\"
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=0
+      - PGID=0
+      - UMASK=000
       - TZ=Asia/Seoul
       - WEBUI_PORT=8080
       - TORRENTING_PORT=6881
