@@ -171,6 +171,17 @@ services:
     volumes:
       - /opt/media-stack/jellyseerr_config:/app/config
 
+  # 2. FlareSolverr (Cloudflare 보안 및 차단 우회 프록시)
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    restart: unless-stopped
+    ports:
+      - "8191:8191"
+    environment:
+      - LOG_LEVEL=info
+      - TZ=Asia/Seoul
+
   # 2. Radarr (영화 자동 수집봇)
   radarr:
     image: lscr.io/linuxserver/radarr:latest
