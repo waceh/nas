@@ -77,12 +77,20 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
    * **애니 루트 폴더**: **`/pds1/Video/animation`** 추가.
 2. `Settings` ➔ `Download Clients` ➔ `+` ➔ `qBittorrent` 추가 ➔ `Test & Save`.
 
-### 4) Prowlarr (토렌트 허브 & FlareSolverr 연동)
-1. [http://192.168.1.109:9696](http://192.168.1.109:9696) 접속 ➔ `Settings` ➔ `Indexers` ➔ `Proxies +`:
-   * **FlareSolverr 추가**: Host `http://flaresolverr:8191` ➔ `Test & Save`.
-2. `Indexers` ➔ `+ Add Indexer`:
-   * **`1337x`**, **`YTS`**, **`EZTV`**, **`TorrentGalaxy`** 추가.
-3. `Settings` ➔ `Apps` ➔ `+`:
+### 4) Prowlarr (토렌트 허브 & FlareSolverr & 통신사 SNI 우회 연동)
+1. **통신사 SNI 차단 무력화 (인증서 검증 해제)**:
+   * `Settings` ➔ `General` ➔ 상단 `Show Advanced: Shown` ➔ `Security` 항목:
+   * **`Certificate Validation`**: **`Disabled`** (또는 `Permissive`) 선택 후 `Save`.
+2. **FlareSolverr 프록시 등록 & 태그 지정**:
+   * `Settings` ➔ `Indexers` ➔ `Proxies +` ➔ `FlareSolverr` 선택:
+   * **Host**: `http://flaresolverr:8191` (또는 `http://192.168.1.109:8191`)
+   * **Tags**: **`flaresolverr`** 입력 후 `Test & Save`.
+3. **토렌트 인덱서 추가 (Indexers ➔ + Add Indexer)**:
+   * **`1337x`**: Tags에 **`flaresolverr`** 입력 후 `Save` (Cloudflare 우회)
+   * **`EZTV`**: Tags에 **`flaresolverr`** 입력 후 `Save` (Cloudflare 우회)
+   * **`TorrentGalaxy`**: Tags에 **`flaresolverr`** 입력 후 `Save` (Cloudflare 우회)
+   * **`YTS`**, **`ThePirateBay`**, **`SolidTorrents`**, **`LimeTorrents`**: Tags 없이 즉시 `Save`.
+4. **Radarr & Sonarr 앱 자동 동기화 (`Settings` ➔ `Apps` ➔ `+`)**:
    * **Radarr 연동**: Host `http://radarr:7878`, API Key 입력 ➔ `Test & Save`.
    * **Sonarr 연동**: Host `http://sonarr:8989`, API Key 입력 ➔ `Test & Save`.
 
