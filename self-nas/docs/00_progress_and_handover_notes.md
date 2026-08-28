@@ -179,7 +179,8 @@ bash /root/nas_power.sh shutdown-host
 - [14. Cockpit 웹 시스템 및 5대 디스크 S.M.A.R.T 건강도 관제 가이드](14_cockpit_disk_monitoring_guide.md)
 - [15. Tailscale WireGuard 하이브리드 보안망 및 원격 접속 가이드](15_tailscale_hybrid_security_and_remote_access_guide.md)
 
-### 🔮 3. 아키텍처 검토 및 확장 로드맵 (98~99)
+### 🔮 3. 아키텍처 검토 및 확장 로드맵 (97~99)
+- [97. OCI 하이브리드 AI 서비스 및 Ollama 아키텍처 가이드](97_oci_hybrid_ai_service_and_ollama_architecture.md)
 - [98. 향후 확장 서비스 후보군 및 Spring AI 검토](98_candidate_services_and_architecture_review.md)
 - [99. (번외편) KMP 모바일 음악 앱 아키텍처](99_kmp_gonic_mobile_app_architecture.md)
 

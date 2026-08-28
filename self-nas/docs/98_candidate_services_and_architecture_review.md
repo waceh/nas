@@ -161,9 +161,11 @@ flowchart LR
 
 ---
 
-### ⑤ 🤖 Spring AI & 백엔드 개발 환경 (LXC 106 - ⏳ 진행 예정 후보)
+### ⑤ 🤖 Spring AI & OCI 하이브리드 AI 개발 환경 (LXC 106 / OCI - ⏳ 진행 예정 후보)
 
-* **배치 환경**: `LXC 106` (Debian 12, 2 Core, 2GB RAM on `local-530`)
+* **배치 환경**: `LXC 106` (Debian 12, 2 Core, 2GB RAM on `local-530`) 및 **OCI Always Free**
 * **핵심 기능**:
   1. **Java 21 + Spring Boot 3.x** 기반 개인 백엔드 API 서버 구동.
-  2. **Spring AI 챗봇 연동**: OpenAI / Claude / 로컬 LLM(Ollama)과 연동하여 NAS 상태를 제어하거나 개인 지식을 질의응답하는 AI 챗봇 백엔드 구축.
+  2. **Spring AI & Ollama 연동**: OCI Always Free(ARM 4코어, 24GB RAM)의 Ollama(Qwen 2.5 / EXAONE 3.5) 및 OpenWebUI와 Tailscale로 연동하여 24/7 AI 집사 및 NAS 문서 기반 RAG 시스템 구축.
+  3. **상세 아키텍처 및 데이터 흐름도**: [`docs/97_oci_hybrid_ai_service_and_ollama_architecture.md`](97_oci_hybrid_ai_service_and_ollama_architecture.md) 참조.
+
