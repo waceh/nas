@@ -12,16 +12,20 @@
 | **인프라/관제** | **📊 Uptime Kuma** | LXC 107 (`:3001`) | ~40 MB | **✅ 실제 구축 완료** | 24시간 서비스 장애/복구 모니터링 & 텔레그램 알림 ([가이드 12](12_homepage_dashboard_and_disk_architecture.md)) |
 | **인프라/관제** | **🛡️ AdGuard Home** | LXC 102 (`:80/53`)| ~40 MB | **✅ 실제 구축 완료** | 집안 전체 기기 광고/트래커 차단 & 내부 DNS 매핑 ([가이드 13](13_adguard_home_dns_setup.md)) |
 | **인프라/관제** | **🖥️ Cockpit Web GUI** | PVE Host (`:9090`) | ~10 MB | **✅ 실제 구축 완료** | 5대 물리 디스크 실시간 온도 & S.M.A.R.T 건강도 관제 ([가이드 14](14_cockpit_disk_monitoring_guide.md)) |
-| **네트워크/보안** | **🛡️ Tailscale Subnet Router** | PVE / LXC | ~20 MB | **✅ 구축 스크립트 & 가이드 완료** | 관리자 포트(PVE, DSM, SSH) 완전 은폐 & 가족 미디어 포트포워딩 유지 ([가이드 15](15_tailscale_hybrid_security_and_remote_access_guide.md)) |
-| **미디어 다운로드** | **📹 MeTube Downloader** | LXC 107 (`:8081`) | ~40 MB | **✅ 구축 스크립트 & 가이드 완료** | YouTube/웹 영상 4K 및 MP3 고음질 추출 & Gonic/Jellyfin 연동 ([가이드 16](16_metube_youtube_media_downloader_guide.md)) |
-| **미디어 자동화** | **🍿 Jellyseerr** | LXC 109 (`:5055`) | ~100 MB | **✅ 구축 스크립트 & 가이드 완료** | 넷플릭스 스타일 웹 화면에서 영화/드라마 원클릭 요청 UI ([가이드 17](17_media_automation_jellyseerr_qbittorrent_guide.md)) |
-| **미디어 자동화** | **⚡ qBittorrent-nox** | LXC 109 (`:8080`) | ~80 MB | **✅ 구축 스크립트 & 가이드 완료** | 스마트 버퍼링(WD Gold 4TB 1차 조각 쓰기 ➔ 26TB White 하드 보호) ([가이드 17](17_media_automation_jellyseerr_qbittorrent_guide.md)) |
-| **보안/금고** | **🔒 Vaultwarden** | LXC 107 (Docker) | ~20 MB | **⏳ 진행 예정 후보** | 1Password 대체 나만의 초경량 비밀번호/보안메모 금고 |
-| **접속/런처** | **📑 Organizr** | LXC / Docker | ~50 MB | **⏳ 진행 예정 후보** | 단일 창 탭 런처 포털 (Home 탭에 Homepage 임베드 검토) |
-| **미디어 자동화** | **🤖 Sonarr / Radarr** | LXC 109 | ~300 MB | **⏳ 진행 예정 후보** | 방영/개봉 일정 추적, 한글 자막 매칭 및 26TB White 하드 자동 분류 |
+| **네트워크/보안** | **🛡️ Tailscale Subnet Router** | PVE Host | ~20 MB | **✅ 실제 구축 완료** | 관리자 포트(PVE, DSM, SSH) 완전 은폐 & 가족 미디어 포트포워딩 유지 ([가이드 15](15_tailscale_hybrid_security_and_remote_access_guide.md)) |
+| **미디어 다운로드** | **📹 MeTube Downloader** | LXC 107 (`:8081`) | ~40 MB | **✅ 실제 구축 완료** | YouTube/웹 영상 4K 및 MP3 추출 & WD Gold 4TB downloads 직통 ([가이드 16](16_metube_youtube_media_downloader_guide.md)) |
+| **미디어 자동화** | **🍿 Jellyseerr (요청 UI)** | LXC 109 (`:5055`) | ~100 MB | **✅ 실제 구축 완료** | 넷플릭스 스타일 웹 화면에서 영화/드라마 원클릭 요청 UI ([가이드 17](17_media_automation_jellyseerr_qbittorrent_guide.md)) |
+| **미디어 자동화** | **🎬 Radarr (영화 봇)** | LXC 109 (`:7878`) | ~90 MB | **✅ 실제 구축 완료** | 영화 자동 탐색, 자막 매칭 및 `/pds1/Video/Movie` 자동 분류 ([가이드 17](17_media_automation_jellyseerr_qbittorrent_guide.md)) |
+| **미디어 자동화** | **📺 Sonarr (드라마 봇)** | LXC 109 (`:8989`) | ~90 MB | **✅ 실제 구축 완료** | 드라마/애니/예능 방영 추적 및 `/pds1/Video/drama` 자동 분류 ([가이드 17](17_media_automation_jellyseerr_qbittorrent_guide.md)) |
+| **미디어 자동화** | **🔍 Prowlarr (인덱서 허브)**| LXC 109 (`:9696`) | ~80 MB | **✅ 실제 구축 완료** | 토렌트 인덱서 통합 관리 및 Radarr/Sonarr 자동 연동 ([가이드 17](17_media_automation_jellyseerr_qbittorrent_guide.md)) |
+| **미디어 자동화** | **🛡️ FlareSolverr (우회 프록시)**| LXC 109 (`:8191`) | ~90 MB | **✅ 실제 구축 완료** | Cloudflare 보안 및 통신사 SNI 차단 자동 우회 ([가이드 17](17_media_automation_jellyseerr_qbittorrent_guide.md)) |
+| **미디어 자동화** | **⚡ qBittorrent-nox** | LXC 109 (`:8080`) | ~80 MB | **✅ 실제 구축 완료** | 스마트 버퍼링(WD Gold 4TB 1차 조각 쓰기 ➔ 26TB White 하드 보호) ([가이드 17](17_media_automation_jellyseerr_qbittorrent_guide.md)) |
+| **보안/금고** | **🔒 Vaultwarden** | LXC 107 (Docker) | ~20 MB | **⏳ 차기 추천 후보 (1순위)** | 1Password 대체 나만의 초경량 비밀번호/2FA OTP 금고 |
+| **파일 관리** | **📁 FileBrowser** | LXC 107 (Docker) | ~15 MB | **⏳ 차기 추천 후보 (2순위)** | 웹 브라우저 기반 초경량 NAS 파일 탐색기 & 임시 다운로드 링크 공유기 |
+| **문서/오피스** | **📄 Stirling-PDF** | LXC 107 (Docker) | ~100 MB | **⏳ 차기 추천 후보 (3순위)** | 웹 브라우저 기반 PDF 만능 편집 툴킷 (병합, 분할, OCR) |
+| **개발/유틸** | **🛠️ IT-Tools** | LXC 107 (Docker) | ~15 MB | **⏳ 차기 추천 후보 (4순위)** | 개발자용 올인원 웹 도구 70종 (JSON, Base64, JWT, Regex 등) |
 | **지식/웹사이트** | **📝 Ghost / Astro** | LXC 108 | ~150 MB | **⏳ 진행 예정 후보** | 개인 기술 블로그 & 포트폴리오 웹사이트 |
 | **지식/웹사이트** | **📚 Quartz** | LXC 108 | ~50 MB | **⏳ 진행 예정 후보** | Obsidian(옵시디언) 마크다운 노트를 예쁜 웹 지식 위키로 호스팅 |
-| **파일 관리** | **📁 FileBrowser** | LXC 107 / 독립 | ~15 MB | **⏳ 진행 예정 후보** | 웹 브라우저 기반 파일 탐색기 & 임시 다운로드 링크 공유기 |
 | **AI / 개발** | **🤖 Spring AI Backend** | LXC 106 | ~500 MB | **⏳ 진행 예정 후보** | Java 21 + Spring Boot 기반 개인 AI 챗봇 및 NAS 제어 백엔드 ([가이드 97](97_oci_hybrid_ai_service_and_ollama_architecture.md)) |
 
 ---
@@ -38,30 +42,33 @@ flowchart TB
     subgraph DoneGroup["✅ [1] 실제 구축 완료된 서비스 스택"]
         Homepage["🏠 Homepage Dashboard (LXC 107)<br/>4단 5열 종합 관제 포털"]:::done
         Kuma["📊 Uptime Kuma (LXC 107:3001)<br/>24H 장애 감시 & 텔레그램 알림"]:::done
+        MeTube["📹 MeTube (LXC 107:8081)<br/>YouTube 4K & MP3 다운로더"]:::done
         AdGuard["🛡️ AdGuard Home (LXC 102)<br/>네트워크 광고차단 & DNS (nas.home)"]:::done
         Cockpit["🖥️ Cockpit GUI (PVE Host:9090)<br/>5대 디스크 실시간 온도/S.M.A.R.T"]:::done
         TailArch["🛡️ Tailscale 2-Tier 보안 아키텍처<br/>가족 미디어 유지 + 관리자 포트 은폐"]:::done
+        
+        subgraph ArrGroup["🍿 미디어 완전 자동화 풀스택 (LXC 109)"]:::done
+            Jellyseerr["🍿 Jellyseerr (요청 UI :5055)"]:::done
+            Radarr["🎬 Radarr (영화 봇 :7878)"]:::done
+            Sonarr["📺 Sonarr (드라마 봇 :8989)"]:::done
+            Prowlarr["🔍 Prowlarr (인덱서 허브 :9696)"]:::done
+            Flare["🛡️ FlareSolverr (우회 프록시 :8191)"]:::done
+            Qbit["⚡ qBittorrent-nox (다운로더 :8080)"]:::done
+        end
     end
 
     subgraph TodoGroup["⏳ [2] 향후 진행 예정 및 검토 후보군"]
         Vault["🔒 Vaultwarden (LXC 107)<br/>개인 비밀번호 금고"]:::todo
-        Organizr["📑 Organizr<br/>단일 창 탭 런처"]:::todo
-        subgraph ArrGroup["🍿 미디어 완전 자동화 스택 (LXC 109)"]
-            Jellyseerr["🍿 Jellyseerr (요청 UI)"]:::todo
-            ArrStack["🤖 Sonarr / Radarr (자동 분류)"]:::todo
-            Qbit["⚡ qBittorrent-nox (다운로더)"]:::todo
-        end
-        subgraph WebGroup["🌐 웹 & 지식 생산성 (LXC 108 / 106)"]
-            Blog["📝 Ghost / Quartz (블로그/위키)"]:::todo
-            FileBrowser["📁 FileBrowser (웹 탐색기)"]:::todo
-            SpringAI["🤖 Spring AI 챗봇 백엔드 (LXC 106)"]:::todo
-        end
+        FileBrowser["📁 FileBrowser (LXC 107)<br/>초경량 웹 탐색기"]:::todo
+        Stirling["📄 Stirling-PDF (LXC 107)<br/>웹 PDF 편집기"]:::todo
+        Blog["📝 Ghost / Quartz (블로그/위키)"]:::todo
+        SpringAI["🤖 Spring AI 챗봇 백엔드 (LXC 106)"]:::todo
     end
 
     subgraph Disks["💾 4-Tier 물리 스토리지"]
         SSD710["💾 Intel 710 SSD (100GB OS 파티션 확장 완료)"]:::storage
         SSD530["💾 Intel 530 SSD (120GB 고속 LXC 풀)"]:::storage
-        Gold["💾 WD Gold 4TB (사진 / 음악 / 백업)"]:::storage
+        Gold["💾 WD Gold 4TB (사진 / 음악 / 백업 / 임시버퍼)"]:::storage
         White["💾 WD White 26TB (영화 / 드라마 - 스핀다운)"]:::storage
     end
 

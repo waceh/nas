@@ -40,8 +40,8 @@
 | **LXC 103** | **Immich Photo Server** | 2C / 4GB | Intel 530 SSD + WD Gold (`/volume1/photo` NFS) | **✅ 구축 완료**<br/>*(10GB+ 색인 완료)* | [`09_immich_caddy_https_and_storage_setup.md`](09_immich_caddy_https_and_storage_setup.md)<br>[`setup_immich_lxc.sh`](../scripts/setup_immich_lxc.sh) |
 | **LXC 104** | **Gonic Music Server** | 1C / 512MB | Intel 530 SSD + WD Gold (`/volume1/music` NFS) | **✅ 구축 완료**<br/>*(폴더 기반 스트리밍)* | [`09_immich_caddy_https_and_storage_setup.md`](09_immich_caddy_https_and_storage_setup.md)<br>[`setup_gonic_lxc.sh`](../scripts/setup_gonic_lxc.sh) |
 | **LXC 105** | **Jellyfin Media Server** | 2C / 2GB | Intel 530 SSD + iGPU QuickSync + 4단 NFS (`video`, `music`, `pds1`, `pds2`) | **✅ 구축 완료**<br/>*(iGPU QSV + RAM 캐시 + NFSv3 락프리)* | [`10_graceful_power_management_and_jellyfin_guide.md`](10_graceful_power_management_and_jellyfin_guide.md)<br>[`setup_jellyfin_lxc.sh`](../scripts/setup_jellyfin_lxc.sh) |
-| **LXC 107** | **Homepage + Uptime Kuma + MeTube** | 1C / 512MB | Intel 530 SSD (`local-530`) | **✅ 구축 완료**<br/>*(포털 & 24H 관제 & 유튜브 다운로더)* | [`12_homepage_dashboard_and_disk_architecture.md`](12_homepage_dashboard_and_disk_architecture.md)<br>[`16_metube_youtube_media_downloader_guide.md`](16_metube_youtube_media_downloader_guide.md)<br>[`setup_metube_lxc.sh`](../scripts/setup_metube_lxc.sh) |
-| **LXC 109** | **Jellyseerr + qBittorrent** | 2C / 1024MB | Intel 530 SSD + WD Gold Temp 버퍼 | **✅ 스택 구성 완료**<br/>*(미디어 원클릭 요청 & 스마트 버퍼링)* | [`17_media_automation_jellyseerr_qbittorrent_guide.md`](17_media_automation_jellyseerr_qbittorrent_guide.md)<br>[`setup_media_automation_lxc.sh`](../scripts/setup_media_automation_lxc.sh) |
+| **LXC 107** | **Homepage + Uptime Kuma + MeTube** | 1C / 1GB | Intel 530 SSD (`local-530`) | **✅ 구축 완료**<br/>*(포털 & 24H 관제 & 유튜브 한글 다운로더)* | [`12_homepage_dashboard_and_disk_architecture.md`](12_homepage_dashboard_and_disk_architecture.md)<br>[`16_metube_youtube_media_downloader_guide.md`](16_metube_youtube_media_downloader_guide.md)<br>[`setup_metube_lxc.sh`](../scripts/setup_metube_lxc.sh)<br>[`patch_metube_korean.sh`](../scripts/patch_metube_korean.sh) |
+| **LXC 109** | **Full *Arr Media Automation Stack**<br/>(Jellyseerr + Radarr + Sonarr + Prowlarr + FlareSolverr + qBittorrent) | 2C / 2048MB | Intel 530 SSD + WD Gold Temp 버퍼 + 26TB White | **✅ 완전 구축 완료**<br/>*(미디어 원클릭 요청, 봇 자동 탐색, 보안 우회, 스마트 버퍼링)* | [`17_media_automation_jellyseerr_qbittorrent_guide.md`](17_media_automation_jellyseerr_qbittorrent_guide.md)<br>[`setup_media_automation_lxc.sh`](../scripts/setup_media_automation_lxc.sh) |
 | **LXC 102** | **AdGuard Home** | 1C / 512MB | Intel 530 SSD (`local-530`) | **✅ 구축 완료**<br/>*(광고차단 & 로컬 DNS)* | [`13_adguard_home_dns_setup.md`](13_adguard_home_dns_setup.md)<br>[`setup_adguard_lxc.sh`](../scripts/setup_adguard_lxc.sh) |
 | **Host** | **Cockpit Web GUI** | PVE Host | Debian 12 Native (`:9090`) | **✅ 설치 완료**<br/>*(디스크 S.M.A.R.T/온도)* | [`14_cockpit_disk_monitoring_guide.md`](14_cockpit_disk_monitoring_guide.md)<br>[`setup_cockpit_pve.sh`](../scripts/setup_cockpit_pve.sh) |
 | **LXC 106** | **Dev Web Server** | 2C / 2GB | Intel 530 SSD (`local-530`) | **⚪ 대기 (선택)** | Spring Boot / Node 개발용 |
@@ -61,6 +61,13 @@
 | **Immich Photo** | `http://192.168.1.103:2283` | **`2283` (TCP)** | Immich 공식 모바일 앱 (iOS/Android 사진 백업) |
 | **Gonic Music** | `http://192.168.1.104:4747` | **`4747` (TCP)** | Amperfy (iOS), Ultrasonic (Android), CarPlay |
 | **Jellyfin Video** | `http://192.168.1.105:8096` | **`8096` (TCP)** | Swiftfin, Infuse, Jellyfin 스마트TV 앱 |
+| **MeTube Downloader** | `http://192.168.1.107:8081` | **`8081` (TCP)** | YouTube/웹 영상 4K & 고음질 음원 추출 다운로더 |
+| **Jellyseerr Request** | `http://192.168.1.109:5055` | **`5055` (TCP)** | 넷플릭스 스타일 미디어 원클릭 탐색 및 요청 포털 |
+| **Radarr (영화 봇)** | `http://192.168.1.109:7878` | **로컬 / VPN** | 영화 자동 탐색, 자막 매칭 및 `/pds1/Video/Movie` 분류 |
+| **Sonarr (드라마 봇)** | `http://192.168.1.109:8989` | **로컬 / VPN** | 드라마/애니/예능 방영 추적 및 `/pds1/Video/drama` 분류 |
+| **Prowlarr (인덱서 허브)**| `http://192.168.1.109:9696` | **로컬 / VPN** | 토렌트 인덱서 통합 관리 및 Radarr/Sonarr 자동 연동 |
+| **FlareSolverr** | `http://192.168.1.109:8191` | **내부 전용** | Cloudflare 보안 및 통신사 SNI 차단 자동 우회 |
+| **qBittorrent** | `http://192.168.1.109:8080` | **`8080` (TCP)** | 스마트 버퍼링 다운로더 (WD Gold 4TB 1차 조각 쓰기) |
 | **Uptime Kuma** | `http://192.168.1.107:3001` | **`3001` (TCP) / 로컬** | 24시간 실시간 장애/복구 텔레그램 봇 알림 |
 | **AdGuard Home** | `http://192.168.1.102` | **포트 53 (DNS) / 80** | 집안 전체 광고 차단 & 로컬 DNS (`nas.home`) |
 | **Cockpit GUI** | `https://192.168.1.200:9090` | **`9090` (HTTPS) / 로컬** | 5대 물리 디스크 실시간 온도 & S.M.A.R.T 건강도 |
@@ -78,7 +85,7 @@ bash /root/nas_power.sh init-order
 # 2. 현재 상태 확인
 bash /root/nas_power.sh status
 
-# 3. 작업 시작 시 수동 순차 기동 (헤놀로지 101 먼저 -> Immich/Gonic/Jellyfin)
+# 3. 작업 시작 시 수동 순차 기동 (헤놀로지 101 먼저 -> Immich/Gonic/Jellyfin/Arr스택)
 bash /root/nas_power.sh up
 
 # 4. 작업 완료 후 안전 순차 종료 (DB 플러시 -> 헤놀로지 Btrfs 플러시)
@@ -98,6 +105,9 @@ bash /root/nas_power.sh shutdown-host
 - [x] **Step 3. Proxmox 자동 백업 스토리지 등록 (`vzdump`) & 재해 복구 매뉴얼** (`nas-backups`)
 - [x] **Step 4. Homepage 올인원 대시보드 + Uptime Kuma 통합 배포** (Intel 710 SSD 100GB OS 파티션 확장 포함)
 - [x] **Step 5. AdGuard Home (LXC 102) 및 Cockpit (PVE Host) 배포 완료** (가이드 13, 14 작성)
+- [x] **Step 6. Tailscale Subnet Router 구축 및 OCI 하이브리드 AI 연동 완료** (가이드 15 작성)
+- [x] **Step 7. MeTube 웹 다운로더 (LXC 107) 배포 완료** (100% 한국어 패치, WD Gold 4TB `downloads` 직통 매핑, 가이드 16 작성)
+- [x] **Step 8. Full *Arr 미디어 완전 자동화 풀스택 (LXC 109) 배포 및 연동 완료** (Jellyseerr + Radarr + Sonarr + Prowlarr + FlareSolverr + qBittorrent, 스마트 버퍼링 및 PDS1 카테고리 분류, 가이드 17 작성)
 - [x] **Step 6. NFSv3 락프리(No-Lock) 고속 마운트 전면 표준화 & Amperfy 트러블슈팅 완료**:
   - `LXC 103 (Immich)` 및 `LXC 104 (Gonic)`의 fstab 마운트 옵션을 `vers=3,nolock,soft,timeo=30,intr,_netdev`로 교체 완료
   - fstab 중복 옵션 정리로 `/mnt/music` 정상 마운트 및 Amperfy 모바일 스트리밍 100% 정상화

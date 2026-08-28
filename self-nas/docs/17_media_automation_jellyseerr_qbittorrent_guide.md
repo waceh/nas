@@ -1,46 +1,54 @@
-# 🍿 Jellyseerr & qBittorrent 스마트 미디어 자동 수집 스택 가이드 (17)
+# 🍿 미디어 완전 자동화 풀스택 가이드: Jellyseerr · Radarr · Sonarr · Prowlarr · FlareSolverr · qBittorrent (17)
 
-> 💡 **Jellyseerr**와 **qBittorrent-nox**를 결합하여, 넷플릭스 스타일 웹 포털에서 보고 싶은 영화/드라마를 검색하고 "요청" 버튼만 누르면 백그라운드에서 전자동으로 다운로드 및 분류되는 미디어 자동화 스택을 구축합니다.
+> 💡 **Jellyseerr**를 프론트엔드로 삼고, **Radarr(영화)**, **Sonarr(드라마/애니)**, **Prowlarr(토렌트 허브)**, **FlareSolverr(차단 우회)**, **qBittorrent(다운로더)**를 유기적으로 결합하여 **"넷플릭스 스타일 UI에서 요청 버튼 하나만 누르면 최고화질 영상과 자막이 내 26TB 하드로 전자동 수집·분류되는 완전 무인 미디어 자동화 파이프라인"**을 구축합니다.
 > 
-> 특히 **'스마트 버퍼링(Smart Buffering)' 아키텍처**를 적용하여, 토렌트 조각 파일 쓰기 부하를 **WD Gold 4TB Enterprise 하드**에서 1차로 모두 흡수함으로써 **26TB WD White 콜드 하드의 모터 수명과 스핀다운 절전 상태를 완벽하게 보호**합니다.
+> 특히 **'스마트 버퍼링(Smart Buffering)' 전략**을 적용하여, 토렌트의 자잘한 조각 파일 쓰기 부하는 **24시간 가동되는 WD Gold 4TB 엔터프라이즈 하드**에서 100% 흡수하고, **26TB WD White 대용량 콜드 하드는 모터를 끄고 깊은 절전(Spin-down) 수면을 유지**하다가 완성된 파일만 예쁘게 전달받습니다.
 
 ---
 
-## 🎯 1. '스마트 버퍼링(Smart Buffering)' 아키텍처 다이어그램
+## 🎯 1. 완전 자동화 풀스택 아키텍처 다이어그램
 
 ```mermaid
 flowchart TB
-    User["👤 사용자 (브라우저 / 스마트폰)"] -->|"1. 넷플릭스 스타일 UI에서 미디어 검색 & 요청"| Jellyseerr["🍿 Jellyseerr (LXC 109:5055)<br/>• Jellyfin(LXC 105) 연동<br/>• 방영/개봉 알림 및 요청 관리"]
-    
-    Jellyseerr -->|"2. 다운로드 지시"| Qbit["⚡ qBittorrent-nox (LXC 109:8080)<br/>• 스마트 백그라운드 다운로더"]
-    
-    subgraph StorageTier["💾 4-Tier 스토리지 분기 전략"]
-        Qbit -->|"3. [1차 조각 파일 쓰기 버퍼]"| Gold["💾 WD Gold 4TB (/mnt/temp)<br/>• 24시간 상시 가동 엔터프라이즈 HDD<br/>• 토렌트 수천 개 조각 쓰기 100% 흡수!"]
-        
-        Gold -->|"4. 다운로드 완료 및 검수 후 이동"| White["💾 WD White 18TB / 8TB (/mnt/pds1, pds2)<br/>• 평소 완전 절전(Spin-down) 수면 상태 유지<br/>• 알짜배기 완성 파일만 저장!"]
+    User["👤 사용자 (스마트폰 / PC)"] -->|"1. 넷플릭스 스타일 탐색 & '요청' 원클릭"| Jellyseerr["🍿 Jellyseerr (LXC 109:5055)<br/>• Jellyfin(LXC 105) 연동<br/>• 방영/개봉 알림 및 요청 관리"]
+
+    subgraph BotLayer["🤖 *Arr 스마트 지배인 계층 (LXC 109)"]
+        Jellyseerr -->|"2. 영화 요청 전달"| Radarr["🎬 Radarr (LXC 109:7878)<br/>• 4K/FHD 화질 판별 & 한글 자막 매칭"]
+        Jellyseerr -->|"2. 드라마/애니 요청 전달"| Sonarr["📺 Sonarr (LXC 109:8989)<br/>• 시즌/에피소드 방영 추적 & 자동 채번"]
+
+        Radarr & Sonarr <-->|"3. 토렌트 인덱서 실시간 조회"| Prowlarr["🔍 Prowlarr (LXC 109:9696)<br/>• 1337x, YTS, EZTV 등 통합 검색"]
+        Prowlarr <-->|"4. Cloudflare 보안 자동 우회"| Flare["🛡️ FlareSolverr (LXC 109:8191)<br/>• 봇 차단 방어막 무력화"]
     end
 
-    White -->|"5. 최종 미디어 스트리밍"| Jellyfin["🎬 Jellyfin (LXC 105)<br/>• iGPU QSV 4K 하드웨어 가속"]
+    Radarr & Sonarr -->|"5. 다운로드 지시 (API)"| Qbit["⚡ qBittorrent-nox (LXC 109:8080)<br/>• 스마트 백그라운드 다운로더"]
+
+    subgraph StorageTier["💾 4-Tier 스토리지 스마트 분기"]
+        Qbit -->|"6. [1차 조각 쓰기 버퍼]"| Gold["💾 WD Gold 4TB (/mnt/temp)<br/>• 24시간 가동 HDD가 I/O 부하 100% 흡수!"]
+        
+        Gold -->|"7. 다운로드 완료 후 자동 이동 & 정리"| White["💾 WD White 18TB / 8TB (/mnt/pds1, pds2)<br/>• 평소 완전 절전(Spin-down) 수면 유지<br/>• /pds1/Video/Movie & drama & animation"]
+    end
+
+    White -->|"8. 최종 미디어 스트리밍"| Jellyfin["🎬 Jellyfin (LXC 105:8096)<br/>• iGPU QSV 4K 하드웨어 가속"]
 ```
 
 ---
 
-## 🌟 2. 왜 스마트 버퍼링이 필수적인가?
+## 🌟 2. 6대 서비스 포트 및 역할 정의
 
-1. **26TB 대용량 하드의 불필요한 스핀업 방지**:
-   - 토렌트 다운로드는 수시간 동안 작은 블록 단위로 지속적인 디스크 I/O를 발생시킵니다.
-   - 이를 대용량 콜드 하드에 직접 쓰면 모터가 계속 돌면서 발열과 마모가 생깁니다.
-   - **24시간 상시 깨어있는 WD Gold 4TB의 `/volume1/temp`를 1차 버퍼로 사용**하면 26TB White 하드는 다운로드 내내 모터를 끄고 깊은 수면을 취할 수 있습니다.
-2. **가짜/낚시 파일 1차 필터링**:
-   - 4TB 임시 폴더에서 자막 싱크와 영상 품질을 확인한 후 안전한 파일만 26TB 보관소로 깔끔하게 이전할 수 있습니다.
-3. **다운로드 완료 즉시 시딩 중지**:
-   - 불필요한 네트워크 대역폭 소모 및 저작권 추적 위험을 원천 차단하기 위해 다운로드 완료 즉시 시딩을 정지(비율 0)하도록 설정합니다.
+| 서비스 명칭 | 내부 접속 포트 | 외부 접속 포트 (ASUS DDNS) | 소모 RAM | 핵심 역할 |
+| :--- | :--- | :--- | :---: | :--- |
+| 🍿 **Jellyseerr** | `http://192.168.1.109:5055` | `http://waceh.asuscomm.com:5055` | ~100 MB | 넷플릭스 스타일 미디어 탐색 및 원클릭 요청 UI |
+| 🤖 **Radarr** | `http://192.168.1.109:7878` | - | ~90 MB | 영화 전담 자동 탐색, 화질 매칭 및 `/pds1/Video/Movie` 자동 분류 |
+| 📺 **Sonarr** | `http://192.168.1.109:8989` | - | ~90 MB | 드라마/예능/애니 전담 에피소드 추적 및 `/pds1/Video/drama` 자동 분류 |
+| 🔍 **Prowlarr** | `http://192.168.1.109:9696` | - | ~80 MB | 1337x, YTS, EZTV 등 전 세계 토렌트 인덱서 통합 관리 및 Radarr/Sonarr 자동 공급 |
+| 🛡️ **FlareSolverr** | `http://192.168.1.109:8191` | - | ~90 MB | 국내 통신사 SNI 차단 및 Cloudflare 봇 방어벽 자동 우회 프록시 |
+| ⚡ **qBittorrent** | `http://192.168.1.109:8080` | `http://waceh.asuscomm.com:8080` | ~80 MB | 스마트 버퍼링 다운로더 (WD Gold 4TB 임시 조각 쓰기) |
 
 ---
 
-## 🚀 3. 원클릭 자동 설치 스크립트 실행
+## 🚀 3. 원클릭 자동 배포 명령어
 
-Proxmox VE 호스트의 쉘(Web Shell 또는 SSH)에서 아래 명령어를 복사하여 실행합니다:
+Proxmox VE 호스트 쉘(Web Shell 또는 SSH)에서 아래 명령어를 실행하여 LXC 109에 6대 풀스택을 한 번에 배포합니다:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/setup_media_automation_lxc.sh | bash
@@ -48,56 +56,67 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
 
 ---
 
-## ⚙️ 4. 접속 주소 및 포트 정보
+## 🛠️ 4. 실전 상호 연동 가이드
 
-| 서비스 명칭 | 내부 접속 URL | 외부 접속 URL (ASUS DDNS) | 소모 RAM | 주요 역할 |
-| :--- | :--- | :--- | :---: | :--- |
-| 🍿 **Jellyseerr** | `http://192.168.1.109:5055` | `http://waceh.asuscomm.com:5055` | ~100 MB | 넷플릭스 스타일 미디어 탐색 및 원클릭 요청 UI |
-| ⚡ **qBittorrent** | `http://192.168.1.109:8080` | `http://waceh.asuscomm.com:8080` | ~80 MB | 스마트 백그라운드 토렌트 다운로더 |
+### 1) qBittorrent 보안 차단 해제 및 스핀다운 보호
+* **API CSRF 보호 해제**: Radarr/Sonarr의 API 통신을 위해 `WebUI\CSRFProtection=false` 설정 완료.
+* **스핀다운 보호 (하드 수명 극대화)**:
+  * [http://192.168.1.109:8080](http://192.168.1.109:8080) ➔ **`도구` ➔ `옵션` ➔ `BitTorrent`**:
+  * `공유 비율이 다음에 도달할 때:` 체크 ➔ **`0.00`** 입력 ➔ `작업:` **`토렌트 일시 중지`** 선택.
+
+### 2) Radarr (영화 봇) 설정
+1. [http://192.168.1.109:7878](http://192.168.1.109:7878) 접속 ➔ `Settings` ➔ `Media Management` ➔ `Root Folders`:
+   * **루트 폴더**: **`/movies/Video/Movie`** (18TB White 하드) 추가.
+2. `Settings` ➔ `Download Clients` ➔ `+` ➔ `qBittorrent`:
+   * **Host**: `qbittorrent` (또는 `192.168.1.109`), **Port**: `8080`, **User/Pass**: `admin`/비밀번호 ➔ `Test & Save`.
+
+### 3) Sonarr (드라마/애니 봇) 설정
+1. [http://192.168.1.109:8989](http://192.168.1.109:8989) 접속 ➔ `Settings` ➔ `Media Management` ➔ `Root Folders`:
+   * **드라마 루트 폴더**: **`/pds1/Video/drama`**
+   * **예능 루트 폴더**: **`/pds1/Video/entertainment`**
+   * **애니 루트 폴더**: **`/pds1/Video/animation`** 추가.
+2. `Settings` ➔ `Download Clients` ➔ `+` ➔ `qBittorrent` 추가 ➔ `Test & Save`.
+
+### 4) Prowlarr (토렌트 허브 & FlareSolverr 연동)
+1. [http://192.168.1.109:9696](http://192.168.1.109:9696) 접속 ➔ `Settings` ➔ `Indexers` ➔ `Proxies +`:
+   * **FlareSolverr 추가**: Host `http://flaresolverr:8191` ➔ `Test & Save`.
+2. `Indexers` ➔ `+ Add Indexer`:
+   * **`1337x`**, **`YTS`**, **`EZTV`**, **`TorrentGalaxy`** 추가.
+3. `Settings` ➔ `Apps` ➔ `+`:
+   * **Radarr 연동**: Host `http://radarr:7878`, API Key 입력 ➔ `Test & Save`.
+   * **Sonarr 연동**: Host `http://sonarr:8989`, API Key 입력 ➔ `Test & Save`.
+
+### 5) Jellyseerr (요청 UI) 설정
+1. [http://192.168.1.109:5055](http://192.168.1.109:5055) 접속 ➔ `설정` ➔ `일반`:
+   * 표시 언어: **`한국어`**, 탐색 지역: **`대한민국`**, 탐색 언어: **`한국어 (ko)`**.
+2. `설정` ➔ `서비스`:
+   * **Radarr 추가**: 호스트 `192.168.1.109`, 포트 `7878`, API Key, 루트 폴더 `/movies/Video/Movie`, 프로필 `HD-1080p`.
+   * **Sonarr 추가**: 호스트 `192.168.1.109`, 포트 `8989`, API Key, 루트 폴더 `/pds1/Video/drama`, 프로필 `HD-1080p`.
 
 ---
 
-## 🛠️ 5. 초기 연동 및 실전 설정 가이드
+## 📁 5. 스토리지 저장 경로 최종 맵핑표
 
-### 1) Jellyseerr 최초 설정 (Jellyfin 연동)
-1. 브라우저에서 `http://192.168.1.109:5055` 접속.
-2. 미디어 서버 선택 화면에서 **`Jellyfin`** 선택.
-3. **Jellyfin 서버 URL**: `http://192.168.1.105:8096` 입력.
-4. Jellyfin 관리자 계정 ID/PW 입력 후 라이브러리 동기화 클릭.
-5. 이제 넷플릭스 화면처럼 트렌딩 영화/시리즈가 표출되며, 이미 다운로드된 영상은 `Available`, 없는 영상은 `Request` 버튼이 활성화됩니다.
-
-### 2) qBittorrent 초기 로그인 및 카테고리 설정
-1. 브라우저에서 `http://192.168.1.109:8080` 접속.
-2. 초기 사용자명: `admin`
-3. 초기 임시 비밀번호 확인:
-   ```bash
-   pct exec 109 -- docker logs qbittorrent | grep "temporary password"
-   ```
-4. 로그인 후 **도구 ➔ 옵션 ➔ 웹 UI**에서 나만의 영구 비밀번호로 변경.
-5. **다운로드 경로 설정 (카테고리 분기)**:
-   - **기본 다운로드 경로**: `/downloads/temp` (WD Gold 4TB 1차 버퍼)
-   - **카테고리 `movies`**: `/downloads/pds1/Movies` (WD White 18TB)
-   - **카테고리 `tv`**: `/downloads/pds2/TV` (WD White 8TB)
-
-### 3) 다운로드 완료 즉시 시딩 중지 (스핀다운 보호)
-* **옵션 ➔ BitTorrent ➔ 시딩 제한**:
-  * `공유 비율이 다음에 도달할 때:` 체크 ➔ **`0.00`** 입력
-  * `작업:` ➔ **`토렌트 일시 중지`** 선택
+| 서비스 | 컨테이너 내부 경로 | 실제 NAS 스토리지 매핑 | 용도 |
+| :--- | :--- | :--- | :--- |
+| **qBittorrent** | `/downloads/temp` | **WD Gold 4TB (`/volume1/temp`)** | 1차 토렌트 조각 파일 쓰기 버퍼 |
+| **Radarr** | `/movies/Video/Movie` | **WD White 18TB (`/volume2/PDS1/Video/Movie`)** | 최종 완성 영화 영구 보관 |
+| **Sonarr** | `/pds1/Video/drama` | **WD White 18TB (`/volume2/PDS1/Video/drama`)** | 최종 드라마 시리즈 영구 보관 |
+| **Sonarr** | `/pds1/Video/entertainment` | **WD White 18TB (`/volume2/PDS1/Video/entertainment`)** | 최종 TV 예능 프로그램 보관 |
+| **Sonarr** | `/pds1/Video/animation` | **WD White 18TB (`/volume2/PDS1/Video/animation`)** | 최종 애니메이션 시리즈 보관 |
 
 ---
 
-## 🔍 6. 컨테이너 관리 및 문제 해결
+## 🔍 6. 컨테이너 상태 점검 및 유지보수
 
-* **LXC 109 컨테이너 상태 점검**:
-  ```bash
-  pct status 109
-  pct exec 109 -- docker ps
-  ```
-* **NFS 스토리지 마운트 확인**:
-  ```bash
-  pct exec 109 -- df -h | grep -E "temp|video|pds"
-  ```
-* **서비스 재기동**:
-  ```bash
-  pct exec 109 -- bash -c "cd /opt/media-stack && docker compose restart"
-  ```
+```bash
+# LXC 109 컨테이너 상태 및 6대 도커 프로세스 확인
+pct status 109
+pct exec 109 -- docker compose -f /opt/media-stack/docker-compose.yml ps
+
+# NFS 마운트 상태 확인
+pct exec 109 -- df -h | grep -E "temp|video|pds"
+
+# 서비스 전체 재기동
+pct exec 109 -- bash -c "cd /opt/media-stack && docker compose restart"
+```

@@ -37,24 +37,39 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
 
 ## ⚙️ 3. 접속 주소 및 포트 정보
 
-| 서비스 명칭 | 내부 접속 URL | 외부 접속 URL (ASUS DDNS) | 소모 RAM | 기본 저장 경로 |
+| 서비스 명칭 | 내부 접속 URL | 외부 접속 URL (ASUS DDNS) | 소모 RAM | 기본 직통 저장 경로 |
 | :--- | :--- | :--- | :---: | :--- |
-| 📹 **MeTube 웹 UI** | `http://192.168.1.107:8081` | `http://waceh.asuscomm.com:8081` | ~40 MB | `/mnt/gold-video`, `/mnt/gold-music`, `/mnt/gold-temp` |
+| 📹 **MeTube 웹 UI** | `http://192.168.1.107:8081` | `http://waceh.asuscomm.com:8081` | ~40 MB | **동영상**: `/volume1/video/downloads`<br/>**음원**: `/volume1/music/downloads`<br/>**임시**: `/volume1/temp/downloads` |
 
 ---
 
-## 💻 4. 실전 활용법 및 팁
+## 🇰🇷 4. MeTube 웹 UI 100% 한국어 패치 엔진
 
-### 1) 최고화질 비디오 다운로드
+MeTube 공식 이미지는 영문만 지원하지만, DOM을 실시간 번역하는 한국어 패치가 내장되어 있습니다. 단독 실행 시:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/patch_metube_korean.sh | bash
+```
+
+* `Add` ➔ **`다운로드 추가`**
+* `Format` ➔ **`포맷 선택`**
+* `Quality` ➔ **`화질 / 음질`**
+* `Downloads` ➔ **`다운로드 목록`**
+* `Clear finished` ➔ **`완료 목록 지우기`**
+
+---
+
+## 💻 5. 실전 활용법 및 팁
+
+### 1) 최고화질 비디오 다운로드 (WD Gold video/downloads 직통)
 1. 브라우저에서 `http://192.168.1.107:8081` 접속.
-2. 다운로드할 유튜브/웹 영상 URL을 붙여넣기.
-3. **Format** 드롭다운에서 `Any Video (Best Quality)` 선택 후 **Add** 클릭.
-4. 자막(`ko`, `en`)이 자동으로 영상 파일 내부에 임베드되어 다운로드됩니다.
+2. 다운로드할 유튜브/웹 영상 URL 붙여넣기.
+3. 포맷 선택에서 `동영상 (최고화질)` 선택 후 **`다운로드 추가`** 클릭.
+4. **WD Gold 4TB `/volume1/video/downloads`**에 자동 저장되어 **[Jellyfin](http://192.168.1.105:8096)**에서 즉시 시청 가능.
 
-### 2) 음원(MP3/FLAC)만 추출하여 Gonic 음악 라이브러리에 저장
-1. MeTube 화면 우측 상단 설정(톱니바퀴) 또는 포맷 선택에서 **`Audio (MP3 / Best Quality)`** 선택.
-2. 다운로드 대상 폴더를 `/mnt/gold-music/YouTube_Music` 등으로 지정.
-3. 다운로드가 완료되면 Gonic이 자동으로 음원을 스캔하여 스마트폰 앱에 즉시 노출됩니다.
+### 2) 음원(MP3/FLAC) 추출 (WD Gold music/downloads 직통)
+1. 포맷 선택에서 **`음원 추출 (MP3/FLAC)`** 선택 후 **`다운로드 추가`** 클릭.
+2. **WD Gold 4TB `/volume1/music/downloads`**에 자동 저장되어 **[Gonic 음악 앱](http://192.168.1.104:4747)**에서 즉시 무손실 스트리밍 가능.
 
 ### 3) 크롬 / 사파리 북마클릿(Bookmarklet) 원클릭 등록
 브라우저 북마크에 아래 자바스크립트를 등록해두면, 유튜브를 보다가 클릭 한 번으로 현재 보고 있는 영상을 NAS로 다운로드 전송할 수 있습니다:
