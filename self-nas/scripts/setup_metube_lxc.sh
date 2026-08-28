@@ -56,7 +56,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update || true
 apt-get install -y nfs-common curl ca-certificates || true
 
-mkdir -p /mnt/gold-temp /mnt/gold-music /mnt/gold-video /opt/metube/data /opt/metube/downloads /opt/metube/audio
+mkdir -p /mnt/gold-temp /mnt/gold-music /mnt/gold-video /opt/metube/data
 
 # 고성능 락프리 NFSv3 마운트 등록 (soft, timeo=30)
 if ! grep -q \"/mnt/gold-temp\" /etc/fstab; then
@@ -70,9 +70,12 @@ if ! grep -q \"/mnt/gold-video\" /etc/fstab; then
 fi
 
 mount -a || true
+
+# WD Gold 4TB 실제 공유폴더 내 download 디렉토리 생성
+mkdir -p /mnt/gold-video/downloads /mnt/gold-music/downloads /mnt/gold-temp/downloads
 "
 
-log_info "2. MeTube Docker Compose 설정 생성..."
+log_info "2. MeTube Docker Compose 설정 생성 (WD Gold downloads 디렉토리 직통 연동)..."
 pct exec "$CTID" -- bash -c "
 cat << 'EOF' > /opt/metube/docker-compose.yml
 services:
@@ -92,12 +95,15 @@ services:
       OUTPUT_TEMPLATE: \"%(title)s.%(ext)s\"
       YTDL_OPTIONS: '{\"writesubtitles\": true, \"subtitleslangs\": [\"ko\", \"en\", \"all\"]}'
     volumes:
-      - /opt/metube/downloads:/downloads
-      - /opt/metube/audio:/audio
+      # 1. 동영상 기본 저장소 -> WD Gold 4TB video/downloads 폴더 직통
+      - /mnt/gold-video/downloads:/downloads
+      # 2. 음원(MP3) 기본 저장소 -> WD Gold 4TB music/downloads 폴더 직통
+      - /mnt/gold-music/downloads:/audio
+      # 3. 임시 검수 저장소 -> WD Gold 4TB temp/downloads 폴더 직통
+      - /mnt/gold-temp/downloads:/mnt/gold-temp
       - /opt/metube/data:/app/.metube
-      - /mnt/gold-temp:/mnt/gold-temp
-      - /mnt/gold-music:/mnt/gold-music
       - /mnt/gold-video:/mnt/gold-video
+      - /mnt/gold-music:/mnt/gold-music
 EOF
 "
 
