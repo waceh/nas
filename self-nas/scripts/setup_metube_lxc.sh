@@ -42,15 +42,23 @@ if ! pct status "$CTID" &>/dev/null; then
     exit 1
 fi
 
-log_info "1. LXC ${CTID} 필수 패키지 점검 (nfs-common, curl)..."
+log_info "1. LXC ${CTID} DNS 및 필수 패키지 점검 (nfs-common, curl)..."
 pct exec "$CTID" -- bash -c "
+# DNS 리졸버 보완 (1.1.1.1, 8.8.8.8 추가)
+if ! grep -q '1.1.1.1' /etc/resolv.conf; then
+    echo 'nameserver 1.1.1.1' >> /etc/resolv.conf
+fi
+if ! grep -q '8.8.8.8' /etc/resolv.conf; then
+    echo 'nameserver 8.8.8.8' >> /etc/resolv.conf
+fi
+
 export DEBIAN_FRONTEND=noninteractive
-apt-get update
-apt-get install -y nfs-common curl ca-certificates
+apt-get update || true
+apt-get install -y nfs-common curl ca-certificates || true
 
 mkdir -p /mnt/gold-temp /mnt/gold-music /mnt/gold-video /opt/metube/data /opt/metube/downloads /opt/metube/audio
 
-# 고성능 락프리 NFSv3 마운트 등록 (타임아웃 3초 soft 설정)
+# 고성능 락프리 NFSv3 마운트 등록 (soft, timeo=30)
 if ! grep -q \"/mnt/gold-temp\" /etc/fstab; then
     echo \"${NAS_IP}:/volume1/temp /mnt/gold-temp nfs defaults,_netdev,vers=3,nolock,soft,timeo=30,intr 0 0\" >> /etc/fstab
 fi
@@ -75,15 +83,14 @@ services:
     ports:
       - \"${PORT}:8081\"
     environment:
-      - UID=1000
-      - GID=1000
-      - DOWNLOAD_DIR=/downloads
-      - AUDIO_DOWNLOAD_DIR=/audio
-      - CUSTOM_DIRS=true
-      - STATE_DIR=/app/.metube
-      - URL_PREFIX=
-      - OUTPUT_TEMPLATE=%(title)s.%(ext)s
-      - YTDL_OPTIONS={\"writesubtitles\": true, \"subtitleslangs\": [\"ko\", \"en\", \"all\"]}
+      UID: 1000
+      GID: 1000
+      DOWNLOAD_DIR: /downloads
+      AUDIO_DOWNLOAD_DIR: /audio
+      CUSTOM_DIRS: \"true\"
+      STATE_DIR: /app/.metube
+      OUTPUT_TEMPLATE: \"%(title)s.%(ext)s\"
+      YTDL_OPTIONS: '{\"writesubtitles\": true, \"subtitleslangs\": [\"ko\", \"en\", \"all\"]}'
     volumes:
       - /opt/metube/downloads:/downloads
       - /opt/metube/audio:/audio
@@ -94,7 +101,7 @@ services:
 EOF
 "
 
-log_info "3. MeTube Docker 이미지 다운로드 및 기동 중 (약 200MB)..."
+log_info "3. MeTube Docker 이미지 다운로드 및 기동 중..."
 pct exec "$CTID" -- bash -c "
 cd /opt/metube
 docker compose pull
