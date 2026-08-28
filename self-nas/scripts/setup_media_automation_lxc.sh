@@ -91,6 +91,14 @@ sleep 5
 # 5. 패키지 설치 및 Docker + NFS + 스택 배포 (LXC 내부)
 log_info "LXC 내부 패키지 및 Docker 엔진 설치 중..."
 pct exec "$CTID" -- bash -c "
+# DNS 리졸버 보완 (1.1.1.1, 8.8.8.8 추가)
+if ! grep -q '1.1.1.1' /etc/resolv.conf; then
+    echo 'nameserver 1.1.1.1' >> /etc/resolv.conf
+fi
+if ! grep -q '8.8.8.8' /etc/resolv.conf; then
+    echo 'nameserver 8.8.8.8' >> /etc/resolv.conf
+fi
+
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get install -y curl ca-certificates gnupg nfs-common
