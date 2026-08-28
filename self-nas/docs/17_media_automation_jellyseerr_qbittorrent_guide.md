@@ -115,6 +115,8 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
 
 ---
 
+---
+
 ## 🔍 6. 컨테이너 상태 점검 및 유지보수
 
 ```bash
@@ -128,3 +130,25 @@ pct exec 109 -- df -h | grep -E "temp|video|pds"
 # 서비스 전체 재기동
 pct exec 109 -- bash -c "cd /opt/media-stack && docker compose restart"
 ```
+
+---
+
+## 💡 7. 실전 미디어 수집 & 운영 꿀팁
+
+### 1) 자동 검색(Auto Search) vs 대화형 검색(Interactive Search)
+* **자동 검색 (`돋보기 아이콘`)**:
+  - Jellyseerr에서 "요청" 버튼을 누르거나 Radarr/Sonarr에서 돋보기를 누르면, 5대 토렌트 사이트에서 **시더(배포자)가 가장 많고 1080p 고화질인 최적의 릴리즈를 스스로 골라 qBittorrent로 자동 전송**합니다.
+* **대화형 검색 (`사람+돋보기 아이콘`)**:
+  - 특정 릴리즈 그룹(SubsPlease, Erai-raws, 자막 내장본 등)이나 용량/화질을 직접 눈으로 보고 고르고 싶을 때 클릭합니다.
+  - 검색된 토렌트 목록 중 마음에 드는 항목의 **`다운로드(구름 아이콘)`**를 누르면 즉시 qBittorrent로 꽂힙니다.
+
+### 2) 한국 드라마 / K-콘텐츠 검색 팁 (TheTVDB 고유 번호)
+* 한국 드라마는 영문 제목 매칭이 간혹 어긋날 수 있습니다 (예: 《괴물》 = *Beyond Evil*).
+* 이때 Sonarr 검색창에 **`tvdb:393636`** 처럼 TheTVDB 고유 ID나 영문명을 입력하면 1초 만에 100% 정확하게 검색 및 등록됩니다.
+
+### 3) 대용량 시리즈(원피스, 나루토 등) 수집 팁
+* 수백~수천 화에 달하는 애니메이션은 전체를 한 번에 긁기보다, **원하는 시즌(Season 10 등) 우측의 돋보기 버튼**을 눌러 시즌 팩(Season Pack) 단위로 다운로드하면 빠르고 안정적입니다.
+
+### 4) 초기 라이브러리 색인(Sync)과 속도
+* 최초 Jellyfin 라이브러리 동기화(`Sync Libraries`) 시에는 수천 장의 포스터와 메타데이터를 다운로드하느라 일시적으로 굼뜰 수 있습니다.
+* 색인이 1회 완료되어 Intel 530 SSD에 캐시가 저장되고 나면, **이후에는 넷플릭스 앱처럼 0.1초 만에 팍팍 뜨는 쾌적한 속도**를 자랑합니다.
