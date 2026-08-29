@@ -2,8 +2,8 @@
 # ==============================================================================
 # 🌐 Proxmox VE Multi-NIC Bonding & MacBook Direct-Link Setup Script
 # ==============================================================================
-# - nic0 + nic2: 2Gbps 본딩 그룹 (bond0 / balance-alb) ➔ vmbr0 (192.168.1.200)
-# - nic1: 맥북 1:1 직결 전용 브리지 ➔ vmbr1 (10.10.10.1/24)
+# - nic1 + nic2 (물리 1·2번): 2.5G + 2.5G 본딩 그룹 (bond0 / balance-alb) ➔ vmbr0 (192.168.1.200)
+# - nic0 (물리 3번): 맥북 1:1 직결 전용 브리지 ➔ vmbr1 (10.10.10.1/24)
 # ==============================================================================
 
 # ANSI 색상
@@ -57,19 +57,13 @@ BACKUP_FILE="/etc/network/interfaces.bak.$(date +%Y%m%d_%H%M%S)"
 echo -e "${BLUE}💾 기존 네트워크 설정 백업:${NC} $BACKUP_FILE"
 cp /etc/network/interfaces "$BACKUP_FILE"
 
-# nic0, nic1, nic2 명시적 최적 매핑
-# - nic0, nic2: 공유기 본딩 그룹
-# - nic1: 맥북 직결 포트
-BOND_SLAVES="nic0 nic2"
-DIRECT_IFACE="nic1"
-
-# 만약 4개 이상의 인터페이스가 있다면(예: nic3 등) 추가 감지
-if [[ " ${PHYS_IFACES[*]} " =~ " nic3 " ]]; then
-    BOND_SLAVES="nic0 nic2 nic3"
-fi
+# nic1, nic2: 공유기 2.5G x2 본딩 그룹 (물리 1·2번)
+# nic0: 맥북 1:1 직결 포트 (물리 3번)
+BOND_SLAVES="nic1 nic2"
+DIRECT_IFACE="nic0"
 
 echo -e "\n${GREEN}📋 확정된 네트워크 구성:${NC}"
-echo -e "   1. ${CYAN}공유기 2Gbps 본딩 그룹 (bond0)${NC}: $BOND_SLAVES (모드: balance-alb)"
+echo -e "   1. ${CYAN}공유기 2.5G x2 본딩 그룹 (bond0)${NC}: $BOND_SLAVES (모드: balance-alb)"
 echo -e "   2. ${CYAN}메인 브리지 (vmbr0)${NC}: 192.168.1.200/24 (게이트웨이: 192.168.1.1) ➔ bond0 연결"
 echo -e "   3. ${CYAN}맥북 1:1 직결 브리지 (vmbr1)${NC}: 10.10.10.1/24 (게이트웨이 없음) ➔ $DIRECT_IFACE 연결"
 
@@ -77,7 +71,7 @@ echo -e "\n${YELLOW}새로운 /etc/network/interfaces 파일을 생성합니다.
 
 cat <<INTERFACES_EOF > /etc/network/interfaces
 # Proxmox VE Multi-NIC Configuration
-# Optimized for 2Gbps Home Bonding + MacBook Direct-Attach
+# Optimized for 2.5G x2 Home Bonding + MacBook Direct-Attach
 # Generated on $(date)
 
 auto lo
@@ -93,7 +87,7 @@ INTERFACES_EOF
 done
 
 cat <<INTERFACES_EOF >> /etc/network/interfaces
-# 1. 공유기 대역폭 2배 본딩 (balance-alb)
+# 1. 공유기 1·2번 포트 본딩 (2.5G + 2.5G 초고속 대역폭)
 auto bond0
 iface bond0 inet manual
 	bond-slaves $BOND_SLAVES
@@ -109,7 +103,7 @@ iface vmbr0 inet static
 	bridge-stp off
 	bridge-fd 0
 
-# 3. 맥북 1:1 직결 전용 브리지 (10.10.10.1)
+# 3. 맥북 3번 포트 1:1 직결 전용 브리지 (10.10.10.1)
 auto vmbr1
 iface vmbr1 inet static
 	address 10.10.10.1/24
@@ -123,7 +117,7 @@ echo -e "${GREEN}✅ /etc/network/interfaces 생성 완료!${NC}"
 echo -e "${BLUE}🔄 네트워크 설정을 적용합니다 (ifreload -a)...${NC}"
 
 if ifreload -a; then
-    echo -e "\n${GREEN}🎉 2Gbps 본딩 및 맥북 직결 포트 설정이 완벽하게 적용되었습니다!${NC}"
+    echo -e "\n${GREEN}🎉 2.5G 본딩 및 맥북 직결 포트 설정이 완벽하게 적용되었습니다!${NC}"
     echo -e "${CYAN}======================================================${NC}"
     echo -e "1. Proxmox 웹 콘솔: ${GREEN}https://192.168.1.200:8006${NC}"
     echo -e "2. 본딩 상태 확인: ${GREEN}cat /proc/net/bonding/bond0${NC}"
