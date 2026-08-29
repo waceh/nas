@@ -94,12 +94,20 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
    * **Radarr 연동**: Host `http://radarr:7878`, API Key 입력 ➔ `Test & Save`.
    * **Sonarr 연동**: Host `http://sonarr:8989`, API Key 입력 ➔ `Test & Save`.
 
-### 5) Jellyseerr (요청 UI) 설정
-1. [http://192.168.1.109:5055](http://192.168.1.109:5055) 접속 ➔ `설정` ➔ `일반`:
+### 5) Jellyseerr (요청 UI) 설정 및 500 에러 방지
+1. [http://192.168.1.109:5055](http://192.168.1.109:5055) 접속 ➔ `Settings (설정)` ➔ `General (일반)`:
    * 표시 언어: **`한국어`**, 탐색 지역: **`대한민국`**, 탐색 언어: **`한국어 (ko)`**.
-2. `설정` ➔ `서비스`:
-   * **Radarr 추가**: 호스트 `192.168.1.109`, 포트 `7878`, API Key, 루트 폴더 `/movies/Video/Movie`, 프로필 `HD-1080p`.
-   * **Sonarr 추가**: 호스트 `192.168.1.109`, 포트 `8989`, API Key, 루트 폴더 `/pds1/Video/drama`, 프로필 `HD-1080p`.
+2. `Settings (설정)` ➔ `Services (서비스)`:
+   * **Radarr 추가**:
+     - Host: `127.0.0.1` (또는 `192.168.1.109`), Port: `7878`, API Key 입력 (Radarr `:7878` ➔ Settings ➔ General ➔ Security에서 복사)
+     - `Default Server`: `[x]` 체크, `Test` 클릭 후
+     - **Default Quality Profile**: `HD-1080p` (또는 `Any`) 선택
+     - **Default Root Folder**: **`/pds1/Video/Movie`** (또는 `/movies/Video/Movie`) 선택 ➔ `Save Changes`
+   * **Sonarr 추가**:
+     - Host: `127.0.0.1`, Port: `8989`, API Key 입력
+     - `Default Server`: `[x]` 체크, `Test` 클릭 후
+     - **Default Quality Profile**: `HD-1080p` (또는 `Any`)
+     - **Default Root Folder**: **`/pds1/Video/drama`** 선택 ➔ `Save Changes`
 
 ---
 
@@ -112,8 +120,6 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
 | **Sonarr** | `/pds1/Video/drama` | **WD White 18TB (`/volume2/PDS1/Video/drama`)** | 최종 드라마 시리즈 영구 보관 |
 | **Sonarr** | `/pds1/Video/entertainment` | **WD White 18TB (`/volume2/PDS1/Video/entertainment`)** | 최종 TV 예능 프로그램 보관 |
 | **Sonarr** | `/pds1/Video/animation` | **WD White 18TB (`/volume2/PDS1/Video/animation`)** | 최종 애니메이션 시리즈 보관 |
-
----
 
 ---
 
@@ -135,20 +141,26 @@ pct exec 109 -- bash -c "cd /opt/media-stack && docker compose restart"
 
 ## 💡 7. 실전 미디어 수집 & 운영 꿀팁
 
-### 1) 자동 검색(Auto Search) vs 대화형 검색(Interactive Search)
-* **자동 검색 (`돋보기 아이콘`)**:
-  - Jellyseerr에서 "요청" 버튼을 누르거나 Radarr/Sonarr에서 돋보기를 누르면, 5대 토렌트 사이트에서 **시더(배포자)가 가장 많고 1080p 고화질인 최적의 릴리즈를 스스로 골라 qBittorrent로 자동 전송**합니다.
-* **대화형 검색 (`사람+돋보기 아이콘`)**:
-  - 특정 릴리즈 그룹(SubsPlease, Erai-raws, 자막 내장본 등)이나 용량/화질을 직접 눈으로 보고 고르고 싶을 때 클릭합니다.
-  - 검색된 토렌트 목록 중 마음에 드는 항목의 **`다운로드(구름 아이콘)`**를 누르면 즉시 qBittorrent로 꽂힙니다.
+### 1) 가족 친화형 미디어 운영 모델 (권한 분리)
+* **👑 관리자 (나)**:
+  - **Jellyseerr (`:5055`)**: 침대나 소파에서 스마트폰으로 트렌딩/평점을 보며 1-Click [요청]으로 2.5G 전용선 다운로드 지시.
+  - **콘텐츠 품질 통제**: 최고화질(4K/1080p HDR) + 한글 자막 릴리즈 위주로 26TB 저장소를 깔끔하게 큐레이션.
+* **📱 가족 / 일반 사용자**:
+  - 복잡한 다운로드/서버를 알 필요 없이 **Swiftfin (iOS/Apple TV)**, **Jellyfin (스마트TV/Android)** 전용 앱만 열어 넷플릭스 보듯이 즉시 감상.
 
-### 2) 한국 드라마 / K-콘텐츠 검색 팁 (TheTVDB 고유 번호)
-* 한국 드라마는 영문 제목 매칭이 간혹 어긋날 수 있습니다 (예: 《괴물》 = *Beyond Evil*).
-* 이때 Sonarr 검색창에 **`tvdb:393636`** 처럼 TheTVDB 고유 ID나 영문명을 입력하면 1초 만에 100% 정확하게 검색 및 등록됩니다.
+### 2) 다운로드 100% 완료 후 qBittorrent 목록 자동 정리
+* **원리**: Radarr/Sonarr가 다운로드된 영화를 `/pds1/Video/Movie`로 안전하게 이동시킨 직후, qBittorrent 목록에서 토렌트 작업만 쏙 삭제. (영화 파일은 100% 영구 보존).
+* **설정 방법**:
+  1. **qBittorrent (`:8080`)**: [도구] ➔ [옵션] ➔ [BitTorrent] ➔ `시딩 제한: 비율 0.00` ➔ `토렌트 일시 정지` (또는 `토렌트 삭제`) 설정.
+  2. **Radarr (`:7878`) / Sonarr (`:8989`)**: [Settings] ➔ [Download Clients] ➔ `qBittorrent` 카드 클릭 ➔ 하단 `Remove Completed` (또는 `Remove Imported Downloads`) **`[x]` 체크**!
 
-### 3) 대용량 시리즈(원피스, 나루토 등) 수집 팁
-* 수백~수천 화에 달하는 애니메이션은 전체를 한 번에 긁기보다, **원하는 시즌(Season 10 등) 우측의 돋보기 버튼**을 눌러 시즌 팩(Season Pack) 단위로 다운로드하면 빠르고 안정적입니다.
+### 3) 다운로드 속도와 시더(Seeders) 관계
+* 토렌트는 중앙 서버가 아닌 P2P 전송이므로, **배포자(Seeders) 수와 그들의 업로드 대역폭**에 따라 속도가 결정됩니다.
+* 시더가 많은 최신 인기작은 2.5G 전용선(`vmbr1`) 대역폭을 100% 활용하여 초당 50MB~200MB/s로 1~2분 만에 완료됩니다.
+* 시더가 적은 고전/희귀작은 qBittorrent가 백그라운드에서 조각을 모으며 천천히 다운로드합니다.
 
-### 4) 초기 라이브러리 색인(Sync)과 속도
-* 최초 Jellyfin 라이브러리 동기화(`Sync Libraries`) 시에는 수천 장의 포스터와 메타데이터를 다운로드하느라 일시적으로 굼뜰 수 있습니다.
-* 색인이 1회 완료되어 Intel 530 SSD에 캐시가 저장되고 나면, **이후에는 넷플릭스 앱처럼 0.1초 만에 팍팍 뜨는 쾌적한 속도**를 자랑합니다.
+### 4) TMDb 캐싱 메커니즘과 성능 최적화
+* **1회차 조회**: 미국 TMDb 서버에서 메타데이터를 수신하여 LXC 109 메모리/SQLite DB 및 브라우저 디스크에 캐싱.
+* **2회차 조회부터**: 로컬 캐시에서 `0.001초` 만에 즉시 렌더링.
+* **LXC 109 자원**: 4 vCPU / 4GB RAM 할당으로 6개 봇 동시 구동 시 렉 제로 보장.
+
