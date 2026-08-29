@@ -6,8 +6,6 @@
 # - 포트 4 (미연결): 맥북 1:1 직결 전용 브리지 ➔ vmbr1 (10.10.10.1/24)
 # ==============================================================================
 
-set -euo pipefail
-
 # ANSI 색상
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -26,33 +24,58 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-# ifupdown2 패키지 확인 (Proxmox 무중단 네트워크 리로드 필수)
-if ! command -v ifreload &> /dev/null; then
-    echo -e "${YELLOW}📦 ifupdown2 설치 중...${NC}"
-    apt-get update && apt-get install -y ifupdown2
+# ifupdown2 패키지 확인
+if ! which ifreload >/dev/null 2>&1; then
+    echo -e "${YELLOW}📦 ifupdown2 패키지 설치 중...${NC}"
+    apt-get update -y && apt-get install -y ifupdown2
 fi
 
-# 물리 이더넷 인터페이스 목록 감지 (en*, eth*)
-INTERFACES=($(ls /sys/class/net | grep -E '^(en|eth)' | sort))
-NUM_IFACES=${#INTERFACES[@]}
+# 가상 인터페이스(lo, vmbr, veth, bond, tap 등)를 제외한 모든 물리 NIC 검색
+PHYS_IFACES=()
+for iface in $(ls /sys/class/net/ 2>/dev/null); do
+    # 가상 인터페이스 및 터널 제외
+    if [[ "$iface" =~ ^(lo|vmbr|veth|fwpr|fwbr|tap|bond|tailscale|docker) ]]; then
+        continue
+    fi
+    # /sys/class/net/$iface/device 가 존재하면 실제 물리 NIC
+    if [ -d "/sys/class/net/$iface/device" ] || [[ "$iface" =~ ^(en|eth) ]]; then
+        PHYS_IFACES+=("$iface")
+    fi
+done
+
+# 정렬
+IFS=$'\n' PHYS_IFACES=($(sort <<<"${PHYS_IFACES[*]}"))
+unset IFS
+
+NUM_IFACES=${#PHYS_IFACES[@]}
 
 echo -e "${BLUE}🔍 감지된 물리 이더넷 인터페이스 ($NUM_IFACES 개):${NC}"
-for iface in "${INTERFACES[@]}"; do
-    CARRIER=$(cat /sys/class/net/$iface/carrier 2>/dev/null || echo "0")
-    OPERSTATE=$(cat /sys/class/net/$iface/operstate 2>/dev/null || echo "unknown")
-    SPEED=$(cat /sys/class/net/$iface/speed 2>/dev/null || echo "N/A")
+
+ACTIVE_IFACES=()
+INACTIVE_IFACES=()
+
+for iface in "${PHYS_IFACES[@]}"; do
+    CARRIER="0"
+    if [ -f "/sys/class/net/$iface/carrier" ]; then
+        CARRIER=$(cat "/sys/class/net/$iface/carrier" 2>/dev/null || echo "0")
+    fi
+    
+    OPERSTATE=$(cat "/sys/class/net/$iface/operstate" 2>/dev/null || echo "unknown")
+    SPEED=$(cat "/sys/class/net/$iface/speed" 2>/dev/null || echo "N/A")
     
     if [ "$CARRIER" = "1" ] || [ "$OPERSTATE" = "up" ]; then
         STATUS="${GREEN}연결됨 (Link UP, ${SPEED} Mbps)${NC}"
+        ACTIVE_IFACES+=("$iface")
     else
         STATUS="${YELLOW}미연결 (Link DOWN - 맥북 직결 대기)${NC}"
+        INACTIVE_IFACES+=("$iface")
     fi
     echo -e "   - ${CYAN}${iface}${NC}: $STATUS"
 done
 
-if [ "$NUM_IFACES" -lt 4 ]; then
-    echo -e "${YELLOW}⚠️ 물리 인터페이스가 4개 미만입니다 ($NUM_IFACES 개).${NC}"
-    echo -e "계속 진행하려면 감지된 인터페이스를 확인하세요: ${INTERFACES[*]}"
+if [ "$NUM_IFACES" -eq 0 ]; then
+    echo -e "${RED}❌ 물리 네트워크 카드를 찾을 수 없습니다.${NC}"
+    exit 1
 fi
 
 # 기존 네트워크 설정 백업
@@ -60,32 +83,22 @@ BACKUP_FILE="/etc/network/interfaces.bak.$(date +%Y%m%d_%H%M%S)"
 echo -e "${BLUE}💾 기존 네트워크 설정 백업:${NC} $BACKUP_FILE"
 cp /etc/network/interfaces "$BACKUP_FILE"
 
-# 활성화된 인터페이스와 비활성화(맥북 직결용) 인터페이스 분류
-ACTIVE_IFACES=()
-INACTIVE_IFACES=()
-
-for iface in "${INTERFACES[@]}"; do
-    CARRIER=$(cat /sys/class/net/$iface/carrier 2>/dev/null || echo "0")
-    if [ "$CARRIER" = "1" ]; then
-        ACTIVE_IFACES+=("$iface")
-    else
-        INACTIVE_IFACES+=("$iface")
-    fi
-done
-
-# 기본값 결정: 활성화된 인터페이스 3개는 본딩, 남은 1개는 직결
+# 본딩 슬레이브 및 직결 포트 자동 배정
 if [ "${#ACTIVE_IFACES[@]}" -ge 3 ]; then
     BOND_SLAVES="${ACTIVE_IFACES[0]} ${ACTIVE_IFACES[1]} ${ACTIVE_IFACES[2]}"
-    DIRECT_IFACE="${INACTIVE_IFACES[0]:-${INTERFACES[3]}}"
+    DIRECT_IFACE="${INACTIVE_IFACES[0]:-${PHYS_IFACES[3]:-}}"
 elif [ "$NUM_IFACES" -ge 4 ]; then
-    BOND_SLAVES="${INTERFACES[0]} ${INTERFACES[1]} ${INTERFACES[2]}"
-    DIRECT_IFACE="${INTERFACES[3]}"
+    BOND_SLAVES="${PHYS_IFACES[0]} ${PHYS_IFACES[1]} ${PHYS_IFACES[2]}"
+    DIRECT_IFACE="${PHYS_IFACES[3]}"
+elif [ "$NUM_IFACES" -eq 3 ]; then
+    BOND_SLAVES="${PHYS_IFACES[0]} ${PHYS_IFACES[1]}"
+    DIRECT_IFACE="${PHYS_IFACES[2]}"
 else
-    BOND_SLAVES="${INTERFACES[*]}"
+    BOND_SLAVES="${PHYS_IFACES[*]}"
     DIRECT_IFACE=""
 fi
 
-echo -e "\n${GREEN}📋 생성될 네트워크 구성 계획:${NC}"
+echo -e "\n${GREEN}📋 네트워크 구성 계획:${NC}"
 echo -e "   1. ${CYAN}3Gbps 본딩 그룹 (bond0)${NC}: $BOND_SLAVES (모드: balance-alb)"
 echo -e "   2. ${CYAN}메인 브리지 (vmbr0)${NC}: 192.168.1.200/24 (게이트웨이: 192.168.1.1) ➔ bond0 연결"
 if [ -n "$DIRECT_IFACE" ]; then
@@ -105,7 +118,7 @@ iface lo inet loopback
 INTERFACES_EOF
 
 # 개별 물리 인터페이스 정의
-for iface in "${INTERFACES[@]}"; do
+for iface in "${PHYS_IFACES[@]}"; do
 cat <<INTERFACES_EOF >> /etc/network/interfaces
 iface $iface inet manual
 
@@ -147,13 +160,13 @@ echo -e "${GREEN}✅ /etc/network/interfaces 생성 완료!${NC}"
 echo -e "${BLUE}🔄 네트워크 설정을 적용합니다 (ifreload -a)...${NC}"
 
 if ifreload -a; then
-    echo -e "\n${GREEN}🎉 네트워크 설정이 성공적으로 적용되었습니다!${NC}"
+    echo -e "\n${GREEN}🎉 3Gbps 본딩 및 맥북 직결 포트 설정이 완벽하게 적용되었습니다!${NC}"
     echo -e "${CYAN}======================================================${NC}"
     echo -e "1. Proxmox 웹 콘솔: ${GREEN}https://192.168.1.200:8006${NC}"
-    echo -e "2. bond0 상태 확인: ${GREEN}cat /proc/net/bonding/bond0${NC}"
+    echo -e "2. 본딩 상태 확인: ${GREEN}cat /proc/net/bonding/bond0${NC}"
     echo -e "3. 맥북 1:1 직결 시:"
-    echo -e "   - 맥북 유선 네트워크 설정에서 IP를 ${CYAN}10.10.10.2${NC}, 서브넷 ${CYAN}255.255.255.0${NC} 입력"
-    echo -e "   - 맥북에서 ${CYAN}smb://10.10.10.1${NC} 또는 ${CYAN}https://10.10.10.1:8006${NC} 로 즉시 접속 가능"
+    echo -e "   - 맥북 [설정 ➔ 네트워크]에서 IP: ${CYAN}10.10.10.2${NC}, 서브넷: ${CYAN}255.255.255.0${NC}"
+    echo -e "   - 맥북에서 ${CYAN}smb://10.10.10.1${NC} 로 즉시 초고속 접속"
     echo -e "${CYAN}======================================================${NC}"
 else
     echo -e "${RED}⚠️ 네트워크 리로드 중 경고가 발생했습니다. 백업 복구 명령어:${NC}"
