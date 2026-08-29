@@ -23,7 +23,12 @@
 
 - **CPU**: Intel Core i5-9500T (6C/6T, Intel UHD Graphics 630 iGPU QuickSync 지원)
 - **RAM**: DDR4 16GB (8GB x 2 듀얼 채널)
-- **메인보드/케이스**: Vpro C246 (SATA 8포트, LAN 4포트) / Fractal Node 304 / 550W Gold 파워
+- **메인보드/케이스**: Vpro C246 (SATA 8포트, Onboard Multi-NIC 3포트 + 1더미) / Fractal Node 304 / 550W Gold 파워
+- **네트워크 인터페이스 (Multi-NIC 3포트 풀가동)**:
+  - **1번 슬롯 (`nic0` 1GbE vPro)**: `vmbr0` (공유기 메인망 `192.168.1.200`, PVE 호스트 & 상시 웹/앱 서비스)
+  - **2번 슬롯 (`nic1` 2.5GbE)**: `vmbr1` (공유기 2차선 토렌트/LXC 109 전용 2.5G 브리지, 트래픽 완전 격리)
+  - **3번 슬롯 (`nic2` 2.5GbE)**: `vmbr2` (맥북 1:1 직결 전용망 `10.10.10.x`, 핑 ~0.7ms)
+  - **4번 슬롯**: 미실장 더미 슬롯
 - **스토리지 티어링**:
   - **`Host OS 전용` Intel 710 SSD (100GB MLC, Non-Disk)**: Proxmox VE 8.x 베이스 OS (LVM 병합으로 94.5GB 여유 확보 완료)
   - **`고속 컨테이너` Intel 530 SSD (120GB MLC, Non-Disk)**: Proxmox LVM-Thin `local-530` (LXC 102~107 루트, DB 풀)
@@ -36,12 +41,12 @@
 
 | ID / 대상 | 서비스 명칭 | vCPU / RAM | 구동 스토리지 / 볼륨 | 현재 상태 | 상세 가이드 및 스크립트 |
 | :---: | :--- | :---: | :--- | :---: | :--- |
-| **VM 101** | **Xpenology (Storage Core)** | 2C / 4GB | HDD 3대 Raw Passthrough (Gold 4T, White 26T) | **✅ 구축 완료** | [`04_xpenology_install.md`](04_xpenology_install.md) |
+| **VM 101** | **Xpenology (Storage Core)** | 2C / 4GB | HDD 3대 Raw Passthrough (Gold 4T, White 26T) | **✅ 구축 완료** | LAN 1 `192.168.1.132` + LAN 2 `10.10.10.101` (맥북 직결 SMB), [`04_xpenology_install.md`](04_xpenology_install.md) |
 | **LXC 103** | **Immich Photo Server** | 2C / 4GB | Intel 530 SSD + WD Gold (`/volume1/photo` NFS) | **✅ 구축 완료**<br/>*(10GB+ 색인 완료)* | [`09_immich_caddy_https_and_storage_setup.md`](09_immich_caddy_https_and_storage_setup.md)<br>[`setup_immich_lxc.sh`](../scripts/setup_immich_lxc.sh) |
 | **LXC 104** | **Gonic Music Server** | 1C / 512MB | Intel 530 SSD + WD Gold (`/volume1/music` NFS) | **✅ 구축 완료**<br/>*(폴더 기반 스트리밍)* | [`09_immich_caddy_https_and_storage_setup.md`](09_immich_caddy_https_and_storage_setup.md)<br>[`setup_gonic_lxc.sh`](../scripts/setup_gonic_lxc.sh) |
 | **LXC 105** | **Jellyfin Media Server** | 2C / 2GB | Intel 530 SSD + iGPU QuickSync + 4단 NFS (`video`, `music`, `pds1`, `pds2`) | **✅ 구축 완료**<br/>*(iGPU QSV + RAM 캐시 + NFSv3 락프리)* | [`10_graceful_power_management_and_jellyfin_guide.md`](10_graceful_power_management_and_jellyfin_guide.md)<br>[`setup_jellyfin_lxc.sh`](../scripts/setup_jellyfin_lxc.sh) |
 | **LXC 107** | **Homepage + Uptime Kuma + MeTube** | 1C / 1GB | Intel 530 SSD (`local-530`) | **✅ 구축 완료**<br/>*(포털 & 24H 관제 & 유튜브 한글 다운로더)* | [`12_homepage_dashboard_and_disk_architecture.md`](12_homepage_dashboard_and_disk_architecture.md)<br>[`16_metube_youtube_media_downloader_guide.md`](16_metube_youtube_media_downloader_guide.md)<br>[`setup_metube_lxc.sh`](../scripts/setup_metube_lxc.sh)<br>[`patch_metube_korean.sh`](../scripts/patch_metube_korean.sh) |
-| **LXC 109** | **Full *Arr Media Automation Stack**<br/>(Jellyseerr + Radarr + Sonarr + Prowlarr + FlareSolverr + qBittorrent) | 2C / 2048MB | Intel 530 SSD + WD Gold Temp 버퍼 + 26TB White | **✅ 완전 구축 완료**<br/>*(미디어 원클릭 요청, 봇 자동 탐색, 보안 우회, 스마트 버퍼링)* | [`17_media_automation_jellyseerr_qbittorrent_guide.md`](17_media_automation_jellyseerr_qbittorrent_guide.md)<br>[`setup_media_automation_lxc.sh`](../scripts/setup_media_automation_lxc.sh) |
+| **LXC 109** | **Full *Arr Media Automation Stack**<br/>(Jellyseerr + Radarr + Sonarr + Prowlarr + FlareSolverr + qBittorrent) | 2C / 2048MB | Intel 530 SSD + WD Gold Temp 버퍼 + 26TB White | **✅ 완전 구축 완료**<br/>*(미디어 원클릭 요청, 봇 자동 탐색, 보안 우회, 스마트 버퍼링, 2.5G vmbr1 전용선)* | [`17_media_automation_jellyseerr_qbittorrent_guide.md`](17_media_automation_jellyseerr_qbittorrent_guide.md)<br>[`setup_media_automation_lxc.sh`](../scripts/setup_media_automation_lxc.sh) |
 | **LXC 102** | **AdGuard Home** | 1C / 512MB | Intel 530 SSD (`local-530`) | **✅ 구축 완료**<br/>*(광고차단 & 로컬 DNS)* | [`13_adguard_home_dns_setup.md`](13_adguard_home_dns_setup.md)<br>[`setup_adguard_lxc.sh`](../scripts/setup_adguard_lxc.sh) |
 | **Host** | **Cockpit Web GUI** | PVE Host | Debian 12 Native (`:9090`) | **✅ 설치 완료**<br/>*(디스크 S.M.A.R.T/온도)* | [`14_cockpit_disk_monitoring_guide.md`](14_cockpit_disk_monitoring_guide.md)<br>[`setup_cockpit_pve.sh`](../scripts/setup_cockpit_pve.sh) |
 | **LXC 106** | **Dev Web Server** | 2C / 2GB | Intel 530 SSD (`local-530`) | **⚪ 대기 (선택)** | Spring Boot / Node 개발용 |
@@ -52,8 +57,13 @@
 ## 🌐 4. 네트워크 & 포트포워딩 구성표
 
 - **공유기 게이트웨이**: `192.168.1.1` (ASUS 공유기, DDNS: `waceh.asuscomm.com`)
-- **Proxmox 호스트 IP**: `192.168.1.200` (`https://192.168.1.200:8006`, Cockpit: `:9090`)
-- **헤놀로지 VM 101 IP**: `192.168.1.132` (`http://192.168.1.132:5000`)
+- **Proxmox 메인 IP (`vmbr0`)**: `192.168.1.200` (`https://192.168.1.200:8006`, Cockpit: `:9090`)
+- **헤놀로지 메인 IP (`vmbr0`)**: `192.168.1.132` (`http://192.168.1.132:5000`)
+- **토렌트 스택 전용선 (`vmbr1`)**: `192.168.1.109` (qBit `:8080`, Jellyseerr `:5055`)
+- **맥북 1:1 직결망 (`vmbr2`)**:
+  - Proxmox 웹 콘솔: `https://10.10.10.1:8006`
+  - 맥북: `10.10.10.2`
+  - 헤놀로지 직결 SMB: `smb://10.10.10.101`
 
 | 서비스 | 내부 IP 및 포트 | 외부 포트 / 접속 방식 | 클라이언트 앱 및 연동 |
 | :--- | :--- | :--- | :---: |

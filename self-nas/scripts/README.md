@@ -231,3 +231,19 @@ curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/set
 ```bash
 curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/patch_metube_korean.sh | bash
 ```
+
+---
+
+## 🌐 18. 3-포트 Multi-NIC & 맥북 1:1 직결 자동 구성 (`setup_network_bonding_pve.sh`)
+
+3개의 물리 온보드 랜카드를 각각 **공유기 메인망(`vmbr0`)**, **토렌트 전용선(`vmbr1`)**, **맥북 1:1 직결 전용 통로(`vmbr2`)** 로 분리 구성하여 대역폭 간섭 및 공유기 루프 차단을 원천 방지합니다.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/waceh/nas/main/self-nas/scripts/setup_network_bonding_pve.sh | bash
+```
+
+- **1번 슬롯 (`nic0` 1G)**: `vmbr0` (공유기 메인망 `192.168.1.200`, 게이트웨이 `192.168.1.1`)
+- **2번 슬롯 (`nic1` 2.5G)**: `vmbr1` (공유기 2차선 토렌트/LXC 109 전용 2.5G L2 브리지)
+- **3번 슬롯 (`nic2` 2.5G)**: `vmbr2` (맥북 1:1 직결 전용 브리지 `10.10.10.1`, 헤놀로지 직결 SMB `10.10.10.101`)
+- **상세 가이드**: [`docs/02_network_setup.md`](../docs/02_network_setup.md)
+

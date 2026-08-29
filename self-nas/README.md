@@ -15,7 +15,7 @@
 | **Motherboard** | Server(NAS) Board Vpro C246          | 서버급 안정성, 확장성(SATAX8, LANX4) |
 | **Case**        | Fractal Design Node 304 (Black)      | 미니 ITX, 쿨링 최적화 구조          |
 | **Power**       | Cooler Master MWE 550 V3 80plus GOLD | HDB 저소음 팬 (자동 팬 조절)        |
-| **Network**     | 10Gbps Server NIC (PCIe)             | 맥북 직결 초고속 네트워크(추후 필요시)     |
+| **Network**     | Onboard Multi-NIC (3 Physical Ports)<br/>1x Intel I219-LM (1GbE vPro) + 2x Intel I226-V (2.5GbE) | 슬롯 1(공유기 메인) / 슬롯 2(공유기 2차선 토렌트 전용) / 슬롯 3(맥북 1:1 직결 ~0.7ms) |
 
 ## 💾 2. Storage Architecture
 디스크의 성격과 데이터의 용도에 따라 역할을 완벽히 분리한 4-Tier 스토리지 구성입니다.
@@ -36,13 +36,13 @@
 ## 🏗️ 3. Virtualization (Proxmox VE)
 | 가상 머신 (VM) / 컨테이너 | 할당 자원 | 스토리지 (위치) | 주요 역할 |
 | :--- | :--- | :--- | :--- |
-| **VM 101: 헤놀로지**<br/>*(Pure Storage Core)* | 2 Core / 4GB | WD Gold 4TB, WD White 8TB, WD White 18TB (Raw Passthrough) | **순수 NAS 스토리지 코어** (Samba / NFS 파일 공유 데몬 전용, 도커 미구동으로 초경량 유지) |
+| **VM 101: 헤놀로지**<br/>*(Pure Storage Core)* | 2 Core / 4GB | WD Gold 4TB, WD White 8TB, WD White 18TB (Raw Passthrough) | **순수 NAS 스토리지 코어** (Samba / NFS 파일 공유 데몬 전용, LAN 1 `192.168.1.132` + LAN 2 `10.10.10.101` 맥북 직결) |
 | **LXC 102: AdGuard Home** | 1 Core / 512MB | Intel 530 SSD (`local-530`) | **네트워크 광고 차단 & 로컬 DNS** (`nas.home`, `photo.home`) |
 | **LXC 103: Immich Server** | 2 Core / 4GB | Intel 530 SSD (DB/앱) + WD Gold 4TB (사진/영상 원본) | AI 기반 사진 백업 백엔드 + PostgreSQL + Vector Search DB |
 | **LXC 104: Gonic Music Server** | 1 Core / 512MB | Intel 530 SSD (루트/DB) + WD Gold 4TB (음원 라이브러리) | 초경량 Go 기반 **폴더(디렉토리) 기반 고음질 음악 스트리밍 서버** (Subsonic API) |
 | **LXC 105: Jellyfin Server** | 2 Core / 2GB | Intel 530 SSD (루트/캐시) + WD Gold 4TB (홈비디오) + WD White 26TB (영화/드라마) | Intel UHD 630 iGPU QuickSync HW 가속 미디어 스트리밍 |
 | **LXC 107: Homepage + Kuma + MeTube** | 1 Core / 1GB | Intel 530 SSD (`local-530`) | **올인원 포털 대시보드 (4단 대칭 레이아웃) & Uptime Kuma 24H 장애 관제 & MeTube 유튜브 4K/음원 한글 다운로더** |
-| **LXC 109: Full *Arr Media Stack** | 2 Core / 2GB | Intel 530 SSD + WD Gold Temp 버퍼 + 26TB White | **Jellyseerr(요청) + Radarr(영화) + Sonarr(드라마) + Prowlarr(인덱서) + FlareSolverr(우회) + qBittorrent(다운로더) 완전 무인 자동화 스택 (26TB 스핀다운 보호)** |
+| **LXC 109: Full *Arr Media Stack** | 2 Core / 2GB | Intel 530 SSD + WD Gold Temp 버퍼 + 26TB White | **Jellyseerr(요청) + Radarr(영화) + Sonarr(드라마) + Prowlarr(인덱서) + FlareSolverr(우회) + qBittorrent(다운로더) 완전 무인 자동화 스택 (26TB 스핀다운 보호, 2.5G vmbr1 전용선)** |
 | **Host: Cockpit Web GUI** | PVE Host | Debian 12 Native (`:9090`) | **5대 물리 디스크 실시간 온도 & S.M.A.R.T 건강도 웹 콘솔** |
 | **LXC 106: Dev Web Server** | 2 Core / 2GB | Intel 530 SSD (MLC, Non-Disk) | Spring Boot / Node.js / Nginx 개인 프로젝트 개발 & 테스트 웹 서버 |
 | *(선택 확장) Windows VM* | *2~4 Core / 4GB* | *Intel 530 SSD or WD Gold 4TB* | *추후 필요 시에만 최소 리소스로 On-Demand 생성 예정* |
@@ -55,19 +55,22 @@
 * **Folder-based Music Streaming**: `LXC 104 (Gonic)` — 폴더/디렉토리 구조 그대로 스트리밍, 완전 무료 Subsonic 클라이언트(Amperfy/Ultrasonic/Substreamer) 및 CarPlay/Android Auto 연동
 * **Media Streaming**: `LXC 105 (Jellyfin)` — iGPU 하드웨어 가속, 4TB Gold & 26TB White NFS 미디어 라이브러리 연동
 * **Dashboard & Monitoring Stack**: `LXC 107 (Homepage + Uptime Kuma)` — 4단 5열 대칭 포털 & 텔레그램 봇 실시간 장애 알림
+* **Full Media Automation**: `LXC 109 (*Arr Stack)` — 미디어 검색/요청부터 2.5G 전용선 초고속 다운로드 및 HDD 스핀다운 보호
 * **Hardware Health Console**: `Proxmox Host (Cockpit)` — 5대 물리 디스크 S.M.A.R.T 건강도 및 실시간 온도(°C) 관제
 * **Development Web Server**: `LXC 106 (Dev Web)` — 개인 웹 애플리케이션 개발/배포 환경
 
-## 🌐 5. Network Topology & ISP Bridge Mode (LG U+)
+## 🌐 5. Multi-NIC 3-포트 분리 및 토폴로지
 ```
-Internet(origin)
-   │
-LG U+ 공유기/모뎀 (임대 장비)
-   │
-ASUS 공유기 (내 방, 유무선)
-   ├── NAS (유선)
-   ├── PC (유선)
-   └── MacBook M1 Pro 16" (WiFi)
+[ASUS 메인 공유기 (192.168.1.1)]
+    ├── (LAN 1번) ──▶ NAS 1번 슬롯 (nic0 1G)   ── ⚡ vmbr0 (192.168.1.200 Proxmox 관리 & 상시 서비스망)
+    ├── (LAN 2번) ──▶ NAS 2번 슬롯 (nic1 2.5G) ── 🚀 vmbr1 (LXC 109 토렌트 다운로드 2.5G 전용선)
+    ├── (유선)   ──▶ 데스크톱 PC
+    └── (Wi-Fi)  ──▶ 스마트폰 / 스마트 TV
+
+[내 맥북 (MacBook Dock)]
+    └── (유선)   ──▶ NAS 3번 슬롯 (nic2 2.5G) ── ⚡ vmbr2 (10.10.10.x 맥북 1:1 직통 작업실 ~0.7ms)
+                                                     - Proxmox 웹 콘솔: https://10.10.10.1:8006
+                                                     - 헤놀로지 SMB 직결: smb://10.10.10.101
 ```
 LG U+ 공유기와 ASUS 공유기 사이 **이중 NAT** 상태. 포트포워딩/VPN을 한 곳에서만 관리하려면 LG U+ 공유기를 브리지 모드로 전환 권장. 상세 절차 및 대안(이중 NAT 유지 시 양쪽 포워딩)은 [`02_network_setup.md`](docs/02_network_setup.md) 참고.
 

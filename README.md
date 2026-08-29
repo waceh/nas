@@ -27,7 +27,7 @@ flowchart TB
     subgraph HW["🖥️ Physical Hardware (Fractal Node 304 / Vpro C246)"]
         CPU["Intel Core i5-9500T (6C/6T)<br/>Intel UHD Graphics 630 (iGPU)"]:::hw
         RAM["DDR4 RAM 8GB X 2 (16GB)"]:::hw
-        NIC["Onboard 1GbE LAN x4<br/>(10Gbps PCIe NIC 확장 예정)"]:::hw
+        NIC["Onboard Multi-NIC (3 Physical Ports)<br/>1x Intel I219-LM (1G) + 2x Intel I226-V (2.5G)"]:::hw
         
         subgraph Disks["💾 Physical Storage"]
             SSD_710["Intel 710 SSD 100GB (MLC / Non-Disk)<br/>Proxmox Host OS 전용"]:::disk
@@ -40,11 +40,15 @@ flowchart TB
 
     %% 2. 하단 박스: Proxmox VE
     subgraph PVE["⚡ Proxmox VE 8.x (Hypervisor)"]
-        VMBR0["vmbr0 (1GbE LAN - 192.168.50.x)"]:::pve
+        subgraph NET["🌐 Multi-NIC Virtual Bridges"]
+            VMBR0["vmbr0 (1번 슬롯 nic0 / 192.168.1.200)<br/>공유기 메인 홈네트워크 & 관리망"]:::pve
+            VMBR1["vmbr1 (2번 슬롯 nic1 / 2.5G)<br/>공유기 2차선 토렌트/미디어 전용 브리지"]:::pve
+            VMBR2["vmbr2 (3번 슬롯 nic2 / 10.10.10.1)<br/>맥북 1:1 직통 초광속 작업실"]:::pve
+        end
         
         %% VM 101: Xpenology (Pure NAS Storage Core)
         subgraph VM101["📦 VM 101: 헤놀로지 Xpenology (DSM 7.2.1 / Pure Storage Core)"]
-            NAS_SPEC["2 vCPU / 4GB RAM<br/>Boot: Virtual rr.img (sata0)<br/>OS: 32GB vDisk (sata1)<br/>Pure Samba / NFS File Services"]:::vm
+            NAS_SPEC["2 vCPU / 4GB RAM<br/>Boot: Virtual rr.img (sata0)<br/>OS: 32GB vDisk (sata1)<br/>LAN 1 (192.168.1.132) / LAN 2 (10.10.10.101 직결)<br/>Pure Samba / NFS File Services"]:::vm
         end
 
         %% Proxmox Native LXC Containers
@@ -53,12 +57,9 @@ flowchart TB
             LXC103["📸 LXC 103: Immich Photo Server<br/>(PostgreSQL DB / 벡터 엔진 / 앱)"]:::lxc
             LXC104["🎵 LXC 104: Gonic Music Server<br/>(폴더 기반 음악 스트리밍 / Subsonic API)"]:::lxc
             LXC105["🎬 LXC 105: Jellyfin Media Server<br/>(iGPU QuickSync 트랜스코딩 가속)"]:::lxc
+            LXC107["🏠 LXC 107: Homepage + MeTube<br/>(올인원 대시보드 + YouTube 다운로더)"]:::lxc
+            LXC109["⚡ LXC 109: Full *Arr Media Stack<br/>(Jellyseerr+Radarr+Sonarr+Prowlarr+qBittorrent)"]:::lxc
             LXC106["💻 LXC 106: Dev Web Server<br/>(Spring Boot / Node.js / Nginx 개발 서버)"]:::lxc
-            
-            LXC102 ~~~ LXC103
-            LXC103 ~~~ LXC104
-            LXC104 ~~~ LXC105
-            LXC105 ~~~ LXC106
         end
     end
 
@@ -87,7 +88,14 @@ flowchart TB
     
     %% Network Links
     VMBR0 --- VM101
-    VMBR0 --- LXC_AREA
+    VMBR0 --- LXC102
+    VMBR0 --- LXC103
+    VMBR0 --- LXC104
+    VMBR0 --- LXC105
+    VMBR0 --- LXC107
+    VMBR0 --- LXC106
+    VMBR1 --- LXC109
+    VMBR2 --- VM101
 ```
 
 ### 📋 주요 구성 요약
@@ -95,16 +103,17 @@ flowchart TB
 | 레이어 | 구성 요소 | 상세 내용 |
 | :--- | :--- | :--- |
 | **물리 하드웨어** | CPU / RAM / Storage | Intel i5-9500T (6C/6T, UHD 630 iGPU), DDR4 16GB, Intel 710 SSD 100GB (MLC, Non-Disk), Intel 530 SSD 120GB (MLC, Non-Disk), WD Gold 4TB, WD White 8TB (`WD80EMAZ-00WJTA0`), WD White 18TB (`WUH721818ALE604`) |
-| **하이퍼바이저** | Proxmox VE 8.x | 베이스 OS (Intel 710 SSD 전용 구동), 가상 네트워크 브리지(`vmbr0`), 스토리지 & iGPU 패스스루 라우팅 |
-| **가상 머신 (VM)** | **VM 101: 헤놀로지**<br/>*(Pure Storage Core)* | 2 Core / 4GB RAM, HDD 3대 Raw 패스스루(Gold 4TB, White 8TB, White 18TB), **순수 NAS 파일 공유 데몬(Samba / NFS) 전용** (도커 미구동으로 초경량/초안정성 유지) |
+| **네트워크** | Multi-NIC (3 포트) | **1번 슬롯 (`nic0` 1G)**: `vmbr0` (공유기 메인망 `192.168.1.200`)<br/>**2번 슬롯 (`nic1` 2.5G)**: `vmbr1` (공유기 2차선 토렌트/LXC 109 전용 2.5G 브리지)<br/>**3번 슬롯 (`nic2` 2.5G)**: `vmbr2` (맥북 1:1 직통 통로 `10.10.10.1` / 헤놀로지 직결 SMB `10.10.10.101`)<br/>**4번 슬롯**: 미실장 더미 슬롯 |
+| **하이퍼바이저** | Proxmox VE 8.x | 베이스 OS (Intel 710 SSD 전용 구동), 가상 네트워크 브리지 3개(`vmbr0`, `vmbr1`, `vmbr2`), 스토리지 & iGPU 패스스루 라우팅 |
+| **가상 머신 (VM)** | **VM 101: 헤놀로지**<br/>*(Pure Storage Core)* | 2 Core / 4GB RAM, HDD 3대 Raw 패스스루(Gold 4TB, White 8TB, White 18TB), **순수 NAS 파일 공유 데몬(Samba / NFS) 전용** (LAN 1 `192.168.1.132` + LAN 2 `10.10.10.101` 맥북 직결) |
 | | *(선택 확장) Windows VM* | *(추후 필요 시에만 최소 리소스로 On-Demand 생성 예정)* |
-| **LXC 컨테이너**<br/>*(Intel 530 SSD 고속 구동)* | **LXC 102: AdGuard Home** | 1 Core / 512MB RAM, 24/7 무소음 DNS 쿼리 캐시 & 네트워크 광고 차단 |
-| | **LXC 103: Immich Server** | 2 Core / 4GB RAM, AI 사진 백업 백엔드 + PostgreSQL + Vector DB (미디어 저장은 **헤놀로지 WD Gold 4TB** NFS 연동) |
-| | **LXC 104: Gonic Server** | 1 Core / 512MB RAM, Go 기반 초경량 **폴더(디렉토리) 기반 고음질 음악 스트리밍** (Subsonic API 완벽 호환, 음원은 **헤놀로지 WD Gold 4TB** NFS 연동) |
-| | **LXC 105: Jellyfin Server** | 2 Core / 2GB RAM, Intel UHD 630 iGPU QuickSync HW 가속 미디어 서버 (미디어 라이브러리는 **헤놀로지 WD Gold 4TB** NFS 연동) |
-| | **LXC 107: Homepage + MeTube** | 1 Core / 1GB RAM, 올인원 포털 대시보드 + Uptime Kuma + **YouTube 4K/음원 한글 다운로더** |
-| | **LXC 109: Full *Arr Media Stack** | 2 Core / 2GB RAM, **Jellyseerr(요청) + Radarr(영화) + Sonarr(드라마) + Prowlarr(인덱서) + FlareSolverr(우회) + qBittorrent(다운로더) 스마트 버퍼링 스택 (26TB 스핀다운 보호)** |
-| | **LXC 106: Dev Web Server** | 2 Core / 2GB RAM, Spring Boot / Node.js / Nginx 개인 개발 및 테스트 웹 서버 |
+| **LXC 컨테이너**<br/>*(Intel 530 SSD 고속 구동)* | **LXC 102: AdGuard Home** | 1 Core / 512MB RAM, 24/7 무소음 DNS 쿼리 캐시 & 네트워크 광고 차단 (`192.168.1.102`) |
+| | **LXC 103: Immich Server** | 2 Core / 4GB RAM, AI 사진 백업 백엔드 + PostgreSQL + Vector DB (미디어 저장은 **헤놀로지 WD Gold 4TB** NFS 연동, `192.168.1.103`) |
+| | **LXC 104: Gonic Server** | 1 Core / 512MB RAM, Go 기반 초경량 **폴더(디렉토리) 기반 고음질 음악 스트리밍** (Subsonic API 완벽 호환, 음원은 **헤놀로지 WD Gold 4TB** NFS 연동, `192.168.1.104`) |
+| | **LXC 105: Jellyfin Server** | 2 Core / 2GB RAM, Intel UHD 630 iGPU QuickSync HW 가속 미디어 서버 (미디어 라이브러리는 **헤놀로지 WD Gold 4TB** NFS 연동, `192.168.1.105`) |
+| | **LXC 107: Homepage + MeTube** | 1 Core / 1GB RAM, 올인원 포털 대시보드 + Uptime Kuma + **YouTube 4K/음원 한글 다운로더** (`192.168.1.107`) |
+| | **LXC 109: Full *Arr Media Stack** | 2 Core / 2GB RAM, **Jellyseerr(요청) + Radarr(영화) + Sonarr(드라마) + Prowlarr(인덱서) + FlareSolverr(우회) + qBittorrent(다운로더) 스마트 버퍼링 스택 (26TB 스핀다운 보호, 2.5G vmbr1 전용선 `192.168.1.109`)** |
+| | **LXC 106: Dev Web Server** | 2 Core / 2GB RAM, Spring Boot / Node.js / Nginx 개인 개발 및 테스트 웹 서버 (`192.168.1.106`) |
 
 ### 💾 물리적 디스크 용도 및 역할 분담 (4-Tier Storage)
 
