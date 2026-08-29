@@ -107,11 +107,12 @@ bash /root/nas_power.sh shutdown-host
 - [x] **Step 5. AdGuard Home (LXC 102) 및 Cockpit (PVE Host) 배포 완료** (가이드 13, 14 작성)
 - [x] **Step 6. Tailscale Subnet Router 구축 및 OCI 하이브리드 AI 연동 완료** (가이드 15 작성)
 - [x] **Step 7. MeTube 웹 다운로더 (LXC 107) 배포 완료** (100% 한국어 패치, WD Gold 4TB `downloads` 직통 매핑, 가이드 16 작성)
-- [x] **Step 8. Full *Arr 미디어 완전 자동화 풀스택 (LXC 109) 배포 및 연동 완료** (Jellyseerr + Radarr + Sonarr + Prowlarr + FlareSolverr + qBittorrent, 스마트 버퍼링 및 PDS1 카테고리 분류, 가이드 17 작성)
-- [x] **Step 9. Multi-NIC 2Gbps 본딩(Bonding) 및 맥북 1:1 직결(Direct Link) 구성 완료**:
-  - `nic0` (1G) + `nic2` (2.5G): ASUS 공유기 2Gbps 본딩 그룹 (`bond0` / `vmbr0` - `balance-alb`)
-  - `nic1` (2.5G): 맥북 전용 1:1 직결 브리지 (`vmbr1` / `10.10.10.1/24`)
-  - 자동화 프로비저닝 스크립트 배포 완료 (`setup_network_bonding_pve.sh`)
+- [x] **Step 9. Multi-NIC 3-포트 분리 및 맥북 1:1 직결(Direct Link) 최종 검증 완료**:
+  - `vmbr0` (1번 슬롯 `nic0`): 공유기 메인 홈 네트워크 (`192.168.1.200/24`, 게이트웨이 `192.168.1.1`)
+  - `vmbr1` (2번 슬롯 `nic1`): 공유기 2차 라인 2.5G 전용 L2 브리지 (헤놀로지/토렌트 트래픽 격리)
+  - `vmbr2` (3번 슬롯 `nic2`): 맥북 1:1 직결 전용 브리지 (`10.10.10.1/24`, 핑 ~0.7ms 검증 완료)
+  - 4번 슬롯: 미실장 더미 슬롯 확인 완료
+  - 자동화 스크립트 배포 완료 (`apply_network.sh`)
 - [x] **Step 6. NFSv3 락프리(No-Lock) 고속 마운트 전면 표준화 & Amperfy 트러블슈팅 완료**:
   - `LXC 103 (Immich)` 및 `LXC 104 (Gonic)`의 fstab 마운트 옵션을 `vers=3,nolock,soft,timeo=30,intr,_netdev`로 교체 완료
   - fstab 중복 옵션 정리로 `/mnt/music` 정상 마운트 및 Amperfy 모바일 스트리밍 100% 정상화
